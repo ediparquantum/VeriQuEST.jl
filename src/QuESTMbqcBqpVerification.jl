@@ -16,6 +16,10 @@ module QuESTMbqcBqpVerification
     qreal = QuEST.QuEST_Types.qreal
 
 export
+    QuEST_jl,
+    QuEST_jl.QuEST64,
+    QuEST,
+    qreal,
     Client,
     Struct,
     Phase,
