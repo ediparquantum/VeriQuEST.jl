@@ -1,12 +1,5 @@
-using Pkg
-Pkg.activate(".")
-
-include("../src/QuESTMbqcBqpVerification.jl")
-using .QuESTMbqcBqpVerification
+using QuESTMbqcBqpVerification
 using Test
-
-
-
 
 
 tolerance=1e-10
