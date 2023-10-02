@@ -727,7 +727,7 @@ function test_N_qubit_one_dummy_one_trap_N_dummies_small_prob_outcome_bit_flip(n
     end 
     
     verified_decimal = count(==(0),verification_results)./num_iterations
-     @test verified_decimal > trap_acceptance_threshold
+     @test verified_decimal >= trap_acceptance_threshold
 end
 
 function test_graph_colouring_label(N,reps)

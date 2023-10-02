@@ -11,6 +11,7 @@ module QuESTMbqcBqpVerification
     @reexport using RandomMatrices
     @reexport using Combinatorics # For permutations
     @reexport using QuEST_jl
+    @reexport using Printf
     import QuEST_jl.QuEST64
     QuEST = QuEST_jl.QuEST64
     qreal = QuEST.QuEST_Types.qreal
