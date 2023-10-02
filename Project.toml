@@ -1,0 +1,13 @@
+name = "QuESTMbqcBqpVerification"
+uuid = "ad0bff4b-71b6-4e12-8247-dbf9ae5b697f"
+authors = ["Jonathan Miller"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
