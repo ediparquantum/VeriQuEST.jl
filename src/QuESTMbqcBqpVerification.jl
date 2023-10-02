@@ -17,7 +17,7 @@ module QuESTMbqcBqpVerification
 
 export
     QuEST_jl,
-    QuEST_jl.QuEST64,
+    QuEST64,
     QuEST,
     qreal,
     Client,
