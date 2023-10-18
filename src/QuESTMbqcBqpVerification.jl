@@ -115,6 +115,7 @@ export
     init_measurement_outcomes!,
     initialise_quantum_state_meta_graph!,
     generate_property_graph!,
+    MetaGraph,
     produce_initialised_graph,
     produce_initialised_qureg,
     store_measurement_outcome!,

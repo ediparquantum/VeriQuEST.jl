@@ -122,8 +122,11 @@ end
 function init_qubit_meta_graph!(::Client,::ComputationRound,resource::MBQCResourceState,mg)
     verts = get_vertex_iterator(resource)
     for v in verts
+        θ = draw_θᵥ()
         ϕ = get_angle(resource,v)  
-        set_prop!(mg,v,:init_qubit,ϕ)
+        set_prop!(mg,v,:secret_angle,ϕ)
+        set_prop!(mg,v,:init_qubit,θ)
+
     end
     return mg
 end

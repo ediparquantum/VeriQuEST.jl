@@ -114,7 +114,8 @@ end
 
 
 function update_ϕ!(::ComputationRound,::ComputationQubit,::InputQubits,meta_graph,vertex)
-    ϕ = get_prop(meta_graph,vertex,:init_qubit)
+    θᵥ = get_prop(meta_graph,vertex,:init_qubit)
+    ϕ = get_prop(meta_graph,vertex,:secret_angle)
     xᵥ = get_prop(meta_graph,vertex,:classic_input)
     X = get_prop(meta_graph,vertex,:X_correction)
     Z = get_prop(meta_graph,vertex,:Z_correction)
@@ -124,7 +125,7 @@ function update_ϕ!(::ComputationRound,::ComputationQubit,::InputQubits,meta_gra
         sz = z==0 ? 0 : get_prop(meta_graph,z,:outcome)
         push!(Sz,sz)
     end
-    θᵥ = draw_θᵥ()
+    
     rᵥ = draw_rᵥ()
     ϕ̃ = compute_angle_δᵥ(ComputationRound(),InputQubits(),ϕ,Sx,Sz,θᵥ,rᵥ,xᵥ)
     set_prop!(meta_graph,vertex,:updated_ϕ, ϕ̃)
