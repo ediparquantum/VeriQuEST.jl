@@ -16,10 +16,7 @@ using GraphMakie
 using GraphMakie.NetworkLayout
 using Colors
 
-struct Ok end
-struct Abort end
-struct TrapPass end
-struct TrapFail end  
+
 
 # Create client resource
 state_type = DensityMatrix()
