@@ -41,7 +41,7 @@ function create_graph_resource(p::NamedTuple)::MBQCResourceState
     colors = MBQCColouringSet(p[:computation_colours],p[:test_colours])
     mbqc_graph = MBQCGraph(p[:graph],colors,input,output)
     mbqc_flow = MBQCFlow(p[:forward_flow],p[:backward_flow])
-    mbqc_angles = MBQCAngles(p[:angles])
+    mbqc_angles = MBQCAngles(p[:secret_angles],p[:public_angles])
     resource = MBQCResourceState(mbqc_graph,mbqc_flow,mbqc_angles)
     return resource
 end
