@@ -12,8 +12,11 @@ init_plus_phase_state!(qureg,qᵢ,φᵢ)
 function init_plus_phase_state!(::Phase,qureg,qᵢ,φᵢ)
     qᵢ = c_shift_index(qᵢ)
     QuEST.hadamard(qureg,qᵢ)
-    QuEST.phaseShift(qureg,qᵢ,φᵢ)
+    QuEST.rotateZ(qureg,qᵢ,φᵢ)
+    #QuEST.phaseShift(qureg,qᵢ,φᵢ)
 end
+
+
 
 """
     plusState(qureg, qᵢ)
