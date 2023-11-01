@@ -12,10 +12,13 @@ struct ComputationQubit end
 struct TrapQubit end
 struct ComputationRound end
 struct TestRound end
+struct PublicAngles end
+struct SecretAngles end
 struct Ok end
 struct Abort end
 struct TrapPass end
 struct TrapFail end  
+
 """
     InputQubits
 
