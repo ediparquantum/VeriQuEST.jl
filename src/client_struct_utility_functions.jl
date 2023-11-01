@@ -182,11 +182,11 @@ function get_input_value(resource::MBQCResourceState,iter)
 end
 
 function get_angles(resource::MBQCResourceState,::PublicAngles)
-    return resource.angles.angles
+    return resource.angles.public_angles
 end
 
 function get_angles(resource::MBQCResourceState,::SecretAngles)
-    return resource.angles.angles
+    return resource.angles.secret_angles
 end
 
 function get_angle(resource::MBQCResourceState,AngleType,vertex)
