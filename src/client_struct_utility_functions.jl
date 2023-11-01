@@ -216,8 +216,10 @@ function get_verified_flow_output(T,resource::MBQCResourceState,vertex::Int64)
                 intersect(neighs,new_vertex)
             @assert length(new_vertex_in_intersection)==1 "Intersection of neighbourhood of vertex and forward vertex should be 1, it is $(lenth(new_vertex_in_intersection)), figure out problem."
             return new_vertex_in_intersection[1]
-        else
+        elseif new_vertex isa Nothing
             return 
+        else 
+            return
         end
     elseif T isa BackwardFlow
         new_vertex = flow(vertex)
@@ -226,6 +228,8 @@ function get_verified_flow_output(T,resource::MBQCResourceState,vertex::Int64)
                 intersect(neighs,new_vertex)
             @assert length(new_vertex_in_intersection)==1 "Intersection of neighbourhood of vertex and forward vertex should be 1, it is $(lenth(new_vertex_in_intersection)), figure out problem."
             return new_vertex_in_intersection[1]
+        elseif new_vertex isa Nothing
+            return 
         else
             return 
         end
