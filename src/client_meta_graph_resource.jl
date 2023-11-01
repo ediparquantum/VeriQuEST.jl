@@ -122,7 +122,7 @@ end
 function init_qubit_meta_graph!(::Client,::ComputationRound,resource::MBQCResourceState,mg)
     verts = get_vertex_iterator(resource)
     for v in verts
-        ϕ = get_angle(resource,v)  
+        ϕ = get_angle(resource,PublicAngles(),v)  
         set_prop!(mg,v,:init_qubit,ϕ)
     end
     return mg
@@ -131,7 +131,7 @@ end
 function init_qubit_meta_graph!(::Client,::TestRound,resource::MBQCResourceState,mg)
     verts = get_vertex_iterator(resource)    
     for v in verts
-        qubit_type = get_prop(mg,v,:vertex_type)
+        qubit_type = get_prop(mg,v,:vertex_type) # 
         init_qubit_value = init_qubit(qubit_type)
         set_prop!(mg,v,:init_qubit,init_qubit_value)
     end
