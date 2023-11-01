@@ -200,7 +200,8 @@ struct BackwardFlow end
     ```
 """
 struct MBQCAngles 
-    angles
+    secret_angles
+    public_angles
 end
 
 """
