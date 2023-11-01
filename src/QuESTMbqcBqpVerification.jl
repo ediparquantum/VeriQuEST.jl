@@ -25,6 +25,8 @@ export
     Struct,
     Phase,
     NoPhase,
+    PublicAngles,
+    SecretAngles,
     Ok,
     Abort,
     TrapPass,
