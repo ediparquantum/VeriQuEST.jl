@@ -16,7 +16,8 @@
 
 # Base function to update angle 
 function update_ϕ(ϕ,Sx,Sz)
-    return (-1)^Sx*ϕ + π*sum(Sz)
+    #return (-1)^Sx*ϕ + π*sum(Sz)
+    return (-1)^Sx*ϕ + π*mod(sum(Sz),2)
 end
 
 
