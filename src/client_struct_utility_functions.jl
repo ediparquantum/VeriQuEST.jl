@@ -181,9 +181,6 @@ function get_input_value(resource::MBQCResourceState,iter)
     return input_values[input_indices[iter]]
 end
 
-function get_angles(resource::MBQCResourceState,::PublicAngles)
-    return resource.angles.public_angles
-end
 
 function get_angles(resource::MBQCResourceState,::SecretAngles)
     return resource.angles.secret_angles
