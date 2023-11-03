@@ -122,7 +122,7 @@ end
 function init_qubit_meta_graph!(::Client,::ComputationRound,resource::MBQCResourceState,mg)
     verts = get_vertex_iterator(resource)
     for v in verts
-        θ = get_angle(resource,PublicAngles(),v) 
+        θ = draw_θᵥ()
         ϕ = get_angle(resource,SecretAngles(),v) 
         set_prop!(mg,v,:secret_angle,ϕ)
         set_prop!(mg,v,:init_qubit,θ)
@@ -233,9 +233,18 @@ function initialise_quantum_state_meta_graph!(
     return mg
 end
 
+function add_round_type!(::Client,mg,round_type)
+    set_prop!(mg,:round_type,round_type) # Set round to graph
+    mg
+end
 
-
-
+function add_output_qubits!(
+    ::Client,
+    mg,
+    resource::MBQCResourceState)
+    output_inds = resource.graph.output.indices
+    set_prop!(mg,:output_inds,output_inds)
+end
 
 """
     Depending on round type, the metagraph will be generated
@@ -251,7 +260,8 @@ function generate_property_graph!(
     resource::MBQCResourceState,
     state_type::Union{StateVector,DensityMatrix})
     mg = MetaGraph(Client(),resource)
-    set_prop!(mg,:round_type,round_type) # Set round to graph
+    add_round_type!(Client(),mg,round_type)
+    add_output_qubits!(Client(),mg,resource)
     set_vertex_type!(Client(),resource,mg) # Set qubit type according to a random coloring
     set_io_qubits_type!(Client(),resource,mg) # Set if qubit is input or not
     init_qubit_meta_graph!(Client(),resource,mg) # Provide intial value for qubits
