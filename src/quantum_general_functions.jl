@@ -46,3 +46,9 @@ function get_all_amps(::DensityMatrix,quantum_state)
     end
     amps
 end
+
+
+# Function to add to QuESTMbqcBqpVerification 
+function initialise_blank_quantum_state!(quantum_state)
+    QuEST.initBlankState(quantum_state)
+end
