@@ -12,6 +12,7 @@ module QuESTMbqcBqpVerification
     @reexport using Combinatorics # For permutations
     @reexport using QuEST_jl
     @reexport using Printf
+    @reexport using StatsBase
     import QuEST_jl.QuEST64
     QuEST = QuEST_jl.QuEST64
     qreal = QuEST.QuEST_Types.qreal
@@ -25,7 +26,6 @@ export
     Struct,
     Phase,
     NoPhase,
-    PublicAngles,
     SecretAngles,
     Ok,
     Abort,
@@ -135,7 +135,14 @@ export
     measure_along_ϕ_basis!,
     create_resource,
     draw_random_rounds,
-    is_round_OK
+    is_round_OK,
+    update_measurement,
+    run_verification,
+    initialise_blank_quantum_state!,
+    get_output,
+    verify_round,
+    verify_rounds
+
 
 
 
