@@ -106,5 +106,60 @@ para= (
     test_rounds_theshold = test_rounds_theshold)
 
 run_verification_simulator(para)
+ndices = input_indices,input_values = input_values,
+        output_indices = output_indices,graph=graph,computation_colours=computation_colours,test_colours=test_colours,
+        secret_angles = secret_angles,forward_flow = forward_flow,backward_flow=backward_flow)
+    client_resource = create_graph_resource(p)
+    state_type = DensityMatrix()
+    total_rounds,computation_rounds = 10_000,0
+    round_types = draw_random_rounds(total_rounds,computation_rounds)
+    
 
 
+    # Iterate over rounds
+    for round_type in round_types
+        round_type = round_types[1]
+        # Generate client meta graph
+        client_meta_graph = generate_property_graph!(Client(),round_type,client_resource,state_type)
+        
+        
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(Client(),client_meta_graph)
+        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+
+        # Create server resources
+        server_resource = create_resource(Server(),client_graph,client_qureg)
+
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+
+        for q in Base.OneTo(num_qubits_from_server)
+            
+            ϕ = get_updated_ϕ!(Client(),client_meta_graph,q)
+            m = measure_along_ϕ_basis!(Server(),server_quantum_state,q,ϕ)
+            store_measurement_outcome!(Client(),client_meta_graph,q,m)
+        end
+        
+        vertex_type = get_prop(client_meta_graph,1,:vertex_type)
+        if vertex_type isa TrapQubit
+            d = get_prop(client_meta_graph,2,:init_qubit)
+            r = get_prop(client_meta_graph,1,:one_time_pad_int)
+            b = get_prop(client_meta_graph,1,:outcome)
+            @test mod(sum([d,r,b]),2) == 0
+        else
+            d = get_prop(client_meta_graph,1,:init_qubit)
+            r = get_prop(client_meta_graph,2,:one_time_pad_int)
+            b = get_prop(client_meta_graph,2,:outcome)
+            @test mod(sum([d,r,b]),2) == 0
+        end
+
+    end
+
+end
+
+
+
+@testset "test_two_qubit_verification_from_meta_graph()" begin
+    test_two_qubit_verification_from_meta_graph()
+end
