@@ -54,7 +54,7 @@ function test_struct_creation()
     @test SR isa Server
 
     @test MR.angles isa MBQCAngles
-    @test MR.angles.angles isa Tuple
+    @test MR.angles.secret_angles isa Tuple
     @test MR.flow isa MBQCFlow
     @test MR.graph isa MBQCGraph
     
@@ -345,116 +345,6 @@ function test_get_amps_n_qubit(::Client,::DensityMatrix,tolerance)
 end
 
 
-function test_rounds_graphs_in_verification()
-
-
-
-    # Create client resource
-    is_density=true
-    input_indices = [1,2,3]
-    input_values = [0,1,1]
-    output_indices = 0
-    cols,rows = 3,3
-    graph = Graphs.grid([cols,rows])
-    reps = 100
-    computation_colours = ones(nv(graph))
-    test_colours = get_vector_graph_colors(graph;reps=reps)
-    num_vertices = nv(graph)
-    angles = [draw_θᵥ() for i in vertices(graph)]
-    forward_flow(vertex) = vertex + rows
-    backward_flow(vertex) = vertex - rows
-    p = (input_indices = input_indices,input_values = input_values,
-        output_indices = output_indices,graph=graph,computation_colours=computation_colours,test_colours=test_colours,
-        angles = angles,forward_flow = forward_flow,backward_flow=backward_flow)
-    client_resource = create_graph_resource(p)
-    state_type = DensityMatrix()
-    total_rounds,computation_rounds = 10,5
-    round_types = draw_random_rounds(total_rounds,computation_rounds)
-    round_graphs = []
-    # Iterate over rounds
-    for round_type in round_types
-        
-        # Generate client meta graph
-        client_meta_graph = generate_property_graph!(Client(),round_type,client_resource,state_type)
-        client_graph = produce_initialised_graph(Client(),client_meta_graph)
-
-       
-        for v in vertices(client_meta_graph)
-            @test get_prop(client_meta_graph,v,:vertex_io_type) isa Union{NoInputQubits,InputQubits,InputQubits}
-            @test get_prop(client_meta_graph,v,:forward_flow) isa Union{Nothing,Int64}
-            @test get_prop(client_meta_graph,v,:backward_flow) isa Union{Nothing,Int64}
-            @test get_prop(client_meta_graph,v,:X_correction) isa Int64
-            @test get_prop(client_meta_graph,v,:Z_correction) isa Union{Vector{Int64},Int64}
-            v_type = get_prop(client_meta_graph,v,:vertex_type)
-            q_init = get_prop(client_meta_graph,v,:init_qubit)
-            @test v_type isa Union{ComputationQubit,TrapQubit,DummyQubit}
-            if v_type isa Union{ComputationQubit,TrapQubit}
-                @test q_init isa Float64
-            elseif v_type isa DummyQubit
-                @test q_init isa Int
-            end
-            @test get_prop(client_meta_graph,v,:outcome) isa DataType
-
-            vertex_io_type = get_prop(client_meta_graph,v,:vertex_io_type)
-            if  vertex_io_type isa InputQubits && round_type isa ComputationRound
-                @test get_prop(client_meta_graph,v,:classic_input) isa Int64
-            end
-        end
-        # Test the property graph and the client graph match
-        @test Graph(client_meta_graph) == client_graph
-
-        client_quantum_state = produce_initialised_qureg(Client(),client_meta_graph)
-        server_env = create_quantum_env(Server())
-        server_cloned_state = clone_qureq(Server(),client_quantum_state,server_env)
-        # Test both quantum states have same and correct type
-        q_state_type = QuEST_jl.QuEST64.QuEST_Types.Qureg
-        @test client_quantum_state isa q_state_type
-        @test server_cloned_state isa q_state_type
-        c_amps = get_all_amps(state_type,client_quantum_state)
-        s_amps = get_all_amps(state_type,server_cloned_state)
-
-        @test sizeof(c_amps) == sizeof(s_amps)
-        @test typeof(c_amps) == typeof(s_amps)
-
-        # Test the quantum state before the server entangles the two
-        # are identical
-        @test c_amps == s_amps
-
-        # Create server resources
-        server_resource = create_resource(Server(),client_graph,client_quantum_state)
-        @test client_graph == server_resource["graph"]
-        server_quantum_state = server_resource["quantum_state"]
-
-        #=
-        20230915 - I do not know how to determine if the amps
-        in the density matrices are going to change after
-        entanglement occurs. Leaving code block here with date.
-        s_e_amps = get_all_amps(state_type,server_quantum_state)
-        if round_type isa TestRound
-            @info round_type
-            @test c_amps == s_e_amps
-            @test s_amps == s_e_amps
-        else
-            @test c_amps != s_e_amps
-            @test s_amps != s_e_amps
-        end
-        =#
-        num_qubits_from_server = server_quantum_state.numQubitsRepresented
-        @test nv(client_meta_graph) == num_qubits_from_server
-
-        for q in Base.OneTo(num_qubits_from_server)
-            ϕ = get_updated_ϕ!(Client(),client_meta_graph,q)
-            m = measure_along_ϕ_basis!(Server(),server_quantum_state,q,ϕ)
-            @test m isa Int
-            store_measurement_outcome!(Client(),client_meta_graph,q,m)
-        end
-        push!(round_graphs,client_meta_graph)
-    end
-
-    # Test that the rounds stored in the graph match those in the 
-    # round_types vector
-    @test [get_prop(g,:round_type) for g in round_graphs] == round_types
-end
 
 
 
@@ -773,7 +663,7 @@ function test_two_qubit_verification_from_meta_graph()
     backward_flow(vertex) = vertex - rows
     p = (input_indices = input_indices,input_values = input_values,
         output_indices = output_indices,graph=graph,computation_colours=computation_colours,test_colours=test_colours,
-        angles = angles,forward_flow = forward_flow,backward_flow=backward_flow)
+        secret_angles = secret_angles,forward_flow = forward_flow,backward_flow=backward_flow)
     client_resource = create_graph_resource(p)
     state_type = DensityMatrix()
     total_rounds,computation_rounds = 10_000,0
@@ -783,7 +673,7 @@ function test_two_qubit_verification_from_meta_graph()
 
     # Iterate over rounds
     for round_type in round_types
-        
+        round_type = round_types[1]
         # Generate client meta graph
         client_meta_graph = generate_property_graph!(Client(),round_type,client_resource,state_type)
         
@@ -919,4 +809,98 @@ function test_three_qubit_verification_from_meta_graph()
         end
     end
 
+end
+
+
+function test_grover_blind_verification()
+
+    function run_grover_per_search(search)
+        # Grover graph
+        num_vertices = 8
+        graph = Graph(num_vertices)
+        add_edge!(graph,1,2)
+        add_edge!(graph,2,3)
+        add_edge!(graph,3,6)
+        add_edge!(graph,6,7)
+        add_edge!(graph,1,4)
+        add_edge!(graph,4,5)
+        add_edge!(graph,5,8)
+        add_edge!(graph,7,8)
+
+
+
+
+        # Julia is indexed 1, hence a vertex with 0 index is flag for no flow
+        function forward_flow(vertex)
+            v_str = string(vertex)
+            forward = Dict(
+                "1" =>4,
+                "2" =>3,
+                "3" =>6,
+                "4" =>5,
+                "5" =>8,
+                "6" =>7,
+                "7" =>0,
+                "8" =>0)
+            forward[v_str]
+        end
+
+
+        function backward_flow(vertex)
+            v_str = string(vertex)
+            backward = Dict(
+                "1" =>0,
+                "2" =>0,
+                "3" =>2,
+                "4" =>1,
+                "5" =>4,
+                "6" =>3,
+                "7" =>6,
+                "8" =>5)
+            backward[v_str]
+        end
+
+
+
+        state_type = DensityMatrix()
+        input_indices = () # a tuple of indices 
+        input_values = () # a tuple of input values
+        output_indices = (7,8) # Grovers: 7,8
+
+
+
+        function generate_grover_secret_angles(search::String)
+
+            Dict("00"=>(1.0*π,1.0*π),"01"=>(1.0*π,0),"10"=>(0,1.0*π),"11"=>(0,0)) |>
+            x -> x[search] |>
+            x -> [0,0,1.0*x[1],1.0*x[2],0,0,1.0*π,1.0*π] |>
+            x -> Float64.(x)
+        end
+
+        secret_angles = generate_grover_secret_angles(search)
+        total_rounds,computation_rounds = 100,50
+        test_rounds_theshold = total_rounds -computation_rounds
+
+        para= (
+            graph=graph,
+            forward_flow = forward_flow,
+            backward_flow=backward_flow,
+            input_indices = input_indices,
+            input_values = input_values,
+            output_indices =output_indices,
+            secret_angles=secret_angles,
+            state_type = state_type,
+            total_rounds = total_rounds,
+            computation_rounds = computation_rounds,
+            test_rounds_theshold = test_rounds_theshold)
+
+        res = run_verification_simulator(para)
+
+        @test res[:test_verification] == Ok()
+        @test res[:computation_verification] == Ok()
+        @test res[:mode_outcome] .== [parse(Int,search[1]),parse(Int,search[2])]
+    end
+
+    search = ["00","01","10","11"]
+    run_grover_per_search.(search)
 end

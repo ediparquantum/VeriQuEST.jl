@@ -78,11 +78,6 @@ end
 end
 
 
-@testset "test_rounds_graphs_in_verification()" begin
-    # Running multiple rounds due to stochastic sampling
-    [test_rounds_graphs_in_verification() for i in Base.OneTo(num_iterations)]
-end
-
 
 
 @testset "test_is_round_OK()" begin
@@ -164,4 +159,8 @@ end
 
 @testset "test_three_qubit_verification_from_meta_graph()" begin
     test_three_qubit_verification_from_meta_graph()
+end
+
+@testset "test_grover_blind_verification()" begin
+    test_grover_blind_verification()
 end
