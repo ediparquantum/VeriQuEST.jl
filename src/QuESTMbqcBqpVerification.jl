@@ -141,7 +141,10 @@ export
     initialise_blank_quantum_state!,
     get_output,
     verify_round,
-    verify_rounds
+    verify_rounds,
+    get_mode_output,
+    run_verification_simulator,
+    run_computation
 
 
 

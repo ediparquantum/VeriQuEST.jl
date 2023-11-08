@@ -15,6 +15,17 @@ function is_round_OK(trap_results)
 end
 
 
+
+function run_computation(::Client,::Server,client_meta_graph,num_qubits_from_server,server_quantum_state)
+    for q in Base.OneTo(num_qubits_from_server)  
+        ϕ = get_updated_ϕ!(Client(),client_meta_graph,q)
+        m̃ = measure_along_ϕ_basis!(Server(),server_quantum_state,q,ϕ)
+        m = update_measurement(Client(),q,client_meta_graph,m̃)
+        store_measurement_outcome!(Client(),client_meta_graph,q,m)
+    end
+    client_meta_graph
+end
+
 function run_verification(::Client,::Server,
     round_types,client_resource,state_type)
 
@@ -37,15 +48,8 @@ function run_verification(::Client,::Server,
         server_resource = create_resource(Server(),client_graph,client_qureg)
         server_quantum_state = server_resource["quantum_state"]
         num_qubits_from_server = server_quantum_state.numQubitsRepresented
-
-        
-        for q in Base.OneTo(num_qubits_from_server)  
-            ϕ = get_updated_ϕ!(Client(),client_meta_graph,q)
-            m̃ = measure_along_ϕ_basis!(Server(),server_quantum_state,q,ϕ)
-            m = update_measurement(Client(),q,client_meta_graph,m̃)
-            store_measurement_outcome!(Client(),client_meta_graph,q,m)
-        end
-            
+        run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
         initialise_blank_quantum_state!(server_quantum_state)
 
         push!(round_graphs,client_meta_graph)
@@ -117,4 +121,55 @@ function verify_rounds(::Client,::ComputationRound,rounds_as_graphs)
     num_match_mode = count(==(mod_res),outputs)
 
     num_match_mode > num_computation_rounds/2 ? Ok() : Abort()
+end
+
+
+function get_mode_output(::Client,::ComputationRound,rounds_as_graphs)
+
+    outputs = []
+    for mg in rounds_as_graphs
+        get_prop(mg,:round_type) == TestRound() && continue
+        push!(outputs,get_output(Client(),ComputationRound(),mg))
+    end
+
+   mode(outputs)
+end
+
+
+function run_verification_simulator(para)
+    # Define colouring
+    reps = 100
+    computation_colours = ones(nv(para[:graph]))
+    test_colours = get_vector_graph_colors(para[:graph];reps=reps)
+
+    p = (
+        input_indices = para[:input_indices],
+        input_values = para[:input_values],
+        output_indices =para[:output_indices],
+        graph=para[:graph],
+        computation_colours=computation_colours,
+        test_colours=test_colours,
+        secret_angles=para[:secret_angles],
+        forward_flow = para[:forward_flow],
+        backward_flow=para[:backward_flow])
+        
+    client_resource = create_graph_resource(p)
+
+    round_types = draw_random_rounds(para[:total_rounds],para[:computation_rounds])
+
+    rounds_as_graphs = run_verification(
+        Client(),Server(),
+        round_types,client_resource,
+        para[:state_type])
+
+  
+
+
+        test_verification = verify_rounds(Client(),TestRound(),rounds_as_graphs,para[:test_rounds_theshold])
+        computation_verification = verify_rounds(Client(),ComputationRound(),rounds_as_graphs)
+        mode_outcome = get_mode_output(Client(),ComputationRound(),rounds_as_graphs)
+    return (
+        test_verification = test_verification,
+        computation_verification = computation_verification,
+        mode_outcome = mode_outcome)
 end
