@@ -658,7 +658,7 @@ function test_two_qubit_verification_from_meta_graph()
     computation_colours = ones(nv(graph))
     test_colours = get_vector_graph_colors(graph;reps=reps)
     num_vertices = nv(graph)
-    angles = [draw_θᵥ() for i in vertices(graph)]
+    secret_angles = [draw_θᵥ() for i in vertices(graph)]
     forward_flow(vertex) = vertex + rows
     backward_flow(vertex) = vertex - rows
     p = (input_indices = input_indices,input_values = input_values,
@@ -673,7 +673,7 @@ function test_two_qubit_verification_from_meta_graph()
 
     # Iterate over rounds
     for round_type in round_types
-        round_type = round_types[1]
+        
         # Generate client meta graph
         client_meta_graph = generate_property_graph!(Client(),round_type,client_resource,state_type)
         
@@ -726,12 +726,12 @@ function test_three_qubit_verification_from_meta_graph()
     computation_colours = ones(nv(graph))
     test_colours = get_vector_graph_colors(graph;reps=reps)
     num_vertices = nv(graph)
-    angles = [draw_θᵥ() for i in vertices(graph)]
+    secret_angles = [draw_θᵥ() for i in vertices(graph)]
     forward_flow(vertex) = vertex + rows
     backward_flow(vertex) = vertex - rows
     p = (input_indices = input_indices,input_values = input_values,
         output_indices = output_indices,graph=graph,computation_colours=computation_colours,test_colours=test_colours,
-        angles = angles,forward_flow = forward_flow,backward_flow=backward_flow)
+        secret_angles = secret_angles,forward_flow = forward_flow,backward_flow=backward_flow)
     client_resource = create_graph_resource(p)
     state_type = DensityMatrix()
     total_rounds,computation_rounds = 10_000,0
@@ -898,7 +898,7 @@ function test_grover_blind_verification()
 
         @test res[:test_verification] == Ok()
         @test res[:computation_verification] == Ok()
-        @test res[:mode_outcome] .== [parse(Int,search[1]),parse(Int,search[2])]
+        @test Int.(res[:mode_outcome]) == [parse(Int,search[1]),parse(Int,search[2])]
     end
 
     search = ["00","01","10","11"]
