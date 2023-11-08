@@ -25,53 +25,6 @@ using .QuESTMbqcBqpVerification
 
 #using QuESTMbqcBqpVerification 
 
-
-// # Grover specific functions
-    # Function to generate angles defining what search is completed
-    function generate_angles(p)
-        ϕ₃,ϕ₄ = p
-        [0,0,1.0*ϕ₃,1.0*ϕ₄,0,0,1.0*π,1.0*π]
-    end
-
-    # Julia is indexed 1, hence a vertex with 0 index is flag for no flow
-    function forward_flow(vertex)
-        v_str = string(vertex)
-        forward = Dict(
-            "1" =>4,
-            "2" =>3,
-            "3" =>6,
-            "4" =>5,
-            "5" =>8,
-            "6" =>7,
-            "7" =>0,
-            "8" =>0)
-        forward[v_str]
-    end
-
-
-    function backward_flow(vertex)
-        v_str = string(vertex)
-        backward = Dict(
-            "1" =>0,
-            "2" =>0,
-            "3" =>2,
-            "4" =>1,
-            "5" =>4,
-            "6" =>3,
-            "7" =>6,
-            "8" =>5)
-        backward[v_str]
-    end
-// # end
-
-
-state_type = StateVector()#DensityMatrix()
-input_indices = () # a tuple of indices 
-input_values = () # a tuple of input values
-output_indices = (7,8) # Grovers: 7,8
-
-
-
 # Grover graph
 num_vertices = 8
 graph = Graph(num_vertices)
@@ -84,41 +37,73 @@ add_edge!(graph,4,5)
 add_edge!(graph,5,8)
 add_edge!(graph,7,8)
 
-# Define colouring
-reps = 100
-computation_colours = ones(nv(graph))
-test_colours = get_vector_graph_colors(graph;reps=reps)
 
 
 
-search = "10"
-angle = Dict("00"=>(1.0*π,1.0*π),"01"=>(1.0*π,0),"10"=>(0,1.0*π),"11"=>(0,0))
-secret_angles = Float64.(generate_angles(angle[search]))
+# Julia is indexed 1, hence a vertex with 0 index is flag for no flow
+function forward_flow(vertex)
+    v_str = string(vertex)
+    forward = Dict(
+        "1" =>4,
+        "2" =>3,
+        "3" =>6,
+        "4" =>5,
+        "5" =>8,
+        "6" =>7,
+        "7" =>0,
+        "8" =>0)
+    forward[v_str]
+end
+
+
+function backward_flow(vertex)
+    v_str = string(vertex)
+    backward = Dict(
+        "1" =>0,
+        "2" =>0,
+        "3" =>2,
+        "4" =>1,
+        "5" =>4,
+        "6" =>3,
+        "7" =>6,
+        "8" =>5)
+    backward[v_str]
+end
 
 
 
-p = (
+state_type = DensityMatrix()
+input_indices = () # a tuple of indices 
+input_values = () # a tuple of input values
+output_indices = (7,8) # Grovers: 7,8
+
+
+
+function generate_grover_secret_angles(search::String)
+
+    Dict("00"=>(1.0*π,1.0*π),"01"=>(1.0*π,0),"10"=>(0,1.0*π),"11"=>(0,0)) |>
+    x -> x[search] |>
+    x -> [0,0,1.0*x[1],1.0*x[2],0,0,1.0*π,1.0*π] |>
+    x -> Float64.(x)
+end
+
+search = "00"
+secret_angles = generate_grover_secret_angles(search)
+total_rounds,computation_rounds = 100,50
+test_rounds_theshold = total_rounds -computation_rounds
+
+para= (
+    graph=graph,
+    forward_flow = forward_flow,
+    backward_flow=backward_flow,
     input_indices = input_indices,
     input_values = input_values,
     output_indices =output_indices,
-    graph=graph,
-    computation_colours=computation_colours,
-    test_colours=test_colours,
     secret_angles=secret_angles,
-    forward_flow = forward_flow,
-    backward_flow=backward_flow)
+    state_type = state_type,
+    total_rounds = total_rounds,
+    computation_rounds = computation_rounds,
+    test_rounds_theshold = test_rounds_theshold)
 
-client_resource = create_graph_resource(p)
+run_verification_simulator(para)
 
-
-total_rounds,computation_rounds = 100,50
-round_types = draw_random_rounds(total_rounds,computation_rounds)
-
-rounds_as_graphs = run_verification(Client(),Server(),
-    round_types,client_resource,state_type)
-
-
-
-test_rounds_theshold = 50
-verify_rounds(Client(),TestRound(),rounds_as_graphs,test_rounds_theshold)
-verify_rounds(Client(),ComputationRound(),rounds_as_graphs)
