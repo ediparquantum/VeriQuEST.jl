@@ -14,7 +14,11 @@ function is_round_OK(trap_results)
     !(length(failed_traps) >= 1)
 end
 
-
+function compute_trap_round_fail_threshold(total_rounds,computational_rounds,number_different_test_rounds,inherent_bounded_error::InherentBoundedError) 
+    t = total_rounds - computational_rounds #number of test rounds
+    k,p = number_different_test_rounds,inherent_bounded_error.p
+    floor((t/k)*(2*p - 1)/(2*p - 2))
+end
 
 function run_computation(::Client,::Server,client_meta_graph,num_qubits_from_server,server_quantum_state)
     for q in Base.OneTo(num_qubits_from_server)  
@@ -135,23 +139,30 @@ function get_mode_output(::Client,::ComputationRound,rounds_as_graphs)
    mode(outputs)
 end
 
-
 function run_verification_simulator(para)
-    # Define colouring
-    reps = 100
-    computation_colours = ones(nv(para[:graph]))
-    test_colours = get_vector_graph_colors(para[:graph];reps=reps)
+        # Define colouring
+        reps = 100
+        computation_colours = ones(nv(para[:graph]))
+        test_colours = get_vector_graph_colors(para[:graph];reps=reps)
+        chroma_number = length(test_colours)
+        bqp = InherentBoundedError(1/3)
+        test_rounds_theshold = compute_trap_round_fail_threshold(para[:total_rounds],para[:computation_rounds],chroma_number,bqp) 
+    
+   
+
+   
+    backward_flow(vertex) = compute_backward_flow(para[:graph],para[:forward_flow],vertex)
 
     p = (
-        input_indices = para[:input_indices],
-        input_values = para[:input_values],
-        output_indices =para[:output_indices],
+        input_indices =  para[:input][:indices],
+        input_values = para[:input][:values],
+        output_indices =para[:output],
         graph=para[:graph],
         computation_colours=computation_colours,
         test_colours=test_colours,
         secret_angles=para[:secret_angles],
         forward_flow = para[:forward_flow],
-        backward_flow=para[:backward_flow])
+        backward_flow=backward_flow)
         
     client_resource = create_graph_resource(p)
 
@@ -165,7 +176,7 @@ function run_verification_simulator(para)
   
 
 
-        test_verification = verify_rounds(Client(),TestRound(),rounds_as_graphs,para[:test_rounds_theshold])
+        test_verification = verify_rounds(Client(),TestRound(),rounds_as_graphs,test_rounds_theshold)
         computation_verification = verify_rounds(Client(),ComputationRound(),rounds_as_graphs)
         mode_outcome = get_mode_output(Client(),ComputationRound(),rounds_as_graphs)
     return (

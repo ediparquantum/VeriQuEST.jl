@@ -144,8 +144,10 @@ export
     verify_rounds,
     get_mode_output,
     run_verification_simulator,
-    run_computation
-
+    run_computation,
+    compute_backward_flow,
+    InherentBoundedError,
+    compute_trap_round_fail_threshold
 
 
 

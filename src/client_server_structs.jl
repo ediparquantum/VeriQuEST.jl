@@ -271,3 +271,6 @@ struct DummyQubitZeroOneInitialisationError end
 struct QubitFloatPhaseInitialisationError end
 struct FunctionNotMeantToBeUsed end
 
+struct InherentBoundedError
+    p
+end

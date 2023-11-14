@@ -158,6 +158,19 @@ function convert_flow_type_symbol(::Client,flow_type::Union{ForwardFlow,Backward
     return flow_sym
 end
 
+
+function compute_backward_flow(graph,forward_flow,vertex)
+    neighs = neighbors(graph,vertex)
+    fflow_neighs = [forward_flow(n) for n in neighs]
+    !any(vertex .∈ fflow_neighs) && return 0 
+    index_neigh = findall(x->x==vertex,fflow_neighs)
+    length(index_neigh) == 0 && error("The inputted vertex is not in the flow of the neighbours.")
+    previous_vertex = neighs[index_neigh]
+    length(previous_vertex) > 1 && error("There is more than one past vertex found")
+    previous_vertex[1]
+end
+
+
 function add_flow_vertex!(
     ::Client,
     mg,

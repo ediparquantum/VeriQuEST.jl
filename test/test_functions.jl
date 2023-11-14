@@ -904,3 +904,26 @@ function test_grover_blind_verification()
     search = ["00","01","10","11"]
     run_grover_per_search.(search)
 end
+
+function test_compute_backward_flow()
+    graph = Graph(3)
+    add_edge!(graph,1,2)
+    add_edge!(graph,2,3)
+ 
+
+    function forward_flow(vertex)
+        v_str = string(vertex)
+        forward = Dict(
+            "1" =>2,
+            "2" =>3,
+            "3" =>0)
+        forward[v_str]
+    end
+
+
+   
+    backward_flow(vertex) = compute_backward_flow(graph,forward_flow,vertex)
+    @test backward_flow(3) == 2
+    @test backward_flow(2) == 1
+    @test backward_flow(1) == 0
+end
