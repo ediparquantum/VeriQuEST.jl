@@ -11,7 +11,7 @@ Implementation of protocol 1 from Leichtle et al ([Verifying BQP Computations on
 
 
 ## Example
-Run the following to implement
+Run the following commands along with relevant input to implement the blind verification.
 
 Load packages, if not installed, then run `] add <PackageName>`, for `QuEST_jl`, go to [https://github.com/fieldofnodes/QuEST_jl](https://github.com/fieldofnodes/QuEST_jl) for installation instructions.
 ```julia
