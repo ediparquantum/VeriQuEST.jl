@@ -90,8 +90,7 @@ para= (
     secret_angles=secret_angles,
     state_type = state_type,
     total_rounds = total_rounds,
-    computation_rounds = computation_rounds,
-    test_rounds_theshold = test_rounds_theshold)
+    computation_rounds = computation_rounds)
 
   
 
