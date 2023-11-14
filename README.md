@@ -13,7 +13,7 @@ Implementation of protocol 1 from Leichtle et al ([Verifying BQP Computations on
 ## Example
 Run the following to implement
 
-Load packages
+Load packages, if not installed, then run `] add <PackageName>`, for `QuEST_jl`, go to [https://github.com/fieldofnodes/QuEST_jl](https://github.com/fieldofnodes/QuEST_jl) for installation instructions.
 ```julia
 using Pkg
 Pkg.activate(".")
@@ -28,7 +28,7 @@ using Graphs
 using CairoMakie
 using RobustBlindVerification
 ```
-Define the quantume state type, either a state vector backen (`StateVector()`) or a density matrix backend (`DensityMatrix()`)
+Define the quantum state type, either a state vector backend (`StateVector()`) or a density matrix backend (`DensityMatrix()`)
 
 ```julia
   state_type = DensityMatrix()
@@ -40,9 +40,9 @@ Using the Julia Graphs package, implement a graph.
   graph = Graph(num_vertices)
 ```
 
-Define the flow. As long a qubit index is inputted and a bubit index is ouputed, any function will do. Note that Julia is index starting from $1$, but QuEST (the quantum simulator) is in C and indexed from $0$. 
+Define the flow. As long a qubit index is inputted and a qubit index is ouputed, any function will do. Note that Julia is indexed starting from $1$, but QuEST (the quantum simulator) is in C and indexed from $0$. 
 
-The `forward_flow` function takes a present qubit and return the next qubit according to the flow.
+The `forward_flow` function takes a present qubit and returns the next qubit according to the flow.
 ```julia
 function forward_flow(vertex)
     # Define function or data structure to output new vertex index
@@ -58,7 +58,7 @@ function backward_flow(vertex)
 end
 ```
 
-Define the input and output vertices. For input vertices, provide the indices and the classical inputs. For no inputs, provide empty brackets `()`
+Define the input and output vertices as tuples. For input vertices, provide the indices and the classical inputs. For no inputs, provide empty brackets `()`
 
 ```julia
   input_indices = () # a tuple of indices 
@@ -73,7 +73,7 @@ Provide the vertices considered the outputs of the graph.
 
 for $M$ output vertices.
 
-Provide the angles known to the client only. Data structured encapsulated by `[]` are vectors in Julia.
+Provide the angles known to the client only. Data structures encapsulated by `[]` are vectors in Julia.
 
 ```julia
   secret_angles = []
@@ -114,7 +114,7 @@ The outcome will be a named tuple
 (test_verification = test_verification_outcome, computation_verification = computation_verification_outcome, mode_outcome = mode_outcome)
 ```
 
-where `test_verification_outcome`and `computation_verification_outcome` is of type `Ok()` or `Abort()` based on outcomes computed according to Leichtle et al.
+where `test_verification_outcome`and `computation_verification_outcome` is of type `Ok()` or `Abort()` based on outcomes computed according to Leichtle et al. The outcome of the computation is `mode_outcome`.
 
 
 For an example see `grover_verification_script.jl`.
