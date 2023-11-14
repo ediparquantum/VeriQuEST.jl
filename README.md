@@ -6,8 +6,11 @@
 [![Build Status](https://travis-ci.com/fieldofnodes/QuESTMbqcBqpVerification.jl.svg?branch=main)](https://travis-ci.com/fieldofnodes/QuESTMbqcBqpVerification.jl)
 [![Coverage](https://codecov.io/gh/fieldofnodes/QuESTMbqcBqpVerification.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/fieldofnodes/QuESTMbqcBqpVerification.jl)
 
+## Use branch: `software_user_exploration` to explore the following code.
+
 
 Implementation of protocol 1 from Leichtle et al ([Verifying BQP Computations on Noisy Devices with Minimal Overhead](https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.2.040302)).
+
 
 
 ## Example
@@ -119,4 +122,5 @@ where `test_verification_outcome`and `computation_verification_outcome` is of ty
 
 For an example see `grover_verification_script.jl`.
 
+## To do
 
