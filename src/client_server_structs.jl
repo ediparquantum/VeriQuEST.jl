@@ -18,6 +18,9 @@ struct Abort end
 struct TrapPass end
 struct TrapFail end  
 struct MBQC end
+struct Terse end
+struct Verbose end
+struct TrustworthyServer end
 
 """
     InputQubits

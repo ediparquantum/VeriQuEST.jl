@@ -38,10 +38,6 @@ add_edge!(graph,7,8)
 
 input = (indices = (),values = ())
 output = (7,8)
-#input_indices = () # a tuple of indices 
-#input_values = () # a tuple of input values
-#output_indices = (7,8) # Grovers: 7,8
-
 
 
 # Julia is indexed 1, hence a vertex with 0 index is flag for no flow
@@ -90,37 +86,85 @@ para= (
 # Noiseless and trust worthy server
 mbqc_outcome = run_mbqc(para)
 ubqc_outcome = run_ubqc(para)
-vbqc_outcome = run_verification_simulator(para)
+vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
 
 malicious_angles = π/8
-malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),para,malicious_angles)
-
+malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,malicious_angles)
 
 # Test 
-test_sim = []
-comp_sim = []
+outcomes = []
 angle_range = range(0.0,2*π,length=100)
 for a in angle_range
-    malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),para,a) 
-    out_test = malicious_vbqc_outcome[:test_verification] isa Ok ? 1.0 : 0.0
-    out_comp = malicious_vbqc_outcome[:computation_verification] isa Ok ? 1.0 : 0.0
+    malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,a) 
+   push!(outcomes,malicious_vbqc_outcome)
+end
+
+test_sim = []
+comp_sim = []
+test_counts = []
+comp_counts = []
+for o in outcomes
+    out_test = Float64(o[:test_verification] isa Ok ? 1.0 : 0.0)
+    out_comp = Float64(o[:computation_verification] isa Ok ? 1.0 : 0.0)
     push!(test_sim,out_test)
     push!(comp_sim,out_comp)
+    push!(test_counts,o[:test_verification_verb][:failed])
+    push!(comp_counts,o[:computation_verification_verb][:failed])
 end
 
 
 
-# Test round results
-f = Figure(resolution = (800,800),fontsize = 22)
-ax = Axis(f[1,1],xlabel = "Angle",xticks = ([0,π/4,π/2,3*π/4,π,5*π/4,3*π/2,7*π/4,2*π],["0","π/4","π/2","3π/4","π","5π/4","3π/2","7π/4","2π"]),ylabel = "Round Outcome", yticks = ([0.0,1.0],["Abort","Ok"]),title = "Malicious Server Verification Results", subtitle = "Inserts an additional angle to measurement basis")
-results_scatter = scatter!(ax,angle_range,Float64.(test_sim))
-Legend(f[2,1],[results_scatter],["Test"],orientation=:horizontal,halign=:left)
-save("examples/malicious_server_added_angle_range_0to2pi_test_rounds.png",f)
 
 
-# Computation results
-f = Figure(resolution = (800,800),fontsize = 22)
-ax = Axis(f[1,1],xlabel = "Angle",xticks = ([0,π/4,π/2,3*π/4,π,5*π/4,3*π/2,7*π/4,2*π],["0","π/4","π/2","3π/4","π","5π/4","3π/2","7π/4","2π"]),ylabel = "Round Outcome", yticks = ([0.0,1.0],["Abort","Ok"]),title = "Malicious Server Verification Results", subtitle = "Inserts an additional angle to measurement basis")
-results_scatter = scatter!(ax,angle_range,Float64.(comp_sim))
-Legend(f[2,1],[results_scatter],["Computation"],orientation=:horizontal,halign=:left)
-save("examples/malicious_server_added_angle_range_0to2pi_computation_rounds.png",f)
+f = plot_verification_results(MaliciousServer(),Terse(),angle_range,test_sim,"Test")
+save("examples/terse_malicious_server_added_angle_range_0to2pi_test_rounds.png",f)
+f = plot_verification_results(MaliciousServer(),Terse(),angle_range,comp_sim,"Computation")
+save("examples/terse_malicious_server_added_angle_range_0to2pi_computation_rounds.png",f)
+f = plot_verification_results(MaliciousServer(),Verbose(),angle_range,test_counts,"Test")
+save("examples/verbose_malicious_server_added_angle_range_0to2pi_test_rounds.png",f)
+f = plot_verification_results(MaliciousServer(),Verbose(),angle_range,comp_counts,"Computation")
+save("examples/verbose_malicious_server_added_angle_range_0to2pi_computation_rounds.png",f)
+
+function two_pi_x()
+    ([0,π/4,π/2,3*π/4,π,5*π/4,3*π/2,7*π/4,2*π],["0","π/4","π/2","3π/4","π","5π/4","3π/2","7π/4","2π"])
+end
+
+function ok_abort_y()
+    ([0.0,1.0],["Abort","Ok"])
+end
+
+
+function plot_verification_results(::MaliciousServer,::Verbose,xdata,ydata,label)
+    ∑ydata = sum(ydata)
+    normy = ydata ./ ∑ydata
+    f = Figure(resolution = (1200,1200),fontsize = 35)
+    ax = Axis(
+        f[1,1],
+        xlabel = "Angle",
+        ylabel = "Failed Rounds", 
+        title = "Malicious Server Verification Results", 
+        subtitle = "Inserts an additional angle to measurement basis",
+        xticks = two_pi_x(),aspect=1)
+    results_scatter = barplot!(ax,xdata,Float64.(normy))
+    Legend(f[2,1],
+    [results_scatter],[label],
+    orientation=:horizontal,halign=:left)
+    f
+end
+
+function plot_verification_results(::MaliciousServer,::Terse,xdata,ydata,label)
+    f = Figure(resolution = (1200,1200),fontsize = 35)
+    ax = Axis(
+        f[1,1],
+        xlabel = "Angle",
+        ylabel = "Round Outcome", 
+        title = "Malicious Server Verification Results", 
+        subtitle = "Inserts an additional angle to measurement basis",
+        xticks = two_pi_x(),
+        yticks = ok_abort_y(),aspect=1)
+    results_scatter = scatter!(ax,xdata,Float64.(ydata))
+    Legend(f[2,1],
+    [results_scatter],[label],
+    orientation=:horizontal,halign=:left)
+    f
+end
