@@ -41,6 +41,7 @@ export
     TrapQubit,
     ComputationRound,
     TestRound,
+    MBQC,
     InputQubits,
     NoInputQubits,
     ClusterState,
@@ -113,11 +114,13 @@ export
     MetaGraph,
     set_vertex_type!,
     set_io_qubits_type!,
-    init_qubit,
-    init_qubit_meta_graph!,
     convert_flow_type_symbol,
     add_flow_vertex!,
     add_correction_vertices!,
+    add_round_type!,
+    add_output_qubits!,
+    init_qubit,
+    init_qubit_meta_graph!,
     init_measurement_outcomes!,
     initialise_quantum_state_meta_graph!,
     generate_property_graph!,
@@ -144,8 +147,14 @@ export
     verify_rounds,
     get_mode_output,
     run_verification_simulator,
-    run_computation
-
+    run_computation,
+    compute_backward_flow,
+    InherentBoundedError,
+    compute_trap_round_fail_threshold,
+    get_ubqc_output,
+    run_ubqc,
+    run_mbqc,
+    create_ubqc_resource
 
 
 

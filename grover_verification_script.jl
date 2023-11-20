@@ -10,11 +10,6 @@
 
 using Pkg
 Pkg.activate(".")
-
-using QuEST_jl
-import QuEST_jl.QuEST64
-QuEST = QuEST_jl.QuEST64
-qreal = QuEST.QuEST_Types.qreal
 using Test
 using StatsBase
 using Graphs
@@ -23,7 +18,9 @@ using CairoMakie
 include("src/QuESTMbqcBqpVerification.jl")
 using .QuESTMbqcBqpVerification 
 
-#using QuESTMbqcBqpVerification 
+# Choose backend and round counts
+state_type = DensityMatrix()
+total_rounds,computation_rounds = 100,50
 
 # Grover graph
 num_vertices = 8
@@ -37,6 +34,13 @@ add_edge!(graph,4,5)
 add_edge!(graph,5,8)
 add_edge!(graph,7,8)
 
+
+
+input = (indices = (),values = ())
+output = (7,8)
+#input_indices = () # a tuple of indices 
+#input_values = () # a tuple of input values
+#output_indices = (7,8) # Grovers: 7,8
 
 
 
@@ -56,26 +60,6 @@ function forward_flow(vertex)
 end
 
 
-function backward_flow(vertex)
-    v_str = string(vertex)
-    backward = Dict(
-        "1" =>0,
-        "2" =>0,
-        "3" =>2,
-        "4" =>1,
-        "5" =>4,
-        "6" =>3,
-        "7" =>6,
-        "8" =>5)
-    backward[v_str]
-end
-
-
-
-state_type = DensityMatrix()
-input_indices = () # a tuple of indices 
-input_values = () # a tuple of input values
-output_indices = (7,8) # Grovers: 7,8
 
 
 
@@ -87,22 +71,24 @@ function generate_grover_secret_angles(search::String)
     x -> Float64.(x)
 end
 
-search = "00"
+search = "10"
 secret_angles = generate_grover_secret_angles(search)
-total_rounds,computation_rounds = 100,50
-test_rounds_theshold = total_rounds -computation_rounds
+
+
 
 para= (
     graph=graph,
     forward_flow = forward_flow,
-    backward_flow=backward_flow,
-    input_indices = input_indices,
-    input_values = input_values,
-    output_indices =output_indices,
+    input = input,
+    output = output,
     secret_angles=secret_angles,
     state_type = state_type,
     total_rounds = total_rounds,
-    computation_rounds = computation_rounds,
-    test_rounds_theshold = test_rounds_theshold)
+    computation_rounds = computation_rounds)
 
-run_verification_simulator(para)
+ubqc_outcome = run_ubqc(para)
+vbqc_outcome = run_verification_simulator(para)
+mbqc_outcome = run_mbqc(para)
+
+
+

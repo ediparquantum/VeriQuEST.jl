@@ -8,7 +8,7 @@ function update_measurement(::Client,::ComputationRound,q,mg,outcome)
     abs(outcome-one_time_pad_int)	
 end
 
-function update_measurement(::Client,::TestRound,q,mg,outcome)
+function update_measurement(::Client,::Union{MBQC,TestRound},q,mg,outcome)
     outcome
 end
 

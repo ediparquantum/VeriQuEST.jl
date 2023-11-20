@@ -164,3 +164,7 @@ end
 @testset "test_grover_blind_verification()" begin
     test_grover_blind_verification()
 end
+
+@testset "test_compute_backward_flow()" begin
+    test_compute_backward_flow()
+end
