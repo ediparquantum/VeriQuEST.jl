@@ -154,7 +154,8 @@ export
     get_ubqc_output,
     run_ubqc,
     run_mbqc,
-    create_ubqc_resource
+    create_ubqc_resource,
+    MaliciousServer
 
 
 
@@ -173,6 +174,7 @@ include("client_initialise_qubit_state.jl")
 include("client_meta_graph_resource.jl")
 include("client_update_angle.jl")
 include("server_functions.jl")
+include("server_malicious_behaviour.jl")
 include("verification_functions.jl")
 
 end

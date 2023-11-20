@@ -72,6 +72,37 @@ function run_verification(::Client,::Server,
     round_graphs
 end
 
+function run_verification(::Client,::MaliciousServer,
+    round_types,client_resource,state_type,malicious_angles)
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        client_meta_graph = generate_property_graph!(
+            Client(),
+            round_type,
+            client_resource,
+            state_type)
+        
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(Client(),client_meta_graph)
+        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+        
+        # Create server resources
+        server_resource = create_resource(MaliciousServer(),client_graph,client_qureg,malicious_angles)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        run_computation(Client(),MaliciousServer(),server_resource,client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
+end
 
 
 function verify_round(::Client,::TestRound,mg)
