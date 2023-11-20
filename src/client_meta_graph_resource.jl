@@ -36,7 +36,7 @@ function MetaGraph(::Client,resource::MBQCResourceState)
 end
 
 
-function set_vertex_type!(::ComputationRound,resource,mg)
+function set_vertex_type!(::Union{MBQC,ComputationRound},resource,mg)
     color_pattern = Int.(resource.graph.colouring.computation_round)
     qubit_types = [ComputationQubit()]
     vertex_qubit_types_list = [qubit_types[i] for i in color_pattern]
@@ -66,6 +66,19 @@ function set_vertex_type!(::Client,resource,mg)
     return mg
 end
 
+
+"""
+    For MBQC, with no blind
+"""
+function set_io_qubits_type!(::MBQC,resource,mg)
+    idx_vec = get_input_indices(resource)
+    val_vec = get_input_values(resource)
+    for v in get_vertex_iterator(resource)
+        in_bool = v ∈ idx_vec
+        in_bool ? set_props!(mg,v,Dict(:vertex_io_type => InputQubits(),:classic_input => val_vec[v])) : 
+            set_prop!(mg,v,:vertex_io_type,NoInputQubits())
+    end
+end
 
 
 """
@@ -99,6 +112,15 @@ end
 
 
 
+function init_qubit_meta_graph!(::Client,::MBQC,resource::MBQCResourceState,mg)
+    verts = get_vertex_iterator(resource)
+    for v in verts
+        ϕ = get_angle(resource,SecretAngles(),v) 
+        set_prop!(mg,v,:secret_angle,ϕ)
+        set_prop!(mg,v,:init_qubit,ϕ)
+    end
+    return mg
+end
 
 """
     For use to initialise the qubit in the meta graph
@@ -211,7 +233,7 @@ end
 
 function initialise_quantum_state_meta_graph!(
     ::Client,
-    state_type::DensityMatrix,
+    state_type::Union{StateVector,DensityMatrix},
     mg)
     num_qubits = nv(mg)
     quantum_env = create_quantum_env(Client())
@@ -227,7 +249,26 @@ function initialise_quantum_state_meta_graph!(
     return mg
 end
 
+function initialise_quantum_state_meta_graph!(
+    ::MBQC,
+    ::Client,
+    state_type::Union{StateVector,DensityMatrix},
+    mg)
+    num_qubits = nv(mg)
+    quantum_env = create_quantum_env(Client())
+    quantum_state = create_quantum_state(Client(),state_type,quantum_env,num_qubits)
+    for v in vertices(mg)
+        v_type = get_prop(mg,v,:vertex_type)
+        v_io_type = get_prop(mg,v,:vertex_io_type)
+       # qubit_input_value = get_prop(mg,v,:init_qubit)
+        initialise_qubit(MBQC(),v_type,v_io_type,quantum_state,v)
+    end
+    set_prop!(mg,:quantum_state,quantum_state) # Set state to graph
 
+    return mg
+end
+
+#=
 function initialise_quantum_state_meta_graph!(
     ::Client,
     state_type::StateVector,
@@ -245,6 +286,20 @@ function initialise_quantum_state_meta_graph!(
 
     return mg
 end
+=#
+
+
+function entangle_graph!(::Client,mg)
+    qureg = get_prop(mg,:quantum_state)
+    graph = Graph(mg)
+
+    edge_iter = edges(graph)
+    for e in edge_iter
+        src,dst = c_shift_index(e.src),c_shift_index(e.dst)
+        QuEST.controlledPhaseFlip(qureg,src,dst)
+    end
+end
+
 
 function add_round_type!(::Client,mg,round_type)
     set_prop!(mg,:round_type,round_type) # Set round to graph
@@ -287,11 +342,44 @@ function generate_property_graph!(
 end
 
 
+function generate_property_graph!(
+    ::Client,
+    round_type::MBQC,
+    resource::MBQCResourceState,
+    state_type::Union{StateVector,DensityMatrix})
+    mg = MetaGraph(Client(),resource)
+    add_round_type!(Client(),mg,round_type)
+    add_output_qubits!(Client(),mg,resource)
+    set_vertex_type!(Client(),resource,mg) # Set qubit type according to a random coloring
+    set_io_qubits_type!(Client(),resource,mg) # Set if qubit is input or not
+    init_qubit_meta_graph!(Client(),resource,mg) # Provide intial value for qubits
+    add_flow_vertex!(Client(),mg,resource)
+    add_correction_vertices!(Client(),mg,resource)
+    init_measurement_outcomes!(Client(),mg,resource)
+    initialise_quantum_state_meta_graph!(MBQC(),Client(),state_type,mg)
+    entangle_graph!(Client(),mg)    
+    return mg
+end
+
+
+
+
+
+
+
+
+
 create_quantum_env(::Client) = QuEST.createQuESTEnv()
 produce_initialised_graph(::Client,mg) = Graph(mg)
 produce_initialised_qureg(::Client,mg) = get_prop(mg,:quantum_state)
 
 
+function measure_along_ϕ_basis!(::Client,ψ,v::Union{Int32,Int64},ϕ::qreal)
+    v = c_shift_index(v)
+    QuEST.rotateZ(ψ,v,-ϕ)
+    QuEST.hadamard(ψ,v)
+    QuEST.measure(ψ,v)
+end
 
 function store_measurement_outcome!(::Client,client_meta_graph,qubit,outcome)
     set_prop!(client_meta_graph,qubit,:outcome, outcome)

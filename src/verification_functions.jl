@@ -30,6 +30,16 @@ function run_computation(::Client,::Server,client_meta_graph,num_qubits_from_ser
     client_meta_graph
 end
 
+function run_computation(client_meta_graph,num_qubits_from_server,server_quantum_state)
+    for q in Base.OneTo(num_qubits_from_server)  
+        ϕ = get_updated_ϕ!(Client(),client_meta_graph,q)
+        m̃ = measure_along_ϕ_basis!(Client(),server_quantum_state,q,ϕ)
+        m = update_measurement(Client(),q,client_meta_graph,m̃)
+        store_measurement_outcome!(Client(),client_meta_graph,q,m)
+    end
+    client_meta_graph
+end
+
 function run_verification(::Client,::Server,
     round_types,client_resource,state_type)
 
@@ -98,7 +108,7 @@ function verify_rounds(::Client,::TestRound,rounds_as_graphs,pass_theshold)
     return failed_rounds > pass_theshold ? Abort() : Ok()
 end
 
-function get_output(::Client,::ComputationRound,mg)
+function get_output(::Client,::Union{MBQC,ComputationRound},mg)
     output_inds = get_prop(mg,:output_inds)
     outcome = []
     for v in output_inds
@@ -128,7 +138,7 @@ function verify_rounds(::Client,::ComputationRound,rounds_as_graphs)
 end
 
 
-function get_mode_output(::Client,::ComputationRound,rounds_as_graphs)
+function get_mode_output(::Client,::ComputationRound,rounds_as_graphs::Vector)
 
     outputs = []
     for mg in rounds_as_graphs
@@ -137,6 +147,12 @@ function get_mode_output(::Client,::ComputationRound,rounds_as_graphs)
     end
 
    mode(outputs)
+end
+
+function get_ubqc_output(::Client,::ComputationRound,mg::MetaGraphs.MetaGraph)
+
+        get_prop(mg,:round_type) == TestRound() && error("This function is for computational rounds only, not test rounds")
+        get_output(Client(),ComputationRound(),mg)
 end
 
 function run_verification_simulator(para)
@@ -183,4 +199,62 @@ function run_verification_simulator(para)
         test_verification = test_verification,
         computation_verification = computation_verification,
         mode_outcome = mode_outcome)
+end
+
+
+
+function create_ubqc_resource(para)
+    
+    test_colours = []#get_vector_graph_colors(para[:graph];reps=reps)
+    computation_colours = ones(nv(para[:graph]))
+    backward_flow(vertex) = compute_backward_flow(para[:graph],para[:forward_flow],vertex)
+
+    p = (
+        input_indices =  para[:input][:indices],
+        input_values = para[:input][:values],
+        output_indices =para[:output],
+        graph=para[:graph],
+        computation_colours=computation_colours,
+        test_colours=test_colours,
+        secret_angles=para[:secret_angles],
+        forward_flow = para[:forward_flow],
+        backward_flow=backward_flow)
+     
+    create_graph_resource(p)
+end
+
+function run_ubqc(para)
+    
+   state_type = para[:state_type]
+   client_resource = create_ubqc_resource(para)
+
+    # Generate client meta graph
+    client_meta_graph = generate_property_graph!(
+       Client(),
+       ComputationRound(),
+       client_resource,
+       state_type)
+
+   # Extract graph and qureg from client
+   client_graph = produce_initialised_graph(Client(),client_meta_graph)
+   client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+   
+   # Create server resources
+   server_resource = create_resource(Server(),client_graph,client_qureg)
+   server_quantum_state = server_resource["quantum_state"]
+   num_qubits_from_server = server_quantum_state.numQubitsRepresented
+   run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+   #initialise_blank_quantum_state!(server_quantum_state)
+   return get_ubqc_output(Client(),ComputationRound(),client_meta_graph)
+end
+
+
+function run_mbqc(para)
+    resource = create_ubqc_resource(para)
+    client_meta_graph = generate_property_graph!(
+        Client(),MBQC(),resource,para[:state_type])
+    quantum_state = get_prop(client_meta_graph,:quantum_state)
+    num_qubits = quantum_state.numQubitsRepresented
+    run_computation(client_meta_graph,num_qubits,quantum_state)
+    get_output(Client(),MBQC(),client_meta_graph)
 end

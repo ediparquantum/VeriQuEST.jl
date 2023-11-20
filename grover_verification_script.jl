@@ -10,11 +10,6 @@
 
 using Pkg
 Pkg.activate(".")
-
-using QuEST_jl
-import QuEST_jl.QuEST64
-QuEST = QuEST_jl.QuEST64
-qreal = QuEST.QuEST_Types.qreal
 using Test
 using StatsBase
 using Graphs
@@ -22,8 +17,6 @@ using CairoMakie
 
 include("src/QuESTMbqcBqpVerification.jl")
 using .QuESTMbqcBqpVerification 
-
-#using QuESTMbqcBqpVerification 
 
 # Choose backend and round counts
 state_type = DensityMatrix()
@@ -42,11 +35,12 @@ add_edge!(graph,5,8)
 add_edge!(graph,7,8)
 
 
+
 input = (indices = (),values = ())
 output = (7,8)
-input_indices = () # a tuple of indices 
-input_values = () # a tuple of input values
-output_indices = (7,8) # Grovers: 7,8
+#input_indices = () # a tuple of indices 
+#input_values = () # a tuple of input values
+#output_indices = (7,8) # Grovers: 7,8
 
 
 
@@ -77,7 +71,7 @@ function generate_grover_secret_angles(search::String)
     x -> Float64.(x)
 end
 
-search = "01"
+search = "10"
 secret_angles = generate_grover_secret_angles(search)
 
 
@@ -92,17 +86,9 @@ para= (
     total_rounds = total_rounds,
     computation_rounds = computation_rounds)
 
-  
+ubqc_outcome = run_ubqc(para)
+vbqc_outcome = run_verification_simulator(para)
+mbqc_outcome = run_mbqc(para)
 
-
-run_verification_simulator(para)
-
-function run_mbqc(para)
-
-end
-
-function run_ubqc(para)
-
-end
 
 
