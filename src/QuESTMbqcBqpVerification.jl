@@ -13,6 +13,7 @@ module QuESTMbqcBqpVerification
     @reexport using QuEST_jl
     @reexport using Printf
     @reexport using StatsBase
+    @reexport using CairoMakie
     import QuEST_jl.QuEST64
     QuEST = QuEST_jl.QuEST64
     qreal = QuEST.QuEST_Types.qreal
@@ -158,7 +159,10 @@ export
     run_ubqc,
     run_mbqc,
     create_ubqc_resource,
-    MaliciousServer
+    MaliciousServer,
+    two_pi_x,
+    ok_abort_y,
+    plot_verification_results
 
 
 
@@ -179,5 +183,6 @@ include("client_update_angle.jl")
 include("server_functions.jl")
 include("server_malicious_behaviour.jl")
 include("verification_functions.jl")
+include("verification_visualisation.jl")
 
 end
