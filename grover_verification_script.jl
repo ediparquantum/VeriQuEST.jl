@@ -38,10 +38,6 @@ add_edge!(graph,7,8)
 
 input = (indices = (),values = ())
 output = (7,8)
-#input_indices = () # a tuple of indices 
-#input_values = () # a tuple of input values
-#output_indices = (7,8) # Grovers: 7,8
-
 
 
 # Julia is indexed 1, hence a vertex with 0 index is flag for no flow
@@ -71,7 +67,7 @@ function generate_grover_secret_angles(search::String)
     x -> Float64.(x)
 end
 
-search = "10"
+search = "11"
 secret_angles = generate_grover_secret_angles(search)
 
 
@@ -86,9 +82,45 @@ para= (
     total_rounds = total_rounds,
     computation_rounds = computation_rounds)
 
-ubqc_outcome = run_ubqc(para)
-vbqc_outcome = run_verification_simulator(para)
+
+# Noiseless and trust worthy server
 mbqc_outcome = run_mbqc(para)
+ubqc_outcome = run_ubqc(para)
+vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
+
+malicious_angles = π/8
+malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,malicious_angles)
+
+# Test 
+outcomes = []
+angle_range = range(0.0,2*π,length=100)
+for a in angle_range
+    malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,a) 
+   push!(outcomes,malicious_vbqc_outcome)
+end
+
+test_sim = []
+comp_sim = []
+test_counts = []
+comp_counts = []
+for o in outcomes
+    out_test = Float64(o[:test_verification] isa Ok ? 1.0 : 0.0)
+    out_comp = Float64(o[:computation_verification] isa Ok ? 1.0 : 0.0)
+    push!(test_sim,out_test)
+    push!(comp_sim,out_comp)
+    push!(test_counts,o[:test_verification_verb][:failed])
+    push!(comp_counts,o[:computation_verification_verb][:failed])
+end
 
 
 
+
+
+f = plot_verification_results(MaliciousServer(),Terse(),angle_range,test_sim,"Test")
+save("examples/terse_malicious_server_added_angle_range_0to2pi_test_rounds.png",f)
+f = plot_verification_results(MaliciousServer(),Terse(),angle_range,comp_sim,"Computation")
+save("examples/terse_malicious_server_added_angle_range_0to2pi_computation_rounds.png",f)
+f = plot_verification_results(MaliciousServer(),Verbose(),angle_range,test_counts,"Test")
+save("examples/verbose_malicious_server_added_angle_range_0to2pi_test_rounds.png",f)
+f = plot_verification_results(MaliciousServer(),Verbose(),angle_range,comp_counts,"Computation")
+save("examples/verbose_malicious_server_added_angle_range_0to2pi_computation_rounds.png",f)

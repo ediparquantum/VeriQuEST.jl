@@ -72,7 +72,15 @@ function run_verification(::Client,::Server,
     round_graphs
 end
 
-
+function get_output(::Client,::Union{MBQC,ComputationRound},mg)
+    output_inds = get_prop(mg,:output_inds)
+    outcome = []
+    for v in output_inds
+            classic_outcome = get_prop(mg,v,:outcome)
+            push!(outcome,classic_outcome)
+    end
+    outcome
+end
 
 function verify_round(::Client,::TestRound,mg)
     trap_results = []
@@ -96,7 +104,7 @@ function verify_round(::Client,::TestRound,mg)
     all([t isa TrapPass for t in trap_results]) ? 1 : 0
 end
 
-function verify_rounds(::Client,::TestRound,rounds_as_graphs,pass_theshold)
+function verify_rounds(::Client,::TestRound,::Terse,rounds_as_graphs,pass_theshold)
       
     outcomes = []
     for mg in rounds_as_graphs
@@ -108,17 +116,20 @@ function verify_rounds(::Client,::TestRound,rounds_as_graphs,pass_theshold)
     return failed_rounds > pass_theshold ? Abort() : Ok()
 end
 
-function get_output(::Client,::Union{MBQC,ComputationRound},mg)
-    output_inds = get_prop(mg,:output_inds)
-    outcome = []
-    for v in output_inds
-            classic_outcome = get_prop(mg,v,:outcome)
-            push!(outcome,classic_outcome)
+function verify_rounds(::Client,::TestRound,::Verbose,rounds_as_graphs,pass_theshold)
+      
+    outcomes = []
+    for mg in rounds_as_graphs
+        get_prop(mg,:round_type) == ComputationRound() && continue
+        push!(outcomes,verify_round(Client(),TestRound(),mg))
     end
-    outcome
+    num_rounds = length(outcomes)
+
+    failed_rounds = count(==(0),outcomes)
+    return (failed = failed_rounds,passed = num_rounds - failed_rounds)
 end
 
-function verify_rounds(::Client,::ComputationRound,rounds_as_graphs)
+function verify_rounds(::Client,::ComputationRound,::Terse,rounds_as_graphs)
     num_computation_rounds = [
         get_prop(mg,:round_type) == ComputationRound() ? 1 : nothing
             for mg in rounds_as_graphs] |>
@@ -135,6 +146,26 @@ function verify_rounds(::Client,::ComputationRound,rounds_as_graphs)
     num_match_mode = count(==(mod_res),outputs)
 
     num_match_mode > num_computation_rounds/2 ? Ok() : Abort()
+end
+
+function verify_rounds(::Client,::ComputationRound,::Verbose,rounds_as_graphs)
+    num_computation_rounds = [
+        get_prop(mg,:round_type) == ComputationRound() ? 1 : nothing
+            for mg in rounds_as_graphs] |>
+        x-> filter(!isnothing,x) |>
+        length
+    
+    outputs = []
+    for mg in rounds_as_graphs
+        get_prop(mg,:round_type) == TestRound() && continue
+        push!(outputs,get_output(Client(),ComputationRound(),mg))
+    end
+    num_rounds = length(outputs)
+
+
+    mod_res = mode(outputs)
+    num_match_mode = count(==(mod_res),outputs)
+    return (failed = num_rounds - num_match_mode, passed = num_match_mode)
 end
 
 
@@ -154,53 +185,6 @@ function get_ubqc_output(::Client,::ComputationRound,mg::MetaGraphs.MetaGraph)
         get_prop(mg,:round_type) == TestRound() && error("This function is for computational rounds only, not test rounds")
         get_output(Client(),ComputationRound(),mg)
 end
-
-function run_verification_simulator(para)
-        # Define colouring
-        reps = 100
-        computation_colours = ones(nv(para[:graph]))
-        test_colours = get_vector_graph_colors(para[:graph];reps=reps)
-        chroma_number = length(test_colours)
-        bqp = InherentBoundedError(1/3)
-        test_rounds_theshold = compute_trap_round_fail_threshold(para[:total_rounds],para[:computation_rounds],chroma_number,bqp) 
-    
-   
-
-   
-    backward_flow(vertex) = compute_backward_flow(para[:graph],para[:forward_flow],vertex)
-
-    p = (
-        input_indices =  para[:input][:indices],
-        input_values = para[:input][:values],
-        output_indices =para[:output],
-        graph=para[:graph],
-        computation_colours=computation_colours,
-        test_colours=test_colours,
-        secret_angles=para[:secret_angles],
-        forward_flow = para[:forward_flow],
-        backward_flow=backward_flow)
-        
-    client_resource = create_graph_resource(p)
-
-    round_types = draw_random_rounds(para[:total_rounds],para[:computation_rounds])
-
-    rounds_as_graphs = run_verification(
-        Client(),Server(),
-        round_types,client_resource,
-        para[:state_type])
-
-  
-
-
-        test_verification = verify_rounds(Client(),TestRound(),rounds_as_graphs,test_rounds_theshold)
-        computation_verification = verify_rounds(Client(),ComputationRound(),rounds_as_graphs)
-        mode_outcome = get_mode_output(Client(),ComputationRound(),rounds_as_graphs)
-    return (
-        test_verification = test_verification,
-        computation_verification = computation_verification,
-        mode_outcome = mode_outcome)
-end
-
 
 
 function create_ubqc_resource(para)
@@ -257,4 +241,104 @@ function run_mbqc(para)
     num_qubits = quantum_state.numQubitsRepresented
     run_computation(client_meta_graph,num_qubits,quantum_state)
     get_output(Client(),MBQC(),client_meta_graph)
+end
+
+
+
+function run_verification_simulator(::TrustworthyServer,::Terse,para)
+    # Define colouring
+    reps = 100
+    computation_colours = ones(nv(para[:graph]))
+    test_colours = get_vector_graph_colors(para[:graph];reps=reps)
+    chroma_number = length(test_colours)
+    bqp = InherentBoundedError(1/3)
+    test_rounds_theshold = compute_trap_round_fail_threshold(para[:total_rounds],para[:computation_rounds],chroma_number,bqp) 
+
+
+
+
+    backward_flow(vertex) = compute_backward_flow(para[:graph],para[:forward_flow],vertex)
+
+    p = (
+        input_indices =  para[:input][:indices],
+        input_values = para[:input][:values],
+        output_indices =para[:output],
+        graph=para[:graph],
+        computation_colours=computation_colours,
+        test_colours=test_colours,
+        secret_angles=para[:secret_angles],
+        forward_flow = para[:forward_flow],
+        backward_flow=backward_flow)
+        
+    client_resource = create_graph_resource(p)
+
+    round_types = draw_random_rounds(para[:total_rounds],para[:computation_rounds])
+
+    rounds_as_graphs = run_verification(
+        Client(),Server(),
+        round_types,client_resource,
+        para[:state_type])
+
+
+
+
+        test_verification = verify_rounds(Client(),TestRound(),Terse(),rounds_as_graphs,test_rounds_theshold)
+        computation_verification = verify_rounds(Client(),ComputationRound(),Terse(),rounds_as_graphs)
+        mode_outcome = get_mode_output(Client(),ComputationRound(),rounds_as_graphs)
+    return (
+        test_verification = test_verification,
+        computation_verification = computation_verification,
+        mode_outcome = mode_outcome)
+end
+
+
+
+function run_verification_simulator(::TrustworthyServer,::Verbose,para)
+    # Define colouring
+    reps = 100
+    computation_colours = ones(nv(para[:graph]))
+    test_colours = get_vector_graph_colors(para[:graph];reps=reps)
+    chroma_number = length(test_colours)
+    bqp = InherentBoundedError(1/3)
+    test_rounds_theshold = compute_trap_round_fail_threshold(para[:total_rounds],para[:computation_rounds],chroma_number,bqp) 
+
+
+
+
+    backward_flow(vertex) = compute_backward_flow(para[:graph],para[:forward_flow],vertex)
+
+    p = (
+        input_indices =  para[:input][:indices],
+        input_values = para[:input][:values],
+        output_indices =para[:output],
+        graph=para[:graph],
+        computation_colours=computation_colours,
+        test_colours=test_colours,
+        secret_angles=para[:secret_angles],
+        forward_flow = para[:forward_flow],
+        backward_flow=backward_flow)
+        
+    client_resource = create_graph_resource(p)
+
+    round_types = draw_random_rounds(para[:total_rounds],para[:computation_rounds])
+
+    rounds_as_graphs = run_verification(
+        Client(),Server(),
+        round_types,client_resource,
+        para[:state_type])
+
+
+
+
+        test_verification = verify_rounds(Client(),TestRound(),Terse(),rounds_as_graphs,test_rounds_theshold)
+        computation_verification = verify_rounds(Client(),ComputationRound(),Terse(),rounds_as_graphs)
+        test_verification_verb = verify_rounds(Client(),TestRound(),Verbose(),rounds_as_graphs,test_rounds_theshold)
+        computation_verification_verb = verify_rounds(Client(),ComputationRound(),Verbose(),rounds_as_graphs)
+        mode_outcome = get_mode_output(Client(),ComputationRound(),rounds_as_graphs)
+    return (
+        test_verification = test_verification,
+        test_verification_verb = test_verification_verb,
+        computation_verification = computation_verification,
+        computation_verification_verb = computation_verification_verb,
+        mode_outcome = mode_outcome)
 end
