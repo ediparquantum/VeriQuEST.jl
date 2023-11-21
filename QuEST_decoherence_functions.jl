@@ -23,7 +23,7 @@ end
 
 
 
-function add_damping!(::Quest,ρ,q,p)
+function add_damping!(::Quest,::SingleQubit,ρ,q,p)
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
     q = c_shift_index(q)
     QuEST.mixDamping(ρ,q,p)
