@@ -61,6 +61,7 @@ export
     Terse,
     Verbose,
     TrustworthyServer,
+    NoisyServer,
     DummyQubitZeroOneInitialisationError,
     QubitFloatPhaseInitialisationError,
     FunctionNotMeantToBeUsed,
