@@ -1,5 +1,6 @@
 abstract type NoiseModels end
 abstract type NoiseParameters <: NoiseModels end
+struct NoNoiseParameters <: NoiseParameters end
 struct QubitNoiseParameters <: NoiseParameters
     backend
     type::Union{SingleQubit,TwoQubits,MultipleQubits}
@@ -33,18 +34,25 @@ struct Depolarising <: NoiseModels end
 struct Kraus <: NoiseModels end
 struct Pauli <: NoiseModels end
 
-function add_noise!(params::NoiseParameters)
+
+function add_noise!(model::NoNoise,params::NoNoiseParameters)
 
 end
+function add_noise!(model::Damping,params::QubitNoiseParameters)
 
-function add_noise!(::Quest,::Damping,params::NoiseParameters)
-    num_noisy_qubits = params[:num_noisy_qubits]
-    ρ = params
-    add_damping!(Quest(),num_noisy_qubits,ρ,q,p)
+end
+function add_noise!(model::MixtureDensityMatrices,params::DensityMatrixMixtureParameters)
 
-    struct NoiseParameters
-        other_fields::Bool
-        num_noisy_qubits::Union{SingleQubit,TwoQubits,MultipleQubits}
-        ρ::DensityMatrix
-        q::Union{Int64,Vector{Int64}}
-        
+end
+function add_noise!(model::Dephasing,params::QubitNoiseParameters)
+
+end
+function add_noise!(model::Kraus,params::KrausMapNoiseParameters)
+
+end
+function add_noise!(model::Depolarising,params::QubitNoiseParameters)
+
+end
+function add_noise!(model::Pauli,params::QubitNoiseParameters)
+
+end
