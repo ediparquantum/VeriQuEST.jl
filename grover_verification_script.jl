@@ -140,3 +140,22 @@ save("examples/verbose_malicious_server_added_angle_range_0to2pi_computation_rou
     noise_model = noise_model()
     noisy_vbqc_outcome = run_verification_simulator(NoisyServer(),Verbose(),para,malicious_angles)
 end
+
+include("QuEST_decoherence_functions.jl")
+num_qubits = 3
+quantum_env = create_quantum_env(Client())
+ρ = create_quantum_state(Client(),DensityMatrix(),quantum_env,num_qubits)
+q,p = 1,0.1
+add_damping!(Quest(),SingleQubit(),ρ,q,p)
+
+
+
+for i=1:10
+qureg1 = QuEST.createDensityQureg(i, env)
+qureg2 = QuEST.createDensityQureg(i, env)    
+@test qureg1.numQubitsRepresented == i
+@test qureg2.numQubitsRepresented == i
+QuEST.destroyQureg(qureg1, env) 
+QuEST.destroyQureg(qureg2, env)
+end
+QuEST.destroyQuESTEnv(env)

@@ -5,23 +5,51 @@ struct MultipleQubits end
 struct TracePreserving end
 struct NotTracePreserving end 
 struct ProbabilityExceedsOneError end
+struct ProbabilityExceedsOneHalfError end
+struct ProbabilityExceedsThreeQuartersError end
+struct ProbabilityExceedsFifteenSixteensError end
 struct ProbabilityLessThanZeroError end
+struct ProbabilityExceedsNoErrorExceeded end
 struct DimensionMismatchDensityMatrices end
-
-function throw_error(::ProbabilityExceedsOneError)
-    error("Probability is greater than 1 (hint: not a probability and threw an error)")
-end
+struct ExceededNumKrausOperators end
+struct UntestedKrausFunction end
 
 function throw_error(::ProbabilityLessThanZeroError)
     error("Probability is less than 0 (hint: not a probability and threw an error)")
 end
+
+function throw_error(::ProbabilityExceedsOneHalfError)
+    error("Probability is greater than 1/2 (hint: error thrown in relation to noise model limitations)")
+end
+
+function throw_error(::ProbabilityExceedsThreeQuartersError)
+    error("Probability is greater than 3/4 (hint: error thrown in relation to noise model limitations)")
+end
+
+function throw_error(::ProbabilityExceedsFifteenSixteensError)
+    error("Probability is greater than 15/16 (hint: error thrown in relation to noise model limitations)")
+end
+function throw_error(::ProbabilityExceedsOneError)
+    error("Probability is greater than 1 (hint: not a probability and threw an error)")
+end
+
+function throw_error(::ProbabilityExceedsNoErrorExceeded)
+    error("Probability is greater than no error from 1.")
+end
+
 
 function throw_error(::DimensionMismatchDensityMatrices)
     error("Density matrices do not have the same dimensions")
 end
 
 
+function throw_error(::ExceededNumKrausOperators)
+    error("More Kraus operators were presented than allowed. Check again.")
+end
 
+function throw_warning(::UntestedKrausFunction)
+    @warn "Kraus operator is not tested, specifically transalting a pointer index from Julia to C, use at peril till function goes away"
+end
 
 function add_damping!(::Quest,::SingleQubit,ρ,q,p)
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
@@ -38,73 +66,88 @@ function mix_two_density_matrices!(::Quest,ρ₁,ρ₂,p)
     QuEST.mixDensityMatrix(ρ₁,p,ρ₂)
 end 
 
-function add_dephasing(::Quest,::SingleQubit)
-end 
-function add_dephasing(::Quest,::TwoQubits)
-end 
-void mixDephasing(Qureg qureg, int targetQubit, qreal prob)
-Mixes a density matrix qureg to induce single-qubit dephasing noise. More...
-
-void mixTwoQubitDephasing(Qureg qureg, int qubit1, int qubit2, qreal prob)
-Mixes a density matrix qureg to induce two-qubit dephasing noise. More...
-
-function add_depolarising(::Quest,::SingleQubit)
+function add_dephasing!(::Quest,::SingleQubit,ρ,q,p)
+    p > 1/2 && throw_error(ProbabilityExceedsOneHalfError())
+    q = c_shift_index(q)
+    QuEST.mixDephasing(ρ,q,p)
 end 
 
-function add_depolarising(::Quest,::TwoQubits)
+
+function add_dephasing!(::Quest,::TwoQubits,ρ,q₁,q₂,p)
+    p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
+    q₁ = c_shift_index(q₁)
+    q₂ = c_shift_index(q₂)
+    QuEST.mixTwoQubitDephasing(ρ,q₁,q₂,p)
 end 
 
-void mixDepolarising(Qureg qureg, int targetQubit, qreal prob)
-Mixes a density matrix qureg to induce single-qubit homogeneous depolarising noise. More...
 
-void mixTwoQubitDepolarising(Qureg qureg, int qubit1, int qubit2, qreal prob)
-Mixes a density matrix qureg to induce two-qubit homogeneous depolarising noise. More...
+function add_depolarising!(::Quest,::SingleQubit,ρ,q,p)
+    p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
+    q = c_shift_index(q)
+    QuEST.mixDepolarising(ρ,q,p)
+end 
 
-
-
- 
-function apply_kraus_map(::Quest,::SingleQubit,::TracePreserving)
-end
-function apply_kraus_map(::Quest,::TwoQubits,::TracePreserving)
-end
-function apply_kraus_map(::Quest,::MultipleQubits,::TracePreserving)
-end
-function apply_kraus_map(::Quest,::SingleQubit,::NotTracePreserving)
-end
-function apply_kraus_map(::Quest,::TwoQubits,::NotTracePreserving)
-end
-function apply_kraus_map(::Quest,::MultipleQubits,::NotTracePreserving)
-end
+function add_depolarising!(::Quest,::TwoQubits,ρ,q₁,q₂,p)
+    p > 15/16 && throw_error(ProbabilityExceedsFifteenSixteensError())
+    q₁ = c_shift_index(q₁)
+    q₂ = c_shift_index(q₂)
+    QuEST.mixTwoQubitDepolarising(ρ,q₁,q₂,p)
+end 
 
  
+function apply_kraus_map!(::Quest,::SingleQubit,::TracePreserving,ρ,q,complex_mat,num_ops)
+    num_ops > 4 && throw_error(ExceededNumKrausOperators())
+    q = c_shift_index(q)
+    QuEST.mixKrausMap(ρ,q,complex_mat,num_ops)
+end
+function apply_kraus_map!(::Quest,::TwoQubits,::TracePreserving,ρ,q₁,q₂,complex_mat,num_ops)
+    num_ops > 16 && throw_error(ExceededNumKrausOperators())
+    q₁ = c_shift_index(q₁)
+    q₂ = c_shift_index(q₂)
+    QuEST.mixTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
+end
+function apply_kraus_map!(::Quest,::MultipleQubits,::TracePreserving,ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunction())
+    num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperators())
+    leas_sig_qubit = c_shift_index(q₁)
+    QuEST.mixMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+end
+
+function apply_kraus_map!(::Quest,::SingleQubit,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+    num_ops > 4 && throw_error(ExceededNumKrausOperators())
+    q = c_shift_index(q)
+    QuEST.mixNonTPKrausMap(ρ,q,complex_mat,num_ops)
+end
+
+function apply_kraus_map!(::Quest,::TwoQubits,::NotTracePreserving,ρ,q₁,q₂,complex_mat,num_ops)
+    num_ops > 16 && throw_error(ExceededNumKrausOperators())
+    q₁ = c_shift_index(q₁)
+    q₂ = c_shift_index(q₂)
+    QuEST.mixNonTPTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
+end
+
+
+function apply_kraus_map!(::Quest,::MultipleQubits,::NotTracePreserving,ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunction())
+    num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperators())
+    leas_sig_qubit = c_shift_index(q₁)
+    QuEST.mixNonTPMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+end
+
+function add_pauli_noise!(::Quest,::SingleQubit,ρ,q,px,py,pz)
+    prob_no_error = 1 - px - py - pz
+    px <= prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
+    py <= prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
+    pz <= prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
+    q =  c_shift_index(q)
+    QuEST.mixPauli(ρ,q,px,py,pz)
+end
 
  
-void mixKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps)
-Apply a general single-qubit Kraus map to a density matrix, as specified by at most four Kraus operators, 
-(ops). More...
- 
-void mixTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps)
-Apply a general two-qubit Kraus map to a density matrix, as specified by at most sixteen Kraus operators. More...
+#=
 
-void mixMultiQubitKrausMap(Qureg qureg, int *targets, int numTargets, ComplexMatrixN *ops, int numOps)
-Apply a general N-qubit Kraus map to a density matrix, as specified by at most(2N)^2 Kraus operators. More...
- 
-void mixNonTPKrausMap(Qureg qureg, int target, ComplexMatrix2 *ops, int numOps)
-Apply a general non-trace-preserving single-qubit Kraus map to a density matrix, as specified by at most four operators, 
-(ops). More...
  
 void mixNonTPMultiQubitKrausMap(Qureg qureg, int *targets, int numTargets, ComplexMatrixN *ops, int numOps)
 Apply a general N-qubit non-trace-preserving Kraus map to a density matrix, as specified by at most(2N)^2 operators. More...
  
-void mixNonTPTwoQubitKrausMap(Qureg qureg, int target1, int target2, ComplexMatrix4 *ops, int numOps)
-Apply a general non-trace-preserving two-qubit Kraus map to a density matrix, as specified by at most sixteen operators, 
-(ops). More...
- 
-function add_pauli_noise(::Quest,::SingleQubit)
-void mixPauli(Qureg qureg, int targetQubit, qreal probX, qreal probY, qreal probZ)
-Mixes a density matrix qureg to induce general single-qubit Pauli noise. More...
-end
- 
-
- 
-Detailed mixDepolarising
+=#
