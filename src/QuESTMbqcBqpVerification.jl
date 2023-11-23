@@ -163,7 +163,30 @@ export
     MaliciousServer,
     two_pi_x,
     ok_abort_y,
-    plot_verification_results
+    plot_verification_results,
+    Quest,
+    SingleQubit,
+    TwoQubits,
+    MultipleQubits ,
+    TracePreserving,
+    NotTracePreserving ,
+    ProbabilityExceedsOneError,
+    ProbabilityExceedsOneHalfError,
+    ProbabilityExceedsThreeQuartersError,
+    ProbabilityExceedsFifteenSixteensError,
+    ProbabilityLessThanZeroError,
+    ProbabilityExceedsNoErrorExceeded,
+    DimensionMismatchDensityMatrices,
+    ExceededNumKrausOperators,
+    UntestedKrausFunction,
+    throw_error,
+    throw_warning,
+    add_damping!,
+    mix_two_density_matrices!,
+    add_dephasing!,
+    add_depolarising!,
+    apply_kraus_map!,
+    add_pauli_noise!
 
 
 
@@ -173,6 +196,7 @@ export
 
 
 include("client_server_structs.jl")
+include("QuEST_decoherence_functions.jl")
 include("c_utility_functions.jl")
 include("quantum_general_functions.jl")
 include("client_struct_utility_functions.jl")

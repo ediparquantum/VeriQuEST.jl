@@ -144,10 +144,3 @@ function add_pauli_noise!(::Quest,::SingleQubit,ρ,q,px,py,pz)
 end
 
  
-#=
-
- 
-void mixNonTPMultiQubitKrausMap(Qureg qureg, int *targets, int numTargets, ComplexMatrixN *ops, int numOps)
-Apply a general N-qubit non-trace-preserving Kraus map to a density matrix, as specified by at most(2N)^2 operators. More...
- 
-=#
