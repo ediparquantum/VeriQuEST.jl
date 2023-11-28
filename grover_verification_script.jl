@@ -139,15 +139,12 @@ save("examples/verbose_malicious_server_added_angle_range_0to2pi_computation_rou
     noisy_vbqc_outcome = run_verification_simulator(NoisyServer(),Verbose(),para,malicious_angles)
 end
 
-num_qubits = 3
+num_qubits = 2
 quantum_env = create_quantum_env(Client())
 ρ = create_quantum_state(Client(),DensityMatrix(),quantum_env,num_qubits)
 QuEST.pauliX(ρ,0)
 get_all_amps(state_type,ρ)
-q,p = 1,0.1
-model = Damping()
-params = QubitNoiseParameters(Quest(),SingleQubit(),ρ,q,p)
-add_noise!(model,params)
-get_all_amps(state_type,ρ)
-add_noise!(Dephasing(),params)
+p = 0.2
+params = [QubitNoiseParameters(Quest(),SingleQubit(),ρ,q,p) for q in Base.OneTo(num_qubits)]
+add_noise!.(Ref(Depolarising()),params)
 get_all_amps(state_type,ρ)
