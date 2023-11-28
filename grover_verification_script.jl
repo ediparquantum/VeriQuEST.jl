@@ -91,6 +91,10 @@ vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
 malicious_angles = π/8
 malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,malicious_angles)
 
+noise_model = noise_model()
+noisy_vbqc_outcome = run_verification_simulator(NoisyServer(),Verbose(),para,malicious_angles)
+
+
 # Test 
 outcomes = []
 angle_range = range(0.0,2*π,length=100)
@@ -124,3 +128,26 @@ f = plot_verification_results(MaliciousServer(),Verbose(),angle_range,test_count
 save("examples/verbose_malicious_server_added_angle_range_0to2pi_test_rounds.png",f)
 f = plot_verification_results(MaliciousServer(),Verbose(),angle_range,comp_counts,"Computation")
 save("examples/verbose_malicious_server_added_angle_range_0to2pi_computation_rounds.png",f)
+
+
+
+
+
+
+@testset "test_run_verification_simulator" begin
+    noise_model = noise_model()
+    noisy_vbqc_outcome = run_verification_simulator(NoisyServer(),Verbose(),para,malicious_angles)
+end
+
+num_qubits = 3
+quantum_env = create_quantum_env(Client())
+ρ = create_quantum_state(Client(),DensityMatrix(),quantum_env,num_qubits)
+QuEST.pauliX(ρ,0)
+get_all_amps(state_type,ρ)
+q,p = 1,0.1
+model = Damping()
+params = QubitNoiseParameters(Quest(),SingleQubit(),ρ,q,p)
+add_noise!(model,params)
+get_all_amps(state_type,ρ)
+add_noise!(Dephasing(),params)
+get_all_amps(state_type,ρ)

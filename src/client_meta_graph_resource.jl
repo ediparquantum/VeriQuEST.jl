@@ -368,8 +368,6 @@ end
 
 
 
-
-create_quantum_env(::Client) = QuEST.createQuESTEnv()
 produce_initialised_graph(::Client,mg) = Graph(mg)
 produce_initialised_qureg(::Client,mg) = get_prop(mg,:quantum_state)
 

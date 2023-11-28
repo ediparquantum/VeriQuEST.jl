@@ -1,0 +1,3 @@
+struct NoisyServer end
+
+
