@@ -14,6 +14,7 @@ struct ProbabilityExceedsNoErrorExceeded end
 struct DimensionMismatchDensityMatrices end
 struct ExceededNumKrausOperators end
 struct UntestedKrausFunction end
+struct OnlySingleQubitNoiseInUseError end
 
 function throw_error(::ProbabilityLessThanZeroError)
     error("Probability is less than 0 (hint: not a probability and threw an error)")
@@ -46,6 +47,10 @@ end
 
 function throw_error(::ExceededNumKrausOperators)
     error("More Kraus operators were presented than allowed. Check again.")
+end
+
+function throw_error(::OnlySingleQubitNoiseInUseError)
+    error("Two qubit or multiple qubit noise is not tested and will not be allowed to run, untill")
 end
 
 function throw_warning(::UntestedKrausFunction)
@@ -93,9 +98,9 @@ end
 function add_pauli_noise!(::Quest,::SingleQubit,ρ,q,p)
     px,py,pz = p
     prob_no_error = 1 - px - py - pz
-    px <= prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
-    py <= prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
-    pz <= prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
+    px > prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
+    py > prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
+    pz > prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
     q =  c_shift_index(q)
     QuEST.mixPauli(ρ,q,px,py,pz)
 end

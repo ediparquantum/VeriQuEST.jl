@@ -18,6 +18,7 @@ using CairoMakie
 include("src/QuESTMbqcBqpVerification.jl")
 using .QuESTMbqcBqpVerification 
 
+
 # Choose backend and round counts
 state_type = DensityMatrix()
 total_rounds,computation_rounds = 100,50
@@ -116,10 +117,6 @@ for o in outcomes
     push!(comp_counts,o[:computation_verification_verb][:failed])
 end
 
-
-
-
-
 f = plot_verification_results(MaliciousServer(),Terse(),angle_range,test_sim,"Test")
 save("examples/terse_malicious_server_added_angle_range_0to2pi_test_rounds.png",f)
 f = plot_verification_results(MaliciousServer(),Terse(),angle_range,comp_sim,"Computation")
@@ -129,22 +126,60 @@ save("examples/verbose_malicious_server_added_angle_range_0to2pi_test_rounds.png
 f = plot_verification_results(MaliciousServer(),Verbose(),angle_range,comp_counts,"Computation")
 save("examples/verbose_malicious_server_added_angle_range_0to2pi_computation_rounds.png",f)
 
-
-
-
-
-
 @testset "test_run_verification_simulator" begin
     noise_model = noise_model()
     noisy_vbqc_outcome = run_verification_simulator(NoisyServer(),Verbose(),para,malicious_angles)
 end
 
+
+# ERRORRRRRRRRRRWS
+
 num_qubits = 2
 quantum_env = create_quantum_env(Client())
 ρ = create_quantum_state(Client(),DensityMatrix(),quantum_env,num_qubits)
-QuEST.pauliX(ρ,0)
-get_all_amps(state_type,ρ)
+init_plus_phase_state!.(Ref(NoPhase()),Ref(ρ),Base.OneTo(num_qubits))
+q = 1
+pxyz = [0.2,0.2,0.2]
 p = 0.2
-params = [QubitNoiseParameters(Quest(),SingleQubit(),ρ,q,p) for q in Base.OneTo(num_qubits)]
-add_noise!.(Ref(Depolarising()),params)
+model = Depolarising(SingleQubit(),p)
+model = Dephasing(SingleQubit(),p)
+model = Damping(SingleQubit(),p)
+model = Pauli(SingleQubit(),pxyz)
+params = QubitNoiseParameters(Quest(),ρ,q)
+noise_model = NoiseModel(model,params)
 get_all_amps(state_type,ρ)
+add_noise!(Server(),noise_model)
+get_all_amps(state_type,ρ)
+add_noise!(Server(),noise_model)
+get_all_amps(state_type,ρ)
+
+
+model_vec = [Depolarising,Dephasing,Damping,Pauli]
+qubit_typ = [SingleQubit() for i in eachindex(model_vec)]
+model_pro = [0.1,0.2,0.21,[0.2,0.2,0.2]]
+models = map((x,y,z) -> x(y,z),model_vec,qubit_typ,model_pro)
+
+params = QubitNoiseParameters(Quest(),ρ,q)
+noise_model = NoiseModel.(models,Ref(params))
+[add_noise!(Server(),nm) for nm in noise_model[1]]
+map(x -> add_noise!(Server(),x),noise_model[1])
+get_all_amps(state_type,ρ)
+
+noise_model isa Vector 
+QuESTMbqcBqpVerification.length(noise_model[1]) == 1
+[i for i in eachindex(x)]
+
+using LinearAlgebra
+
+# Probability of bit-flip
+p = 0.1  # You can replace :p with an actual numerical value
+
+# Define Pauli X matrix
+X = [0 1; 1 0]
+
+# Kraus operators
+K0 = sqrt(1 - p) * ident_2x2()
+K1 = sqrt(p) * X
+
+# Check completeness condition
+@assert K0' * K0 + K1' * K1 ≈ I

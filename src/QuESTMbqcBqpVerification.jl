@@ -81,10 +81,12 @@ export
     DimensionMismatchDensityMatrices,
     ExceededNumKrausOperators,
     UntestedKrausFunction,
+    NoiseModel,
     NoiseModels,
     NoiseParameters,
     NoNoiseParameters,
     QubitNoiseParameters,
+    OnlySingleQubitNoiseInUseError,
     DensityMatrixMixtureParameters,
     KrausMapNoiseParameters,
     NoNoise,
@@ -127,7 +129,7 @@ export
     draw_rᵥ,    
     draw_dᵥ,
     draw_random_rounds,
-    entangleGraph!,
+    entangle_graph!,
     generate_property_graph!,
     generate_random_greedy_color,
     get_state_vector_pair_per_qubit,    
@@ -174,6 +176,7 @@ export
     initialise_qubit,
     is_round_OK,
     initialise_blank_quantum_state!,
+    length,
     MetaGraph,
     measure_along_ϕ_basis!,
     mix_two_density_matrices!,
@@ -215,6 +218,7 @@ export
     include("client_update_angle.jl")
     include("server_functions.jl")
     include("server_malicious_behaviour.jl")
+    include("server_noisy.jl")
     include("verification_functions.jl")
     include("verification_visualisation.jl")
 

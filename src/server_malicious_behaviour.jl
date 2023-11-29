@@ -24,7 +24,7 @@ function create_resource(::MaliciousServer,client_graph,client_qureg,malicious_a
     server_qureg = clone_qureq(Server(),client_qureg,server_env)
 
     #  Server entangles graph
-    entangleGraph!(Server(),server_qureg,server_graph)
+    entangle_graph!(Server(),server_qureg,server_graph)
     return Dict("env"=>server_env,"quantum_state"=>server_qureg,"graph"=>server_graph, "angles" => malicious_angles)
 end
 
@@ -32,7 +32,7 @@ function run_computation(::Client,::MaliciousServer,server_resource,client_meta_
     for q in Base.OneTo(num_qubits_from_server)  
         ϕ̃ = get_updated_ϕ!(Client(),client_meta_graph,q)
         ϕ = get_updated_ϕ!(MaliciousServer(),server_resource,q,ϕ̃)
-        m̃ = measure_along_ϕ_basis!(Server(),server_quantum_state,q,ϕ)
+        m̃ = measure_along_ϕ_basis!(MaliciousServer(),server_quantum_state,q,ϕ)
         m = update_measurement(Client(),q,client_meta_graph,m̃)
         store_measurement_outcome!(Client(),client_meta_graph,q,m)
     end
