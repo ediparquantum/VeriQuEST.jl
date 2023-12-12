@@ -15,7 +15,7 @@ function clone_graph(::Server,client_graph)
     client_graph
 end
 
-function entangleGraph!(::Server,qureg,graph)
+function entangle_graph!(::Server,qureg,graph)
     edge_iter = edges(graph)
     for e in edge_iter
         src,dst = c_shift_index(e.src),c_shift_index(e.dst)
@@ -23,13 +23,12 @@ function entangleGraph!(::Server,qureg,graph)
     end
 end
 
-function measure_along_ϕ_basis!(::Server,ψ,v::Union{Int32,Int64},ϕ::qreal)
+function measure_along_ϕ_basis!(::Union{Server,NoisyServer},ψ,v::Union{Int32,Int64},ϕ::Union{Float64,qreal})
     v = c_shift_index(v)
     QuEST.rotateZ(ψ,v,-ϕ)
     QuEST.hadamard(ψ,v)
     QuEST.measure(ψ,v)
 end
-
 
 
 function create_resource(::Server,client_graph,client_qureg)
@@ -39,6 +38,6 @@ function create_resource(::Server,client_graph,client_qureg)
     server_qureg = clone_qureq(Server(),client_qureg,server_env)
 
     #  Server entangles graph
-    entangleGraph!(Server(),server_qureg,server_graph)
+    entangle_graph!(Server(),server_qureg,server_graph)
     return Dict("env"=>server_env,"quantum_state"=>server_qureg,"graph"=>server_graph)
 end

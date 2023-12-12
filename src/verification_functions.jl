@@ -20,12 +20,12 @@ function compute_trap_round_fail_threshold(total_rounds,computational_rounds,num
     floor((t/k)*(2*p - 1)/(2*p - 2))
 end
 
-function run_computation(::Client,::Server,client_meta_graph,num_qubits_from_server,server_quantum_state)
+function run_computation(client::Client,server::Union{Server,NoisyServer},client_meta_graph,num_qubits_from_server,server_quantum_state)
     for q in Base.OneTo(num_qubits_from_server)  
-        ϕ = get_updated_ϕ!(Client(),client_meta_graph,q)
-        m̃ = measure_along_ϕ_basis!(Server(),server_quantum_state,q,ϕ)
-        m = update_measurement(Client(),q,client_meta_graph,m̃)
-        store_measurement_outcome!(Client(),client_meta_graph,q,m)
+        ϕ = get_updated_ϕ!(client,client_meta_graph,q)
+        m̃ = measure_along_ϕ_basis!(server,server_quantum_state,q,ϕ)
+        m = update_measurement(client,q,client_meta_graph,m̃)
+        store_measurement_outcome!(client,client_meta_graph,q,m)
     end
     client_meta_graph
 end

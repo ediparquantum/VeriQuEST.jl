@@ -1,53 +1,86 @@
+
+
 abstract type NoiseModels end
 abstract type NoiseParameters <: NoiseModels end
 struct NoNoiseParameters <: NoiseParameters end
-struct QubitNoiseParameters <: NoiseParameters
-    backend
-    type::Union{SingleQubit,TwoQubits,MultipleQubits}
-    ρ::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
-    q::Union{Vector{Int64},Int64}
-    p::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
+mutable struct NoiseModel <: NoiseModels 
+    model
+    params::NoiseParameters
 end
 
-struct DensityMatrixMixtureParameters <: NoiseParameters
-    backend
-    type::DensityMatrices
+mutable struct NoiseModelParams <: NoiseParameters
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
+end
+mutable struct QubitNoiseParameters <: NoiseParameters
+    ρ::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
+    q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
+end
+
+mutable struct DensityMatrixMixtureParameters <: NoiseParameters
     ρ₁::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
     ρ₂::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
-    p::Union{Float64,qreal}
 end
 
-struct KrausMapNoiseParameters <: NoiseParameters
-    backend
-    type::Union{SingleQubit,TwoQubits,MultipleQubits}
+mutable struct KrausMapNoiseParameters <: NoiseParameters
     trace::Union{TracePreserving,NotTracePreserving}
     ρ::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
-    q::Union{Vector{Int64},Int64}
+    q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
     mat::Matrix{ComplexF64}
-    num_ops::Int64
+    num_ops::Union{Int32,Int64}
     num_qubits::Union{Nothing,Int64}
 end
-struct NoNoise <: NoiseModels end
-struct Damping <: NoiseModels end
-struct MixtureDensityMatrices <: NoiseModels end
-struct Dephasing <: NoiseModels end
-struct Depolarising <: NoiseModels end
-struct Kraus <: NoiseModels end
-struct Pauli <: NoiseModels end
+struct NoNoise <: NoiseModels 
+    backend
+end
+struct Kraus <: NoiseModels 
+    backend
+    type::Union{SingleQubit,TwoQubits,MultipleQubits}
+end
+mutable struct Damping <: NoiseModels 
+    backend
+    type::SingleQubit
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
+end
+mutable struct MixtureDensityMatrices <: NoiseModels 
+    backend
+    type::DensityMatrices
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
+end
+mutable struct Dephasing <: NoiseModels
+    backend
+    type::Union{SingleQubit,TwoQubits} 
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
+end
+mutable struct Depolarising <: NoiseModels 
+    backend
+    type::Union{SingleQubit,TwoQubits} 
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
+end
 
+mutable struct Pauli <: NoiseModels 
+    backend
+    type::SingleQubit
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal},Vector{Vector{Float64}},Vector{Vector{qreal}}}
+end
 
+mutable struct NoisyServer 
+    noise_model::Union{Vector{NoiseModels},NoiseModels}
+end
 
 function get_noise_model(::Damping)
     add_damping!
 end
 
+
 function get_noise_model(::Dephasing)
     add_dephasing!
 end
 
+
 function get_noise_model(::Depolarising)
     add_depolarising!
 end
+
 
 function get_noise_model(::Pauli)
     add_pauli_noise!
@@ -61,6 +94,29 @@ function get_noise_model(::MixtureDensityMatrices)
     mix_two_density_matrices!
 end
 
+function get_noise_param(::Kraus)
+    KrausMapNoiseParameters
+end
+
+function get_noise_param(::MixtureDensityMatrices)
+    MixtureDensityMatrices
+end
+
+function get_noise_param(::Union{Damping,Dephasing,Depolarising,Pauli})
+    QubitNoiseParameters
+end
+
+
+function get_noise_model_params(
+    model::Union{Damping,Dephasing,Depolarising,Pauli},
+    server_qureg::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg})
+    qubit_type = model.type
+    !(qubit_type isa SingleQubit) && 
+    throw_error(OnlySingleQubitNoiseInUseError())
+    noise_param = get_noise_param(model)
+    qubit = 0 # get replaced with each qubit in circuit
+    noise_param(server_qureg,qubit)
+end
 
 function add_noise!(::NoNoise,params::NoNoiseParameters)
     params.ρ
@@ -69,14 +125,13 @@ end
 function add_noise!(
     model::Union{Damping,Dephasing,Depolarising,Pauli},
     params::QubitNoiseParameters)
-
     noise_function = get_noise_model(model)
-    backend = params.backend
-    qubit_type = params.type
+    backend = model.backend
+    qubit_type = model.type
+    prob = model.prob
     ρ = params.ρ
     q = params.q
-    p = params.p
-    noise_function(backend,qubit_type,ρ,q,p)
+    noise_function(backend,qubit_type,ρ,q,prob)
 end
 
 
@@ -85,13 +140,12 @@ end
 function add_noise!(
     model::MixtureDensityMatrices,
     params::DensityMatrixMixtureParameters)
-
     noise_function = get_noise_model(model)
-    backend = params.backend
-    qubit_type = params.type
+    backend = model.backend
+    qubit_type = model.type
     ρ₁ = params.ρ₁
     ρ₂ = params.ρ₂
-    p = params.p
+    p = model.prob
     noise_function(backend,qubit_type,ρ₁,ρ₂,p)
 end
 
@@ -100,10 +154,9 @@ end
 function add_noise!(
     model::Kraus,
     params::KrausMapNoiseParameters)
-
     noise_function = get_noise_model(model)
-    backend = params.backend
-    qubit_type = params.type
+    backend = model.backend
+    qubit_type = model.type
     trace_type = params.trace
     ρ = params.ρ
     q = params.q
@@ -115,8 +168,6 @@ function add_noise!(
 end
 
 
-
-  
 
 
 

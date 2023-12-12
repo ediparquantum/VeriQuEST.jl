@@ -37,6 +37,7 @@ export
     MeasurementOutcome,
     AdjacencyList,
     Server,
+    NoisyServer,
     DummyQubit,
     ComputationQubit,
     TrapQubit,
@@ -81,10 +82,12 @@ export
     DimensionMismatchDensityMatrices,
     ExceededNumKrausOperators,
     UntestedKrausFunction,
+    NoiseModel,
     NoiseModels,
     NoiseParameters,
     NoNoiseParameters,
     QubitNoiseParameters,
+    OnlySingleQubitNoiseInUseError,
     DensityMatrixMixtureParameters,
     KrausMapNoiseParameters,
     NoNoise,
@@ -127,7 +130,7 @@ export
     draw_rᵥ,    
     draw_dᵥ,
     draw_random_rounds,
-    entangleGraph!,
+    entangle_graph!,
     generate_property_graph!,
     generate_random_greedy_color,
     get_state_vector_pair_per_qubit,    
@@ -158,6 +161,7 @@ export
     get_corrections_one_neighbourhood_mulit_vertex_graph,
     get_corrections_multi_neighbourhood_mulit_vertex_graph,
     get_correction_vertices,
+    get_noise_model_params,
     get_random_coloring,
     get_updated_ϕ!,
     get_output,
@@ -215,6 +219,7 @@ export
     include("client_update_angle.jl")
     include("server_functions.jl")
     include("server_malicious_behaviour.jl")
+    include("server_noisy.jl")
     include("verification_functions.jl")
     include("verification_visualisation.jl")
 
