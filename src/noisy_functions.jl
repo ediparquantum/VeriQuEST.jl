@@ -1,3 +1,5 @@
+
+
 abstract type NoiseModels end
 abstract type NoiseParameters <: NoiseModels end
 struct NoNoiseParameters <: NoiseParameters end
@@ -5,20 +7,21 @@ mutable struct NoiseModel <: NoiseModels
     model
     params::NoiseParameters
 end
+
+mutable struct NoiseModelParams <: NoiseParameters
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
+end
 mutable struct QubitNoiseParameters <: NoiseParameters
-    backend
     ρ::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
     q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
 end
 
 mutable struct DensityMatrixMixtureParameters <: NoiseParameters
-    backend
     ρ₁::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
     ρ₂::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
 end
 
 mutable struct KrausMapNoiseParameters <: NoiseParameters
-    backend
     trace::Union{TracePreserving,NotTracePreserving}
     ρ::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
     q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
@@ -26,35 +29,42 @@ mutable struct KrausMapNoiseParameters <: NoiseParameters
     num_ops::Union{Int32,Int64}
     num_qubits::Union{Nothing,Int64}
 end
-struct NoNoise <: NoiseModels end
+struct NoNoise <: NoiseModels 
+    backend
+end
 struct Kraus <: NoiseModels 
+    backend
     type::Union{SingleQubit,TwoQubits,MultipleQubits}
 end
 mutable struct Damping <: NoiseModels 
+    backend
     type::SingleQubit
     prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
 end
 mutable struct MixtureDensityMatrices <: NoiseModels 
+    backend
     type::DensityMatrices
     prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
 end
 mutable struct Dephasing <: NoiseModels
+    backend
     type::Union{SingleQubit,TwoQubits} 
     prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
 end
 mutable struct Depolarising <: NoiseModels 
+    backend
     type::Union{SingleQubit,TwoQubits} 
     prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
 end
 
 mutable struct Pauli <: NoiseModels 
+    backend
     type::SingleQubit
-    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
+    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal},Vector{Vector{Float64}},Vector{Vector{qreal}}}
 end
 
-function length(noise_model::Union{Vector{NoiseModel},NoiseModel})
-    noise_model isa Vector && return length(noise_model)
-    !(noise_model isa Vector) && return 1
+mutable struct NoisyServer 
+    noise_model::Union{Vector{NoiseModels},NoiseModels}
 end
 
 function get_noise_model(::Damping)
@@ -96,6 +106,18 @@ function get_noise_param(::Union{Damping,Dephasing,Depolarising,Pauli})
     QubitNoiseParameters
 end
 
+
+function get_noise_model_params(
+    model::Union{Damping,Dephasing,Depolarising,Pauli},
+    server_qureg::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg})
+    qubit_type = model.type
+    !(qubit_type isa SingleQubit) && 
+    throw_error(OnlySingleQubitNoiseInUseError())
+    noise_param = get_noise_param(model)
+    qubit = 0 # get replaced with each qubit in circuit
+    noise_param(server_qureg,qubit)
+end
+
 function add_noise!(::NoNoise,params::NoNoiseParameters)
     params.ρ
 end
@@ -104,12 +126,12 @@ function add_noise!(
     model::Union{Damping,Dephasing,Depolarising,Pauli},
     params::QubitNoiseParameters)
     noise_function = get_noise_model(model)
-    backend = params.backend
+    backend = model.backend
     qubit_type = model.type
+    prob = model.prob
     ρ = params.ρ
     q = params.q
-    p = model.prob
-    noise_function(backend,qubit_type,ρ,q,p)
+    noise_function(backend,qubit_type,ρ,q,prob)
 end
 
 
@@ -119,7 +141,7 @@ function add_noise!(
     model::MixtureDensityMatrices,
     params::DensityMatrixMixtureParameters)
     noise_function = get_noise_model(model)
-    backend = params.backend
+    backend = model.backend
     qubit_type = model.type
     ρ₁ = params.ρ₁
     ρ₂ = params.ρ₂
@@ -133,7 +155,7 @@ function add_noise!(
     model::Kraus,
     params::KrausMapNoiseParameters)
     noise_function = get_noise_model(model)
-    backend = params.backend
+    backend = model.backend
     qubit_type = model.type
     trace_type = params.trace
     ρ = params.ρ

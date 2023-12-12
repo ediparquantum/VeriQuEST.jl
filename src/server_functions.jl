@@ -23,7 +23,7 @@ function entangle_graph!(::Server,qureg,graph)
     end
 end
 
-function measure_along_ϕ_basis!(::Server,ψ,v::Union{Int32,Int64},ϕ::qreal)
+function measure_along_ϕ_basis!(::Union{Server,NoisyServer},ψ,v::Union{Int32,Int64},ϕ::Union{Float64,qreal})
     v = c_shift_index(v)
     QuEST.rotateZ(ψ,v,-ϕ)
     QuEST.hadamard(ψ,v)
