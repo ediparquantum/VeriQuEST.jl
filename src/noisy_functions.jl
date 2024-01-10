@@ -9,21 +9,21 @@ mutable struct NoiseModel <: NoiseModels
 end
 
 mutable struct NoiseModelParams <: NoiseParameters
-    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
+    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}}
 end
 mutable struct QubitNoiseParameters <: NoiseParameters
-    ρ::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
+    ρ::Union{DensityMatrix,Qureg}
     q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
 end
 
 mutable struct DensityMatrixMixtureParameters <: NoiseParameters
-    ρ₁::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
-    ρ₂::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
+    ρ₁::Union{DensityMatrix,Qureg}
+    ρ₂::Union{DensityMatrix,Qureg}
 end
 
 mutable struct KrausMapNoiseParameters <: NoiseParameters
     trace::Union{TracePreserving,NotTracePreserving}
-    ρ::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg}
+    ρ::Union{DensityMatrix,Qureg}
     q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
     mat::Matrix{ComplexF64}
     num_ops::Union{Int32,Int64}
@@ -39,28 +39,28 @@ end
 mutable struct Damping <: NoiseModels 
     backend
     type::SingleQubit
-    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
+    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}} 
 end
 mutable struct MixtureDensityMatrices <: NoiseModels 
     backend
     type::DensityMatrices
-    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
+    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}} 
 end
 mutable struct Dephasing <: NoiseModels
     backend
     type::Union{SingleQubit,TwoQubits} 
-    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}}
+    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}}
 end
 mutable struct Depolarising <: NoiseModels 
     backend
     type::Union{SingleQubit,TwoQubits} 
-    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal}} 
+    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}} 
 end
 
 mutable struct Pauli <: NoiseModels 
     backend
     type::SingleQubit
-    prob::Union{Float64,qreal,Vector{Float64},Vector{qreal},Vector{Vector{Float64}},Vector{Vector{qreal}}}
+    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64},Vector{Vector{Float64}},Vector{Vector{Float64}}}
 end
 
 mutable struct NoisyServer 
@@ -109,7 +109,7 @@ end
 
 function get_noise_model_params(
     model::Union{Damping,Dephasing,Depolarising,Pauli},
-    server_qureg::Union{DensityMatrix,QuEST_jl.QuEST64.QuEST_Types.Qureg})
+    server_qureg::Union{DensityMatrix,Qureg})
     qubit_type = model.type
     !(qubit_type isa SingleQubit) && 
     throw_error(OnlySingleQubitNoiseInUseError())

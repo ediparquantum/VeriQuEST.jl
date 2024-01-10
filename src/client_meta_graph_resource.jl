@@ -295,8 +295,8 @@ function entangle_graph!(::Client,mg)
 
     edge_iter = edges(graph)
     for e in edge_iter
-        src,dst = c_shift_index(e.src),c_shift_index(e.dst)
-        QuEST.controlledPhaseFlip(qureg,src,dst)
+        src,dst = e.src,e.dst
+        controlledPhaseFlip(qureg,src,dst)
     end
 end
 
@@ -372,11 +372,11 @@ produce_initialised_graph(::Client,mg) = Graph(mg)
 produce_initialised_qureg(::Client,mg) = get_prop(mg,:quantum_state)
 
 
-function measure_along_ϕ_basis!(::Client,ψ,v::Union{Int32,Int64},ϕ::qreal)
-    v = c_shift_index(v)
-    QuEST.rotateZ(ψ,v,-ϕ)
-    QuEST.hadamard(ψ,v)
-    QuEST.measure(ψ,v)
+function measure_along_ϕ_basis!(::Client,ψ,v::Union{Int32,Int64},ϕ::Float64)
+    #v = c_shift_index(v)
+    rotateZ(ψ,v,-ϕ)
+    hadamard(ψ,v)
+    measure(ψ,v)
 end
 
 function store_measurement_outcome!(::Client,client_meta_graph,qubit,outcome)

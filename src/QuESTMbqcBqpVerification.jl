@@ -10,19 +10,14 @@ module QuESTMbqcBqpVerification
     @reexport using Random # Needed for shuffle function
     @reexport using RandomMatrices
     @reexport using Combinatorics # For permutations
-    @reexport using QuEST_jl
+    @reexport using QuEST
     @reexport using Printf
     @reexport using StatsBase
     @reexport using CairoMakie
-    import QuEST_jl.QuEST64
-    QuEST = QuEST_jl.QuEST64
-    qreal = QuEST.QuEST_Types.qreal
+    
+
 
 export
-    QuEST_jl,
-    QuEST64,
-    QuEST,
-    qreal,
     Client,
     Struct,
     Phase,

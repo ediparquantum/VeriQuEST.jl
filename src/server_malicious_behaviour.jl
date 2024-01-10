@@ -4,17 +4,17 @@ struct MaliciousServer end
 
 
 
-function get_updated_ϕ!(::MaliciousServer,server_resource,qubit,ϕ::qreal)
+function get_updated_ϕ!(::MaliciousServer,server_resource,qubit,ϕ::Float64)
     angles = server_resource["angles"]
     θ = length(angles) > 1 ? angles[qubit] : angles[1]
     θ + ϕ
 end
 
-function measure_along_ϕ_basis!(::MaliciousServer,ψ,v::Union{Int32,Int64},ϕ::qreal)
-    v = c_shift_index(v)
-    QuEST.rotateZ(ψ,v,-ϕ)
-    QuEST.hadamard(ψ,v)
-    QuEST.measure(ψ,v)
+function measure_along_ϕ_basis!(::MaliciousServer,ψ,v::Union{Int32,Int64},ϕ::Float64)
+    #v = c_shift_index(v)
+    rotateZ(ψ,v,-ϕ)
+    hadamard(ψ,v)
+    measure(ψ,v)
 end
 
 function create_resource(::MaliciousServer,client_graph,client_qureg,malicious_angles::Union{Float64,Vector{Float64}})

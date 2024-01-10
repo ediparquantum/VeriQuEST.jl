@@ -59,40 +59,40 @@ end
 
 function add_damping!(::Quest,::SingleQubit,ρ,q,p)
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
-    q = c_shift_index(q)
-    QuEST.mixDamping(ρ,q,p)
+    #q = c_shift_index(q)
+    mixDamping(ρ,q,p)
 end
 
 
 
 function add_dephasing!(::Quest,::SingleQubit,ρ,q,p)
     p > 1/2 && throw_error(ProbabilityExceedsOneHalfError())
-    q = c_shift_index(q)
-    QuEST.mixDephasing(ρ,q,p)
+    #q = c_shift_index(q)
+    mixDephasing(ρ,q,p)
 end 
 
 
 function add_dephasing!(::Quest,::TwoQubits,ρ,q,p)
     q₁,q₂ = q
     p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
-    q₁ = c_shift_index(q₁)
-    q₂ = c_shift_index(q₂)
-    QuEST.mixTwoQubitDephasing(ρ,q₁,q₂,p)
+    #q₁ = c_shift_index(q₁)
+    #q₂ = c_shift_index(q₂)
+    mixTwoQubitDephasing(ρ,q₁,q₂,p)
 end 
 
 
 function add_depolarising!(::Quest,::SingleQubit,ρ,q,p)
     p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
-    q = c_shift_index(q)
-    QuEST.mixDepolarising(ρ,q,p)
+    #q = c_shift_index(q)
+    mixDepolarising(ρ,q,p)
 end 
 
 function add_depolarising!(::Quest,::TwoQubits,ρ,q,p)
     q₁,q₂ = q
     p > 15/16 && throw_error(ProbabilityExceedsFifteenSixteensError())
-    q₁ = c_shift_index(q₁)
-    q₂ = c_shift_index(q₂)
-    QuEST.mixTwoQubitDepolarising(ρ,q₁,q₂,p)
+    #q₁ = c_shift_index(q₁)
+    #q₂ = c_shift_index(q₂)
+    mixTwoQubitDepolarising(ρ,q₁,q₂,p)
 end 
 
 function add_pauli_noise!(::Quest,::SingleQubit,ρ,q,p)
@@ -101,45 +101,45 @@ function add_pauli_noise!(::Quest,::SingleQubit,ρ,q,p)
     px > prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
     py > prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
     pz > prob_no_error && throw_error(ProbabilityExceedsNoErrorExceeded())
-    q =  c_shift_index(q)
-    QuEST.mixPauli(ρ,q,px,py,pz)
+    #q =  c_shift_index(q)
+    mixPauli(ρ,q,px,py,pz)
 end
  
 function apply_kraus_map!(::Quest,::SingleQubit,::TracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     num_ops > 4 && throw_error(ExceededNumKrausOperators())
-    q = c_shift_index(q)
-    QuEST.mixKrausMap(ρ,q,complex_mat,num_ops)
+    #q = c_shift_index(q)
+    mixKrausMap(ρ,q,complex_mat,num_ops)
 end
 function apply_kraus_map!(::Quest,::TwoQubits,::TracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     q₁,q₂ = q
     num_ops > 16 && throw_error(ExceededNumKrausOperators())
-    q₁ = c_shift_index(q₁)
-    q₂ = c_shift_index(q₂)
-    QuEST.mixTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
+    #q₁ = c_shift_index(q₁)
+    #q₂ = c_shift_index(q₂)
+    mixTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
 end
 function apply_kraus_map!(::Quest,::MultipleQubits,::TracePreserving,ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperators())
-    leas_sig_qubit = c_shift_index(q₁)
-    QuEST.mixMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+    leas_sig_qubit = q₁#c_shift_index(q₁)
+    mixMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
 end
 
 function apply_kraus_map!(::Quest,::SingleQubit,::NotTracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     num_ops > 4 && throw_error(ExceededNumKrausOperators())
-    q = c_shift_index(q)
-    QuEST.mixNonTPKrausMap(ρ,q,complex_mat,num_ops)
+    #q = c_shift_index(q)
+    mixNonTPKrausMap(ρ,q,complex_mat,num_ops)
 end
 
 function apply_kraus_map!(::Quest,::TwoQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     q₁,q₂ = q
     num_ops > 16 && throw_error(ExceededNumKrausOperators())
-    q₁ = c_shift_index(q₁)
-    q₂ = c_shift_index(q₂)
-    QuEST.mixNonTPTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
+    #q₁ = c_shift_index(q₁)
+    #q₂ = c_shift_index(q₂)
+    mixNonTPTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
 end
 
 
@@ -147,8 +147,8 @@ function apply_kraus_map!(::Quest,::MultipleQubits,::NotTracePreserving,ρ,q,com
     throw_warning(UntestedKrausFunction())
     leas_sig_qubit,num_qubits = q
     num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperators())
-    leas_sig_qubit = c_shift_index(q₁)
-    QuEST.mixNonTPMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+    leas_sig_qubit = q₁#c_shift_index(q₁)
+    mixNonTPMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
 end
 
 
@@ -159,5 +159,5 @@ function mix_two_density_matrices!(::Quest,::DensityMatrices,ρ₁,ρ₂,p)
     p < 0.0 && throw_error(ProbabilityLessThanZeroError())
     ρ₁.numQubitsRepresented == ρ₂.numQubitsRepresented && 
         throw_error(DimensionMismatchDensityMatrices())
-    QuEST.mixDensityMatrix(ρ₁,p,ρ₂)
+    mixDensityMatrix(ρ₁,p,ρ₂)
 end 

@@ -3,12 +3,12 @@
 
 
 
-create_quantum_env(::Server) = QuEST.createQuESTEnv()
-create_quantum_state(::Server,::StateVector,quantum_env,num_qubits) = QuEST.createQureg(num_qubits, quantum_env)
-create_quantum_state(::Server,::DensityMatrix,quantum_env,num_qubits) = QuEST.createDensityQureg(num_qubits, quantum_env)
+create_quantum_env(::Server) = createQuESTEnv()
+create_quantum_state(::Server,::StateVector,quantum_env,num_qubits) = createQureg(num_qubits, quantum_env)
+create_quantum_state(::Server,::DensityMatrix,quantum_env,num_qubits) = createDensityQureg(num_qubits, quantum_env)
 
 function clone_qureq(::Server,client_qureg,env)
-    QuEST.createCloneQureg(client_qureg, env)
+    createCloneQureg(client_qureg, env)
 end
 
 function clone_graph(::Server,client_graph)
@@ -18,16 +18,16 @@ end
 function entangle_graph!(::Server,qureg,graph)
     edge_iter = edges(graph)
     for e in edge_iter
-        src,dst = c_shift_index(e.src),c_shift_index(e.dst)
-        QuEST.controlledPhaseFlip(qureg,src,dst)
+        src,dst = e.src,e.dst
+        controlledPhaseFlip(qureg,src,dst)
     end
 end
 
-function measure_along_ϕ_basis!(::Union{Server,NoisyServer},ψ,v::Union{Int32,Int64},ϕ::Union{Float64,qreal})
-    v = c_shift_index(v)
-    QuEST.rotateZ(ψ,v,-ϕ)
-    QuEST.hadamard(ψ,v)
-    QuEST.measure(ψ,v)
+function measure_along_ϕ_basis!(::Union{Server,NoisyServer},ψ,v::Union{Int32,Int64},ϕ::Union{Float64,Float64})
+    #v = c_shift_index(v)
+    rotateZ(ψ,v,-ϕ)
+    hadamard(ψ,v)
+    measure(ψ,v)
 end
 
 
