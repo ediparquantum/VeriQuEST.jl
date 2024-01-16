@@ -16,7 +16,8 @@
 
 # Base function to update angle 
 function update_ϕ(ϕ,Sx,Sz)
-    return (-1)^Sx*ϕ + π*sum(Sz)
+    #return (-1)^Sx*ϕ + π*sum(Sz)
+    return (-1)^Sx*ϕ + π*mod(sum(Sz),2)
 end
 
 
@@ -88,8 +89,12 @@ function compute_angle_δᵥ(::ComputationRound,::NoInputQubits,ϕ,Sx,Sz,θᵥ,r
     return δᵥ
 end
 
-
-
+"""
+    MBQC compute updated angle
+"""
+function compute_angle_δᵥ(::MBQC,::Union{NoInputQubits,InputQubits},ϕ,Sx,Sz)
+    return update_ϕ(ϕ,Sx,Sz)
+end
 
 
 
@@ -114,7 +119,9 @@ end
 
 
 function update_ϕ!(::ComputationRound,::ComputationQubit,::InputQubits,meta_graph,vertex)
-    ϕ = get_prop(meta_graph,vertex,:init_qubit)
+    θᵥ = get_prop(meta_graph,vertex,:init_qubit)
+    ϕᵥ = get_prop(meta_graph,vertex,:secret_angle)
+    rᵥ = draw_rᵥ()
     xᵥ = get_prop(meta_graph,vertex,:classic_input)
     X = get_prop(meta_graph,vertex,:X_correction)
     Z = get_prop(meta_graph,vertex,:Z_correction)
@@ -124,9 +131,7 @@ function update_ϕ!(::ComputationRound,::ComputationQubit,::InputQubits,meta_gra
         sz = z==0 ? 0 : get_prop(meta_graph,z,:outcome)
         push!(Sz,sz)
     end
-    θᵥ = draw_θᵥ()
-    rᵥ = draw_rᵥ()
-    ϕ̃ = compute_angle_δᵥ(ComputationRound(),InputQubits(),ϕ,Sx,Sz,θᵥ,rᵥ,xᵥ)
+    ϕ̃ = compute_angle_δᵥ(ComputationRound(),InputQubits(),ϕᵥ,Sx,Sz,θᵥ,rᵥ,xᵥ)
     set_prop!(meta_graph,vertex,:updated_ϕ, ϕ̃)
     set_prop!(meta_graph,vertex,:one_time_pad_int, rᵥ)
 
@@ -135,7 +140,9 @@ end
 
 
 function update_ϕ!(::ComputationRound,::ComputationQubit,::NoInputQubits,meta_graph,vertex)
-    ϕ = get_prop(meta_graph,vertex,:init_qubit)
+    θᵥ = get_prop(meta_graph,vertex,:init_qubit)
+    ϕᵥ = get_prop(meta_graph,vertex,:secret_angle)
+    rᵥ = draw_rᵥ()
     X = get_prop(meta_graph,vertex,:X_correction)
     Z = get_prop(meta_graph,vertex,:Z_correction)
     Sx = X==0 ? 0 : get_prop(meta_graph,X,:outcome)
@@ -144,11 +151,23 @@ function update_ϕ!(::ComputationRound,::ComputationQubit,::NoInputQubits,meta_g
         sz = z==0 ? 0 : get_prop(meta_graph,z,:outcome)
         push!(Sz,sz)
     end
-    θᵥ = draw_θᵥ()
-    rᵥ = draw_rᵥ()
-    ϕ̃ = compute_angle_δᵥ(ComputationRound(),NoInputQubits(),ϕ,Sx,Sz,θᵥ,rᵥ)
+    ϕ̃ = compute_angle_δᵥ(ComputationRound(),NoInputQubits(),ϕᵥ,Sx,Sz,θᵥ,rᵥ)
     set_prop!(meta_graph,vertex,:updated_ϕ, ϕ̃)
     set_prop!(meta_graph,vertex,:one_time_pad_int, rᵥ)
+end
+
+function update_ϕ!(::MBQC,::ComputationQubit,qT::Union{NoInputQubits,InputQubits},meta_graph,vertex)
+    ϕᵥ = get_prop(meta_graph,vertex,:secret_angle)
+    X = get_prop(meta_graph,vertex,:X_correction)
+    Z = get_prop(meta_graph,vertex,:Z_correction)
+    Sx = X==0 ? 0 : get_prop(meta_graph,X,:outcome)
+    Sz = []
+    for z in Z
+        sz = z==0 ? 0 : get_prop(meta_graph,z,:outcome)
+        push!(Sz,sz)
+    end
+    ϕ̃ = compute_angle_δᵥ(MBQC(),qT,ϕᵥ,Sx,Sz) 
+    set_prop!(meta_graph,vertex,:updated_ϕ, ϕ̃)
 end
 
 

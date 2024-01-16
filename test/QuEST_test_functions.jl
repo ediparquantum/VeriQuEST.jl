@@ -32,7 +32,7 @@
 using QuEST_jl
 import QuEST_jl.QuEST64
 QuEST = QuEST_jl.QuEST64
-qreal = QuEST.QuEST_Types.qreal
+Float64 = QuEST.QuEST_Types.Float64
 using Test
 using RandomMatrices
 using LinearAlgebra
@@ -83,7 +83,7 @@ function check_createCloneQureg()
         num_qubits = rand(2:12)
         qureg1 = QuEST.createQureg(num_qubits, env)
         for qubit =0:num_qubits-1
-            QuEST.rotateX(qureg1, qubit, rand(qreal))
+            QuEST.rotateX(qureg1, qubit, rand(Float64))
         end
         for qubit = 0:num_qubits-2
             QuEST.controlledNot(qureg1, qubit, qubit+1)
