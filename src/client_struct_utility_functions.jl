@@ -41,7 +41,7 @@ function create_graph_resource(p::NamedTuple)::MBQCResourceState
     colors = MBQCColouringSet(p[:computation_colours],p[:test_colours])
     mbqc_graph = MBQCGraph(p[:graph],colors,input,output)
     mbqc_flow = MBQCFlow(p[:forward_flow],p[:backward_flow])
-    mbqc_angles = MBQCAngles(p[:angles])
+    mbqc_angles = MBQCAngles(p[:secret_angles])
     resource = MBQCResourceState(mbqc_graph,mbqc_flow,mbqc_angles)
     return resource
 end
@@ -181,12 +181,13 @@ function get_input_value(resource::MBQCResourceState,iter)
     return input_values[input_indices[iter]]
 end
 
-function get_angles(resource::MBQCResourceState)
-    return resource.angles.angles
+
+function get_angles(resource::MBQCResourceState,::SecretAngles)
+    return resource.angles.secret_angles
 end
 
-function get_angle(resource::MBQCResourceState,vertex)
-    return get_angles(resource)[vertex]
+function get_angle(resource::MBQCResourceState,AngleType,vertex)
+    return get_angles(resource,AngleType)[vertex]
 end
 
 function get_graph(resource::MBQCResourceState)
@@ -212,8 +213,10 @@ function get_verified_flow_output(T,resource::MBQCResourceState,vertex::Int64)
                 intersect(neighs,new_vertex)
             @assert length(new_vertex_in_intersection)==1 "Intersection of neighbourhood of vertex and forward vertex should be 1, it is $(lenth(new_vertex_in_intersection)), figure out problem."
             return new_vertex_in_intersection[1]
-        else
-            return 
+        elseif new_vertex isa Nothing
+            return nothing
+        else 
+            return nothing
         end
     elseif T isa BackwardFlow
         new_vertex = flow(vertex)
@@ -222,8 +225,10 @@ function get_verified_flow_output(T,resource::MBQCResourceState,vertex::Int64)
                 intersect(neighs,new_vertex)
             @assert length(new_vertex_in_intersection)==1 "Intersection of neighbourhood of vertex and forward vertex should be 1, it is $(lenth(new_vertex_in_intersection)), figure out problem."
             return new_vertex_in_intersection[1]
+        elseif new_vertex isa Nothing
+            return nothing
         else
-            return 
+            return nothing
         end
     else
         @error "Type for flow must be ForwardFlow or BackwardFlow, it is $(T), fix"
