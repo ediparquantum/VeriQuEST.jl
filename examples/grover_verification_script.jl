@@ -14,9 +14,9 @@ using Test
 using StatsBase
 using Graphs
 using CairoMakie
+using QuESTMbqcBqpVerification 
 
-include("src/QuESTMbqcBqpVerification.jl")
-using .QuESTMbqcBqpVerification 
+
 
 // # Set up
     # Choose backend and round counts

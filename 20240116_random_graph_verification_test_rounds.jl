@@ -14,6 +14,7 @@ using Test
 using StatsBase
 using Graphs
 using CairoMakie
+using GraphPlot
 
 include("src/QuESTMbqcBqpVerification.jl")
 using .QuESTMbqcBqpVerification 
@@ -21,10 +22,14 @@ using .QuESTMbqcBqpVerification
 // # Set up
     # Choose backend and round counts
     state_type = DensityMatrix()
-    total_rounds,computation_rounds = 100,50
+    total_rounds,computation_rounds = 100,0
 
     # Grover graph
     num_vertices = 8
+    num_vertex_connected = 3
+    graph = random_regular_graph(num_vertices, num_vertex_connected)
+    plot(graph)
+    
     graph = Graph(num_vertices)
     add_edge!(graph,1,2)
     add_edge!(graph,2,3)
