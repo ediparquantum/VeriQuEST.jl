@@ -39,9 +39,9 @@ function get_all_amps(::DensityMatrix,quantum_state)
     num_qubits = quantum_state.numQubitsRepresented
     amps=[]
     for q₁ in Base.OneTo(num_qubits),q₂ in Base.OneTo(num_qubits)
-        idx = get_density_matrix_indices_per_qubits(q₁,q₂)
-        idxs = [c_shift_index.(x) for x in idx]
-        qubit_amps = [QuEST.getDensityAmp(quantum_state, q[1],q[2]) for q in idxs]
+        idxs = get_density_matrix_indices_per_qubits(q₁,q₂)
+        #idxs = [c_shift_index.(x) for x in idx]
+        qubit_amps = [getDensityAmp(quantum_state, q[1],q[2]) for q in idxs]
         push!(amps,qubit_amps)
     end
     amps
@@ -50,5 +50,5 @@ end
 
 # Function to add to QuESTMbqcBqpVerification 
 function initialise_blank_quantum_state!(quantum_state)
-    QuEST.initBlankState(quantum_state)
+    initBlankState(quantum_state)
 end

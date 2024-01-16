@@ -17,6 +17,10 @@ struct Ok end
 struct Abort end
 struct TrapPass end
 struct TrapFail end  
+struct MBQC end
+struct Terse end
+struct Verbose end
+struct TrustworthyServer end
 
 """
     InputQubits
@@ -209,6 +213,7 @@ struct MBQCAngles
     secret_angles
 end
 
+
 """
     MBQCResourceState(graph, flow, angles)
 
@@ -270,4 +275,9 @@ struct DensityMatrix end
 struct DummyQubitZeroOneInitialisationError end
 struct QubitFloatPhaseInitialisationError end
 struct FunctionNotMeantToBeUsed end
+
+struct InherentBoundedError
+    p
+end
+
 
