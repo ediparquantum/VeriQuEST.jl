@@ -2,7 +2,7 @@
 
 julia_version = "1.9.0"
 manifest_format = "2.0"
-project_hash = "7dee72383d05e852b8e21b234afd1f51100c9964"
+project_hash = "36339621bc34b7f3e95a32e57db2c865dfe7a1a7"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -168,13 +168,6 @@ weakdeps = ["SparseArrays"]
     [deps.ChainRulesCore.extensions]
     ChainRulesCoreSparseArraysExt = "SparseArrays"
 
-[[deps.Clang]]
-deps = ["CEnum", "Clang_jll", "DataStructures", "Libdl"]
-git-tree-sha1 = "4400629b93a97b843bef5a049f2346449aa4e02d"
-repo-rev = "main"
-repo-url = "https://github.com/TartuQC/Clang.jl"
-uuid = "cf6e1f2a-8e4b-4cd1-b89c-30ca782ed4ca"
-version = "0.12.1"
 [[deps.Clang]]
 deps = ["CEnum", "Clang_jll", "Downloads", "Pkg", "TOML"]
 git-tree-sha1 = "846054622cb22aa63b5d51b5d84ec04b42d4d587"
@@ -1192,17 +1185,10 @@ uuid = "4b34888f-f399-49d4-9bb3-47ed5cae4e65"
 version = "1.0.0"
 
 [[deps.QuEST]]
-git-tree-sha1 = "47679227b388489a2306220516b678a37b2f6aab"
-repo-rev = "main"
-repo-url = "https://github.com/fieldofnodes/QuEST.jl"
+deps = ["Clang", "JuliaFormatter", "LinearAlgebra", "QuEST_jll", "RandomMatrices", "Reexport"]
+git-tree-sha1 = "1cbcec1b5699bb2fd5ed4649b5217c58f35334a4"
 uuid = "2f8c4c1a-2c62-410c-b829-98d6ce53c0c2"
 version = "1.0.0"
-
-    [deps.QuEST.deps]
-    Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
-    JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
-    QuEST_jll = "4a967bbd-a16f-537d-8e95-e68e89d08900"
-    Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [[deps.QuEST_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "LLVMOpenMP_jll", "Libdl"]
