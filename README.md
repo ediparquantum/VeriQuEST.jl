@@ -21,10 +21,7 @@ Load packages, if not installed, then run `] add <PackageName>`, for `QuEST_jl`,
 using Pkg
 Pkg.activate(".")
 
-using QuEST_jl
-import QuEST_jl.QuEST64
-QuEST = QuEST_jl.QuEST64
-qreal = QuEST.QuEST_Types.qreal
+using QuEST
 using Test
 using StatsBase
 using Graphs
