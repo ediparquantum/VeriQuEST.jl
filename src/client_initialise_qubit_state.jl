@@ -10,10 +10,13 @@ init_plus_phase_state!(qureg,qᵢ,φᵢ)
     - φᵢ: Angle for phase shift
 """
 function init_plus_phase_state!(::Phase,qureg,qᵢ,φᵢ)
-    qᵢ = c_shift_index(qᵢ)
-    QuEST.hadamard(qureg,qᵢ)
-    QuEST.phaseShift(qureg,qᵢ,φᵢ)
+    #qᵢ = c_shift_index(qᵢ)
+    hadamard(qureg,qᵢ)
+    rotateZ(qureg,qᵢ,φᵢ)
+    #phaseShift(qureg,qᵢ,φᵢ)
 end
+
+
 
 """
     plusState(qureg, qᵢ)
@@ -25,15 +28,15 @@ end
     - `qᵢ`: Qubit index to which the Hadamard gate is applied. Index must be 1-based, as `c_shift_index` is called.
 """
 function init_plus_phase_state!(::NoPhase,qureg,qᵢ)
-    qᵢ = c_shift_index(qᵢ)
-    QuEST.hadamard(qureg,qᵢ)
+    #qᵢ = c_shift_index(qᵢ)
+    hadamard(qureg,qᵢ)
 end
 
 
 function initialise_qubit(::DummyQubit,::NoInputQubits,quantum_state,qubit_index,qubit_input_value::Int)
-    qubit_index = c_shift_index(qubit_index)
+    #qubit_index = c_shift_index(qubit_index)
     iszero(qubit_input_value) ? nothing : 
-    isone(qubit_input_value) ?  QuEST.pauliX(quantum_state, qubit_index) :
+    isone(qubit_input_value) ?  pauliX(quantum_state, qubit_index) :
     throw_error(DummyQubitZeroOneInitialisationError())
 end
 
@@ -44,3 +47,6 @@ function initialise_qubit(::Union{ComputationQubit,TrapQubit},::Union{InputQubit
 end
 
 
+function initialise_qubit(::MBQC,::Union{ComputationQubit,TrapQubit},::Union{InputQubits,InputQubits,NoInputQubits},quantum_state,qubit_index)
+    init_plus_phase_state!(NoPhase(),quantum_state,qubit_index)
+end

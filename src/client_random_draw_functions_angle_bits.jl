@@ -14,7 +14,7 @@ draw_bit()::Int64 = rand([0,1])
 rand_k_0_7()::Float64 = rand(0:7)
 
 # For draw θ a multiple of kπ/4, k ∈ 0..7
-draw_θᵥ()::Float64 = rand_k_0_7()*π/4
+draw_θᵥ()::Float64 = rand_k_0_7()*π/4.0
 
 # For draw random bits for use in verification
 draw_rᵥ()::Int64 = draw_bit()
