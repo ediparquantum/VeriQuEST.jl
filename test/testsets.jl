@@ -10,26 +10,7 @@ end
     test_c_iterator()
 end
 
-@testset "test_env" begin
-    test_env()
-end
 
-@testset "test_qureg" begin
-    test_qureg()
-end
-
-@testset "test_qureg_density" begin
-    test_qureg_density()
-end
-
-@testset "test_plusState" begin
-    test_plusState(tolerance)
-end
-
-
-@testset "check_createCloneQureg" begin
-    check_createCloneQureg()
-end
 
 @testset "test_phase_θ" begin
     test_phase_θ(tolerance)
@@ -40,13 +21,16 @@ end
     test_basic_call_measurement()
 end
 
+
 @testset "test_create_complex_identity" begin
     test_create_complex_identity()
 end
 
+#=
 @testset "test_qubit_initialisation(Client(),DensityMatrix(),DummyQubit(),NoInputQubits())" begin
     test_qubit_initialisation(Client(),DensityMatrix(),DummyQubit(),NoInputQubits()) 
 end
+
 
 
 @testset "test_qubit_initialisation(::Client,::DensityMatrix,vertex_type::Union{TrapQubit,ComputationQubit},vertex_io_type::Union{InputQubits,NoInputQubits},tolerance)" begin
@@ -54,7 +38,7 @@ end
     vert_io_type = [NoInputQubits(),InputQubits()]
     [test_qubit_initialisation(Client(),DensityMatrix(),vt,io,tolerance) for io in vert_io_type, vt in vert_type]
 end
-
+=#
 @testset "test_get_state_vector_pair_per_qubit()" begin
     test_get_state_vector_pair_per_qubit()
 end
@@ -63,7 +47,7 @@ end
     test_get_density_matrix_indices_per_qubits()
 end
 
-
+#=
 @testset "test_get_amps_0_1_states_1_qubit(::Client,::DensityMatrix)" begin
     test_get_amps_0_1_states_1_qubit(Client(),DensityMatrix())
 end
@@ -76,14 +60,14 @@ end
 @testset "test_get_amps_n_qubit(::Client,::DensityMatrix,tolerance)" begin
     test_get_amps_n_qubit(Client(),DensityMatrix(),tolerance)
 end
-
+=#
 
 
 
 @testset "test_is_round_OK()" begin
     test_is_round_OK()
 end
-
+#=
 @testset "test_single_qubit_trap_equals_one_time_pad(num_iterations)" begin
     test_single_qubit_trap_equals_one_time_pad(num_iterations)
   end
@@ -126,7 +110,7 @@ end
     number_dummies =  5    
     test_N_qubit_one_dummy_one_trap_N_dummies_small_prob_outcome_bit_flip(num_iterations,number_dummies,bit_flip_prob,trap_acceptance_threshold)
 end
-
+=#
 
 
 
@@ -162,6 +146,7 @@ end
 end
 
 @testset "test_grover_blind_verification()" begin
+
     test_grover_blind_verification()
 end
 

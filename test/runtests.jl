@@ -1,5 +1,7 @@
 using RobustBlindVerification
 using Test
+using StatsBase
+using Graphs
 
 
 tolerance=1e-10

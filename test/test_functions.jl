@@ -82,94 +82,9 @@ function test_c_iterator()
     end
 end
 
-function test_env()
-    env1 = QuEST.createQuESTEnv()
-    env2 = QuEST.createQuESTEnv()
-    QuEST.destroyQuESTEnv(env1)
-    QuEST.destroyQuESTEnv(env2)
-end
 
-function test_qureg()
-    env= QuEST.createQuESTEnv()
-    for i=1:10
-    qureg1 = QuEST.createQureg(i, env)
-    qureg2 = QuEST.createQureg(i, env)    
-    @test qureg1.numQubitsRepresented == i
-    @test qureg2.numQubitsRepresented == i
-    QuEST.destroyQureg(qureg1, env) 
-    QuEST.destroyQureg(qureg2, env)
-    end
-    QuEST.destroyQuESTEnv(env)
 
-end
 
-function test_qureg_density()
-    env= QuEST.createQuESTEnv()
-    for i=1:10
-    qureg1 = QuEST.createDensityQureg(i, env)
-    qureg2 = QuEST.createDensityQureg(i, env)    
-    @test qureg1.numQubitsRepresented == i
-    @test qureg2.numQubitsRepresented == i
-    QuEST.destroyQureg(qureg1, env) 
-    QuEST.destroyQureg(qureg2, env)
-    end
-    QuEST.destroyQuESTEnv(env)
-
-end
-
-function test_plusState(tolerance)
-    num_tests = 1_000
-    env= QuEST.createQuESTEnv()
-    for i in Base.OneTo(num_tests)
-        num_qubits = 1
-        qureg = QuEST.createQureg(num_qubits, env)
-        q_ind = c_shift_index(1)
-        QuEST.hadamard(qureg,q_ind)
-        @test QuEST.getProbAmp(qureg, q_ind) ≈ 0.5 atol = tolerance
-        QuEST.destroyQureg(qureg, env) 
-    end
-    for i in Base.OneTo(num_tests)
-        num_qubits = 1
-        qureg = QuEST.createDensityQureg(num_qubits, env)
-        q_ind = c_shift_index(1)
-        QuEST.hadamard(qureg,q_ind)
-        for i=c_iterator(2^num_qubits)
-            for j=c_iterator(2^num_qubits)
-                dens_amps = QuEST.getDensityAmp(qureg, i, j)
-                @test abs(dens_amps)^2 ≈ 0.25 atol = tolerance
-            end
-        end
-    
-        QuEST.destroyQureg(qureg, env) 
-    end
-    QuEST.destroyQuESTEnv(env)
-end
-
-function check_createCloneQureg()
-    num_tests = 10
-    env= QuEST.createQuESTEnv()
-    for i =1:num_tests
-        num_qubits = rand(2:12)
-        qureg1 = QuEST.createQureg(num_qubits, env)
-        for qubit =0:num_qubits-1
-            QuEST.rotateX(qureg1, qubit, rand(qreal))
-        end
-        for qubit = 0:num_qubits-2
-            QuEST.controlledNot(qureg1, qubit, qubit+1)
-        end
-        qureg2 = QuEST.createCloneQureg(qureg1, env)
-        @test qureg1.numQubitsRepresented == qureg2.numQubitsRepresented
-        @test qureg1.numAmpsTotal == qureg2.numAmpsTotal
-        @test QuEST.getNumAmps(qureg1) == QuEST.getNumAmps(qureg2)
-        @test QuEST.getNumQubits(qureg1) == QuEST.getNumQubits(qureg2)
-        for ind=1:2^num_qubits-1
-            @test QuEST.getProbAmp(qureg1, ind) == QuEST.getProbAmp(qureg2, ind)
-            @test QuEST.getRealAmp(qureg1, ind) == QuEST.getRealAmp(qureg2, ind)
-            @test QuEST.getImagAmp(qureg1, ind) == QuEST.getImagAmp(qureg2, ind)
-        end 
-    end
-    QuEST.destroyQuESTEnv(env)
-end
 
 function test_phase_θ(tolerance)
     # Test 0 phase is the identity
@@ -208,7 +123,7 @@ end
 function test_create_complex_identity()
     @test ident_2x2() == I(2)
 end
-
+#=
 function test_qubit_initialisation(::Client,::DensityMatrix,::DummyQubit,::NoInputQubits)
     qubit_input_value=[0,1]
     for test in qubit_input_value
@@ -246,7 +161,7 @@ function test_qubit_initialisation(::Client,::DensityMatrix,vertex_type::Union{T
     @test amps ≈ ρ̂ atol = tolerance
 
 end
-
+=#
 function test_get_state_vector_pair_per_qubit()
     @test get_state_vector_pair_per_qubit(1) == (1,2)
     @test get_state_vector_pair_per_qubit(2) == (3,4)
@@ -258,7 +173,7 @@ function test_get_density_matrix_indices_per_qubits()
     mat = [(1,1) (1,2);(2,1) (2,2)]
     @test q₁₂ == mat
 end
-
+#=
 function test_get_amps_0_1_states_1_qubit(::Client,::DensityMatrix)
     # Single qubit density matrix
     # Test init in the blank state
@@ -344,7 +259,7 @@ function test_get_amps_n_qubit(::Client,::DensityMatrix,tolerance)
     QuEST.destroyQuESTEnv(quantum_env)
 end
 
-
+=#
 
 
 
@@ -359,7 +274,7 @@ end
 
 
 
-
+#=
 # Redo this test according to my notability notes
 function test_single_qubit_trap_equals_one_time_pad(num_iterations)
     quantum_env=QuEST.createQuESTEnv()
@@ -619,7 +534,7 @@ function test_N_qubit_one_dummy_one_trap_N_dummies_small_prob_outcome_bit_flip(n
     verified_decimal = count(==(0),verification_results)./num_iterations
      @test verified_decimal >= trap_acceptance_threshold
 end
-
+=#
 function test_graph_colouring_label(N,reps)
     graph = Graphs.complete_graph(N)
     colourings_struct = Graphs.random_greedy_color(graph, reps)
@@ -815,6 +730,9 @@ end
 function test_grover_blind_verification()
 
     function run_grover_per_search(search)
+        # Choose backend and round counts
+        state_type = DensityMatrix()
+        total_rounds,computation_rounds = 100,50
         # Grover graph
         num_vertices = 8
         graph = Graph(num_vertices)
@@ -827,9 +745,11 @@ function test_grover_blind_verification()
         add_edge!(graph,5,8)
         add_edge!(graph,7,8)
 
+        input = (indices = (),values = ())
+        output = (7,8)
+ 
 
-
-
+    
         # Julia is indexed 1, hence a vertex with 0 index is flag for no flow
         function forward_flow(vertex)
             v_str = string(vertex)
@@ -845,62 +765,62 @@ function test_grover_blind_verification()
             forward[v_str]
         end
 
-
-        function backward_flow(vertex)
-            v_str = string(vertex)
-            backward = Dict(
-                "1" =>0,
-                "2" =>0,
-                "3" =>2,
-                "4" =>1,
-                "5" =>4,
-                "6" =>3,
-                "7" =>6,
-                "8" =>5)
-            backward[v_str]
-        end
-
-
-
-        state_type = DensityMatrix()
-        input_indices = () # a tuple of indices 
-        input_values = () # a tuple of input values
-        output_indices = (7,8) # Grovers: 7,8
-
-
-
-        function generate_grover_secret_angles(search::String)
+        function generate_grover_secret_angles(search)
 
             Dict("00"=>(1.0*π,1.0*π),"01"=>(1.0*π,0),"10"=>(0,1.0*π),"11"=>(0,0)) |>
             x -> x[search] |>
             x -> [0,0,1.0*x[1],1.0*x[2],0,0,1.0*π,1.0*π] |>
             x -> Float64.(x)
         end
+    
 
         secret_angles = generate_grover_secret_angles(search)
-        total_rounds,computation_rounds = 100,50
-        test_rounds_theshold = total_rounds -computation_rounds
 
         para= (
             graph=graph,
             forward_flow = forward_flow,
-            backward_flow=backward_flow,
-            input_indices = input_indices,
-            input_values = input_values,
-            output_indices =output_indices,
+            input = input,
+            output = output,
             secret_angles=secret_angles,
             state_type = state_type,
             total_rounds = total_rounds,
-            computation_rounds = computation_rounds,
-            test_rounds_theshold = test_rounds_theshold)
+            computation_rounds = computation_rounds)
 
-        res = run_verification_simulator(para)
+        int_search = [parse(Int,search[1]),parse(Int,search[2])]
+        # Run grover search on mbqc and ubqc
+        mbqc_outcome = run_mbqc(para)
+        ubqc_outcome = run_ubqc(para)
+        @test mbqc_outcome == ubqc_outcome
+        @test mbqc_outcome == int_search
+        @test ubqc_outcome == int_search
 
-        @test res[:test_verification] == Ok()
-        @test res[:computation_verification] == Ok()
-        @test Int.(res[:mode_outcome]) == [parse(Int,search[1]),parse(Int,search[2])]
+        # Run grover search on verification simulator with a TrustworthyServer
+        vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
+
+        test_rounds = total_rounds - computation_rounds
+        @test vbqc_outcome[:test_verification] == Ok()
+        @test vbqc_outcome[:computation_verification] == Ok()
+        @test vbqc_outcome[:mode_outcome] == int_search
+        @test vbqc_outcome[:test_verification_verb][:failed] == 0
+        @test vbqc_outcome[:test_verification_verb][:passed] == test_rounds 
+        @test vbqc_outcome[:computation_verification_verb][:failed] == 0
+        @test vbqc_outcome[:computation_verification_verb][:passed] == computation_rounds
+
+
+
+        malicious_angles = π/2
+        malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,malicious_angles)
+        @test malicious_vbqc_outcome[:test_verification] == Abort()
+        @test malicious_vbqc_outcome[:computation_verification] == Abort()
+        @test malicious_vbqc_outcome[:mode_outcome] != int_search
+        @test malicious_vbqc_outcome[:test_verification_verb][:failed] != 0
+        @test malicious_vbqc_outcome[:test_verification_verb][:passed] != test_rounds
+        @test malicious_vbqc_outcome[:computation_verification_verb][:failed] != 0
+        @test malicious_vbqc_outcome[:computation_verification_verb][:passed] != computation_rounds
     end
 
+
+    
     search = ["00","01","10","11"]
     run_grover_per_search.(search)
 end

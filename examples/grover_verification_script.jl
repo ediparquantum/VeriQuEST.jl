@@ -14,7 +14,9 @@ using Test
 using StatsBase
 using Graphs
 using CairoMakie
-using QuESTMbqcBqpVerification 
+include("../src/RobustBlindVerification.jl")
+
+using .RobustBlindVerification
 
 
 
@@ -90,11 +92,12 @@ using QuESTMbqcBqpVerification
     ubqc_outcome = run_ubqc(para)
     vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
 
+    vbqc_outcome[:test_verification]
     malicious_angles = π/2
     malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,malicious_angles)
 
     outcomes = []
-    angle_range = range(0.0,2*π,length=100)
+    angle_range = range(0.0,2*π,length=10)
     for a in angle_range
         malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,a) 
     push!(outcomes,malicious_vbqc_outcome)
