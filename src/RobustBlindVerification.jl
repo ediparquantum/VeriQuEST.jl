@@ -1,4 +1,4 @@
-module QuESTMbqcBqpVerification
+module RobustBlindVerification
 
     using Reexport
  
