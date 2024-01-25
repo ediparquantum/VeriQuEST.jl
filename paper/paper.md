@@ -44,7 +44,7 @@ aas-journal: Astrophysical Journal <- The name of the AAS journal.
 
 We present here the Julia package, `RobustBlindVerification.jl` (RBV) to emulate quantum verification protocols in ideal and noisy settings. The RBV package is a quantum computing emulator, which uses the `QuEST.jl` package (from QuEST, a C library wrapped packaged using `BinaryBuilder.jl` for reproducible 3rd-party binaries) to perform the quantum operations. RBV is based on the measurement based quantum computing (MBQC) paradigm, and uses universal blind quantum computing to hide computations from detection. Verfication is implemented via trapification strategies and multiple rounds of computation. The verification algorithm is implemneted to account for noise and naive malicious behaviour or uncorrelated noise.
 
-Refine and proof ...
+Refine and proof ... [@PRXQuantum.2.040302]
 
 # Statement of need
 
