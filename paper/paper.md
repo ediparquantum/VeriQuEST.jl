@@ -251,14 +251,173 @@ The Pauli noise acts on the x,y and z axis to there are three probabilities for 
     prob_vec = [p_damp,p_deph,p_depo,p_pauli]
 
     models = Vector{NoiseModels}()
-    for m in eachindex(model_vec)
-        push!(models,model_vec[m](Quest(),SingleQubit(),prob_vec[m]))
+    for m in eachindex(model_vec)        push!(models,model_vec[m](Quest(),SingleQubit(),prob_vec[m]))
     end
     server = NoisyServer(models)
     vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
 If we want to run general Kraus maps, we can do so on single, double and `n` qubit levels - **NEED TO DO**. If we have a density matrix with a specified noise model, we can mix that with the algorithm as well - **NEED TO DO**.
+
+## Inside the verification simulator
+
+Let us look closer at the `TrustWorthy` `Verbose` simulator function.
+
+```julia
+    function run_verification_simulator(::TrustworthyServer,::Verbose,para)
+    ...
+    end
+```
+
+Currently, the trapification strategy is to generate a random colouring of the presented graph, based on a greedy heuristic [Cite graphs package?]. Naively the choice is made such that out of `100` repetitions, the best coloring is picked. The computation round is simply one colour for all vertices.
+
+```julia
+    computation_colours = ones(nv(para[:graph]))
+```
+
+For each coloured vertex, a 2-colour graph is formed, that of the colored vertex and a colour for the remaining vertices. Hence, a 4-colour graph, can be split into 4 distinct graphs according to the colouring.
+
+```julia
+    test_colours = get_vector_graph_colors(para[:graph];reps=reps)
+```
+
+To determine the number of acceptable failed rounds a value is computed dependent on the BQP error, the number of colours and the distribution of test rounds to total rounds.
+
+```julia
+    chroma_number = length(test_colours)
+    bqp = InherentBoundedError(1/3)
+    test_rounds_theshold = compute_trap_round_fail_threshold(para[:total_rounds],para[:computation_rounds],chroma_number,bqp) 
+```
+
+Recall that the `forward_flow` is user defined, then the `backward_flow` is numerically computed./
+
+```julia
+    backward_flow(vertex) = compute_backward_flow(para[:graph],para[:forward_flow],vertex)
+```
+
+These computations along with the remaining values from `para` are stored in a `NamedTuple` which is used to create a `struct` wrapping all variables in a defined type.
+
+```julia
+    p = (
+        input_indices =  para[:input][:indices],
+        input_values = para[:input][:values],
+        output_indices =para[:output],
+        graph=para[:graph],
+        computation_colours=computation_colours,
+        test_colours=test_colours,
+        secret_angles=para[:secret_angles],
+        forward_flow = para[:forward_flow],
+        backward_flow=backward_flow)
+        
+    client_resource = create_graph_resource(p)
+```
+
+The `round_types` is a random permutation of `structs` `ComputationRound` and `TestRound` on the exact number of each.
+
+```julia
+    round_types = draw_random_rounds(para[:total_rounds],para[:computation_rounds])
+```
+
+The type held by `round_types` is a `Vector`, which is iterated through to execute rounds determined by element of the iterator. The function `run_verification` executes the protocol for each round and return a vector of `MetaGraphs` for each round.
+
+```julia
+    rounds_as_graphs = run_verification(
+        Client(),Server(),
+        round_types,client_resource,
+        para[:state_type])
+```
+
+The `MetaGraph` is the core data structure for any given MBQC computation. Due to it's inherent graph and vertex properties, mulitple dispatch was used to perform appropriate computation across vertices in a graph. Results for the `Verbose` flag ar the outcomes with the results for acceptable round or failed round.
+
+```julia
+        test_verification = verify_rounds(Client(),TestRound(),Terse(),rounds_as_graphs,test_rounds_theshold)
+        computation_verification = verify_rounds(Client(),ComputationRound(),Terse(),rounds_as_graphs)
+        test_verification_verb = verify_rounds(Client(),TestRound(),Verbose(),rounds_as_graphs,test_rounds_theshold)
+        computation_verification_verb = verify_rounds(Client(),ComputationRound(),Verbose(),rounds_as_graphs)
+        mode_outcome = get_mode_output(Client(),ComputationRound(),rounds_as_graphs)
+```
+
+These results are returned as a `NamedTuple`
+
+```julia
+    return (
+        test_verification = test_verification,
+        test_verification_verb = test_verification_verb,
+        computation_verification = computation_verification,
+        computation_verification_verb = computation_verification_verb,
+        mode_outcome = mode_outcome)
+```
+
+Let's look closer at the verification function, `run_verification`.
+
+```julia
+
+function run_verification(::Client,::Server,
+    round_types,client_resource,state_type)
+    ...
+    round_graphs
+    end
+```
+    
+As before, we take a `Client` and a `Server` type, the server can be replaced with a different type given a desired computation. We run the verification protocol over a vector of rounds.
+
+```julia
+    round_graphs = []
+    for round_type in round_types
+        ...
+        client_meta_graph = ...
+        push!(round_graphs,client_meta_graph)
+    end
+```
+
+For each `round_type` in the vector `round_types`, note `round_type` is either `TestRound` or `ComputationRound` and Julia's multiple dispatch will perform the appropriate functions based on said type, the computation is performed, details are mutated onto the property graph, `client_meta_graph` and stored in the vector `round_graphs`. Within each round several computations take place. First,
+
+```julia
+    client_meta_graph = generate_property_graph!(
+        Client(),
+        round_type,
+        client_resource,
+        state_type)
+```
+
+a `client_meta_graph` is generated with the function `generate_property_graph!` which takes the `Client`, `round_type`, `client_resoure` and `state_type` as inputs. This function will be discussed further below. The `client_meta_graph` contains round specific values, the vertex angles, the forward and backward vertices according to the flow, allocation variables for measurement outcomes, the initialised state quatum register backed by QuEST. Note that no vertex is entangled, only initialised according the UBQC methdologies of client and server sepatation. To effect this disctinction the client quantum register and simple graph are extracted.
+
+```julia
+    client_graph = produce_initialised_graph(Client(),client_meta_graph)
+    client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+```
+
+The the server resource is created, `create_resource`, using the `Server`, `client_graph` and `client_qureg` as inputs. The server side resource is where noise is added if that is the case and where the circuit is entangled according to the edge map of the underlying MBQC graph structure.
+
+```julia
+    server_resource = create_resource(Server(),client_graph,client_qureg)
+```
+
+From here the server quantum state, or register is extracted from the server container, `server_resource`, thus, separationg of the client and the server is effected. We even extract the number ofqubits based on the server register.
+
+
+```julia
+    server_quantum_state = server_resource["quantum_state"]
+    num_qubits_from_server = server_quantum_state.numQubitsRepresented
+```
+
+Now for the given round, which has entirely driven the specific values of the propetry graph, the UBQC computation can be performed.
+
+```julia
+    run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+```
+
+The underlying register is still in effect, so to save loading and memory usage, we clear the state of the server register, ready to take on the next round of client side computation.
+
+```julia
+    initialise_blank_quantum_state!(server_quantum_state)
+```
+
+Now we come back to pushing the `client_meta_graph`,  which now holds all of the measurement outcomes, to the `round_graphs` vector. This is then returned at the end of the function call.
+
+```julia
+    push!(round_graphs,client_meta_graph)
+```
 
 
 # Citations
