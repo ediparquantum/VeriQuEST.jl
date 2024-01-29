@@ -42,9 +42,20 @@ aas-journal: Astrophysical Journal <- The name of the AAS journal.
 
 # Summary
 
-We present here the Julia package, `RobustBlindVerification.jl` (RBV) to emulate quantum verification protocols in ideal and noisy settings. The RBV package is a quantum computing emulator, which uses the `QuEST.jl` package (from QuEST, a C library wrapped packaged using `BinaryBuilder.jl` for reproducible 3rd-party binaries) to perform the quantum operations. RBV is based on the measurement based quantum computing (MBQC) paradigm, and uses universal blind quantum computing to hide computations from detection. Verfication is implemented via trapification strategies and multiple rounds of computation. The verification algorithm is implemneted to account for noise and naive malicious behaviour or uncorrelated noise.
+
+Utilising remote computation resources when local availability does not meet the users needs is currently in use for classical and cloud computing. It is likely that quantum computing will also be accessed and used as such. It is not unreasonable that computations, data and algorithms run on powerful quantum servers be confidential, free from harm and verifiable. Hence, delegated quantum computing is an important pathway to extending QC usefulness. Security protocols for blind and verifiable QC do exist and it has been shown that bounded-error quantum polynomial (BQP) computations can be verified with little overhead, other than computational repetitions, are composable and secure with toleration to constant noise, called Robust Blind Verified Quantum Computing (RBVQC). To emulate these known results, we introduce the Julia package, `RobustBlindVerification.jl` (RBV). RBV is a quantum verification emulator using Julia and the C library `QuEST` (for QC emulation and noise modelling). To explore the theoretical nature of RBVQC numerically, this software implements measurement based quantum computing (MBQC), universal blind MBQC (UBQC) and an RBVQC protocol.
+
+
+
 
 Refine and proof ... [@PRXQuantum.2.040302]
+
+
+
+
+
+
+
 
 # Statement of need
 
