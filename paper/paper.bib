@@ -49,3 +49,92 @@
       archivePrefix={arXiv},
       primaryClass={quant-ph}
 }
+
+
+@article{Gheorghiu_2019,
+doi = {10.1088/2058-9565/aaeeb3},
+url = {https://dx.doi.org/10.1088/2058-9565/aaeeb3},
+year = {2018},
+month = {nov},
+publisher = {IOP Publishing},
+volume = {4},
+number = {1},
+pages = {015009},
+author = {Alexandru Gheorghiu and Matty J Hoban and Elham Kashefi},
+title = {A simple protocol for fault tolerant verification of quantum computation},
+journal = {Quantum Science and Technology},
+abstract = {With experimental quantum computing technologies now in their infancy, the search for efficient means of testing the correctness of these quantum computations is becoming more pressing. An approach to the verification of quantum computation within the framework of interactive proofs has been fruitful for addressing this problem. Specifically, an untrusted agent (prover) alleging to perform quantum computations can have his claims verified by another agent (verifier) who only has access to classical computation and a small quantum device for preparing or measuring single qubits. However, when this quantum device is prone to errors, verification becomes challenging and often existing protocols address this by adding extra assumptions, such as requiring the noise in the device to be uncorrelated with the noise on the prover’s devices. In this paper, we present a simple protocol for verifying quantum computations, in the presence of noisy devices, with no extra assumptions. This protocol is based on post hoc techniques for verification, which allow for the prover to know the desired quantum computation and its input. We also perform a simulation of the protocol, for a one-qubit computation, and find the error thresholds when using the qubit repetition code as well as the Steane code.}
+}
+
+
+@article{Kapourniotis2019nonadaptivefault,
+  doi = {10.22331/q-2019-07-12-164},
+  url = {https://doi.org/10.22331/q-2019-07-12-164},
+  title = {Nonadaptive fault-tolerant verification of quantum supremacy with noise},
+  author = {Kapourniotis, Theodoros and Datta, Animesh},
+  journal = {{Quantum}},
+  issn = {2521-327X},
+  publisher = {{Verein zur F{\"{o}}rderung des Open Access Publizierens in den Quantenwissenschaften}},
+  volume = {3},
+  pages = {164},
+  month = jul,
+  year = {2019}
+}
+
+
+@article{MorimaeFujii2013,
+  title = {Secure Entanglement Distillation for Double-Server Blind Quantum Computation},
+  author = {Morimae, Tomoyuki and Fujii, Keisuke},
+  journal = {Phys. Rev. Lett.},
+  volume = {111},
+  issue = {2},
+  pages = {020502},
+  numpages = {5},
+  year = {2013},
+  month = {7},
+  publisher = {American Physical Society},
+  doi = {10.1103/PhysRevLett.111.020502},
+  url = {https://link.aps.org/doi/10.1103/PhysRevLett.111.020502},
+}
+
+
+@article{Mahadev2022ClassicalVerification,
+    author = {Mahadev, Urmila},
+    title = {Classical Verification of Quantum Computations},
+    journal = {SIAM Journal on Computing},
+    volume = {51},
+    number = {4},
+    pages = {1172-1229},
+    year = {2022},
+    doi = {10.1137/20M1371828},
+    URL = {https://doi.org/10.1137/20M1371828},
+    eprint = {https://doi.org/10.1137/20M1371828},
+    abstract = {
+        We present the first protocol allowing a classical computer to interactively verify the result of an efficient quantum computation. We achieve this by constructing a measurement protocol, which enables a classical verifier to use a quantum prover as a trusted measurement device. The protocol forces the prover to behave as follows: the prover must construct an \$n\$ qubit state of his choice, measure each qubit in the Hadamard or standard basis as directed by the verifier, and report the measurement results to the verifier. The soundness of this protocol is enforced based on the assumption that the learning with errors problem is computationally intractable for efficient quantum machines.
+    }
+}
+
+@article{QuESTJones2019,
+    author = {Jones, Tyson and Brown, Anna and Bush, Ian and Benjamin, Simon C.},
+    title = {QuEST and High Performance Simulation of Quantum Computers},
+    journal = {Scientific Reports},
+    volume = {9},
+    number = {1},
+    pages = {10736},
+    year = {2019},
+    doi = {10.1038/s41598-019-47174-9},
+    url = {https://doi.org/10.1038/s41598-019-47174-9},
+    abstract = {
+        We introduce QuEST, the Quantum Exact Simulation Toolkit, and compare it to ProjectQ, qHipster and a recent distributed implementation of Quantum++. QuEST is the first open source, hybrid multithreaded and distributed, GPU accelerated simulator of universal quantum circuits. Embodied as a C library, it is designed so that a user’s code can be deployed seamlessly to any platform from a laptop to a supercomputer. QuEST is capable of simulating generic quantum circuits of general one and two-qubit gates and multi-qubit controlled gates, on pure and mixed states, represented as state-vectors and density matrices, and under the presence of decoherence. Using the ARCUS and ARCHER supercomputers, we benchmark QuEST’s simulation of random circuits of up to 38 qubits, distributed over up to 2048 compute nodes, each with up to 24 cores. We directly compare QuEST’s performance to ProjectQ’s on single machines, and discuss the differences in distribution strategies of QuEST, qHipster and Quantum++. QuEST shows excellent scaling, both strong and weak, on multicore and distributed architectures.
+    }
+}
+
+
+@misc{BinaryBuilder2022,
+    author = {BinaryBuilder Contributors},
+    title = {BinaryBuilder.jl},
+    year = {2022},
+    publisher = {GitHub},
+    journal = {GitHub repository},
+    howpublished = {\url{https://github.com/JuliaPackaging/BinaryBuilder.jl}}
+}

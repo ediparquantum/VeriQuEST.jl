@@ -17,23 +17,23 @@ authors:
     orcid: 0000-0002-5836-1736
     equal-contrib: true
     affiliation: 1
-  - name: Author Without ORCID
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
-    affiliation: 2
-  - name: Author with no affiliation
-    corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 3
-  - given-names: Ludwig
-    dropping-particle: van
-    surname: Beethoven
-    affiliation: 3
+  - name: Cica Gustiani
+    orcid: 0000-0000-0000-0000
+    equal-contrib: false
+    affiliation: '2'
+  - name: Dominik Leichtle
+    orcid: 0000-0000-0000-0000
+    equal-contrib: false
+    affiliation: '2'
+  - name: Elham Kashefi
+    orcid: 0000-0000-0000-0000
+    corresponding: false
+    affiliation: '2'
 affiliations:
- - name: University of Edinburgh School of Informatics, United Kingdom
-   index: 1
- - name: Institution Name, Country
-   index: 2
- - name: Independent Researcher, Country
-   index: 3
+  - name: School of Informatics, University of Edinburgh, 10 Crichton Street, Edinburgh EH8 9AB, United Kingdom
+    index: 1
+  - name: 'Laboratoire d’Informatique de Paris 6, CNRS, Sorbonne Université, 4 Place Jussieu, Paris 75005, France'
+    index: 2
 date: 29 Jan 2024
 bibliography: paper.bib
 
@@ -45,32 +45,19 @@ aas-journal: Astrophysical Journal <- The name of the AAS journal.
 
 # Summary
 
-
-Utilising remote computation resources when local availability does not meet the users needs is currently in use for classical and cloud computing. It is likely that quantum computing will also be accessed and used as such. It is not unreasonable that computations, data and algorithms run on powerful quantum servers be confidential, free from harm and verifiable. Hence, delegated quantum computing is an important pathway to extending QC usefulness. Security protocols for blind and verifiable QC do exist and it has been shown that bounded-error quantum polynomial (BQP) computations can be verified with little overhead, other than computational repetitions, are composable and secure with toleration to constant noise, called Robust Blind Verified Quantum Computing (RBVQC). To emulate these known results, we introduce the Julia package, `RobustBlindVerification.jl` (RBV). RBV is a quantum verification emulator using Julia and the C library `QuEST` (for QC emulation and noise modelling). To explore the theoretical nature of RBVQC numerically, this software implements measurement based quantum computing (MBQC), universal blind MBQC (UBQC) and an RBVQC protocol.
-
-**Refine and proof ... [@PRXQuantum.2.040302]**
-
+Verification of delegated quantum computations is a challenging task in both theory and implementation. To address the theory, methods and protocols have been developed that ouline abstract verification. Implementation will likely require a quantum network in place for certain protocols. In the mean time, specialised emulators have been developed to perform quantum computation, offering a possibility to explore verifcation numerically. Many emulators rely solely on the gate base model and do not allow for projective, mid-circuit measurements, a key component in most quantum verification protocols. In response, we present the Julia package, `RobustBlindVerification.jl` (RBV). RBV aims to emulate blind measurement based quantum computing (MBQC and UBQC) with interactive verfication in place. Quantum computation is emulated in RBV with the Julia package `QuEST.jl`, which in turn is a wrapper package, `QuEST_jll`, developed with `BinaryBuilder.jl` [@BinaryBuilder2022] to reproducibally call the `C` library, `QuEST` [@QuESTJones2019]. RBV is developed based on the work by @PRXQuantum.2.040302, herein referred to as 'the protocol'. The protocol is an example of robust blind quantum computation (RBVQC). It is a formal verification protocol with minimal overhead, beyond computational repetition and resistant to constant noise whilst mainting security. 
 
 # Statement of need
 
+Quantum computing appears to be on a course that leads to the need for efficient, secure and verifiable delegated access through some client-server relationship. The so-called client-server paradigm in use for current classical computation via cloud or high performance computing is the current analogue. Trust in the security, data usages, compuation and algorithm implementation is not a given for delegated QC. Many protocols have been implemented to address these issues. Advancements in verification has relied on verification assuming only uncorrelated noise [@Gheorghiu_2019], verification assuming reliable state preparation per qubit [@Kapourniotis2019nonadaptivefault], verification requiring more than one server and entanglement distillation [@MorimaeFujii2013] or verification with the assumption that a verifier has access to post-quantum cryptography unbeakable by a quantum prover  [@Mahadev2022ClassicalVerification]. Such results fall short of a robust verification protocol that does not suffer from costly process or are inflexible to noise. To respond to these shortcomings, the protocol addresses the problem for bounded-error quantum polynomial (BQP) computations [@PRXQuantum.2.040302]. It is known that the complexity class BQP can efficiently solve binary descision problems with quantum computers. Further, the protocol is robust to constant noise and maintain security.
 
-
-The rise of quantum computers gives rise to a variety of path dependent access points. Delegated quantum computing may likely be the dominant means most can use to access a quantum computer. One party's access may require secrecy in their computation. Another party, or the same, may need to verify results that computations are trustworty. Formal methods in quantum verification have been developed in theory. Many of these methods rely on quantum networks, mid-circuit measurement and qubit capabilities beyond the current near-term offering. In preparation for the aforementioned to become a reality, quanutm emulators offer cheap computational access in many toy problems, along with an ability to test theoretical results. High performance computation utilises multiple CPUs or GPUs to approach the arymptotic limit of classical computation in the emulation of the quantum computers.
-
-Most verification protocols rely on MBQC, due to the ability to separate computational components through the use of projective measurements. Herein lies a pain point. Many quantum computers today do not readily offer mid-circuit measurement, which is key to MBQC. Furth there are few MBQC emulators, and the ones that do exist (CITE Grapix, others ...) do not consider the paradigm of RBVQC. Specifically, there is no impelementation to separate the concerns of the a so-call "client" and "server", nor is there the usage of interactive computation between two parties. 
-
-RBV is to-date (and at the authors undersatnding) the only emulator which implements a simulated blind quantum computation, let alone the verification protool [cite]. Many quantum computing emulators also only focus on the gate-based model, whilst some implement MBQC [Cite] many do not allow for noise models beyond uncorrelated models, which do not utilise density matrix backends. Many emulators are also focused on python-based libraries [cite]. RBV is based in Julia and calls on a C library. QuEST is a remarkable library that is capable of use agnostically to the machinery accessing the library.
-
-What else .... 
-Cite    .....
-
-
+The protocol is designed such that verification is separated into the execution of rounds. The content of each round has its own requirements. After some specified number of rounds, a classical analysis is conducted and a result computed whether the server and/or the computation were to be trusted. Each round is either a round of the required computation, called a *computation* round, or the round is used to test the server, called a *test* round. The computation round is prepared and executed with UBQC, whereas the test rounds utilise a trapification strategy to conduct tests against the server. The test rounds use a strategy that splits some qubits into traps and some into dummies. The traps and the dummies are prepared according to some randomness, which though the UBQC will have determinsitic outcomes that can me tested. The outcome to these tests for each round are aggregated. The aggregate count of test rounds that passed the test must exceed a predetermined amount, based on parameters of the protocol. The mode repsonse for the computation round must be greater than half the number of computation rounds. The results of the test and computation rounds dictate the trust of the server. RBV implements the protocol under these requirements. For an in depth understanding see @@PRXQuantum.2.040302.
 
 # Core features and functionality
 
-The root QC paradigm of RVBQC is MBQC. Hence, a user, after initial implementations, is able to run their given MBQC circuit and obtain noiseless results. Further, without impelementing the multiple rounds of the verification protocol, the user can take that same circuit and run it blindly. The main feature of RBV is the implementation of the protocol (**CITE and reference in some consistent way**). Here the user is able to run the protocol with no noise, uncorrelated noise, and specific noise models. 
 
-RBV uses QuEST, as has been mentioned. Further to this, QuEST was compiled into the Julia package QuEST_jll. This was done with BinaryBuilder.jl, and so is completely reproducible and even accessible from the Julia general registry, if users wish to have direct access. The package was compile with the default CMake options from the QuEST GitHub repository (cite). Further, we created QuEST.jl to specifically call all of the functions in the QuEST header file, making QuEST.jl a completely wrapped package for users to emulate other functions at their desire. [**Needs to be completed and tested, or expression of limitations made**] Users are able to also call multiple threads if needed in these computations. [**What does this mean**] As QuEST is runnable in HPC a future Julia release will include this functionality.
+The root QC paradigm of RVBQC is MBQC. Hence, a user, after initial implementations, is able to run their given MBQC circuit and obtain noiseless results. Further, without impelementing the multiple rounds of the verification protocol, the user can take that same circuit and run it blindly (UBQC). The main feature of RBV is the implementation of the protocol. Here the user is able to run the protocol with no noise, uncorrelated noise, and specific noise models. 
+
 
 We present a basic tutorial on the usage of RBV along with targeted functions explained.
 
@@ -412,6 +399,7 @@ Now we come back to pushing the `client_meta_graph`,  which now holds all of the
 The result is a vector of rounds. Further explanation is found at the GitHub repository.
 
 **To Do**
+
 1. Finish QuEST.jl to acceptable degree
 2. Add and complete documentation to package
 3. Provide tutorials
@@ -423,7 +411,6 @@ The result is a vector of rounds. Further explanation is found at the GitHub rep
 
 # Acknowledgements
 
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+We acknowledge contributions from QSL, NQCC,...???
 
 # References
