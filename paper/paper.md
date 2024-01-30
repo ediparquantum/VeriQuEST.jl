@@ -1,4 +1,7 @@
 ---
+header-includes:
+    - \usepackage[utf8]{inputenc}   
+    - \DeclareUnicodeCharacter{03C0}{$\pi$}
 title: 'RobustBlindVerification.jl: Emulating quantum verification with QuEST'
 tags:
   - Julia
@@ -13,7 +16,7 @@ authors:
   - name: Jonathan Miller
     orcid: 0000-0002-5836-1736
     equal-contrib: true
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
+    affiliation: 1
   - name: Author Without ORCID
     equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
     affiliation: 2
@@ -25,13 +28,13 @@ authors:
     surname: Beethoven
     affiliation: 3
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
+ - name: University of Edinburgh School of Informatics, United Kingdom
    index: 1
  - name: Institution Name, Country
    index: 2
  - name: Independent Researcher, Country
    index: 3
-date: 13 August 2017
+date: 29 Jan 2024
 bibliography: paper.bib
 
 # Optional fields if submitting to a AAS journal too, see this blog post:
@@ -45,57 +48,33 @@ aas-journal: Astrophysical Journal <- The name of the AAS journal.
 
 Utilising remote computation resources when local availability does not meet the users needs is currently in use for classical and cloud computing. It is likely that quantum computing will also be accessed and used as such. It is not unreasonable that computations, data and algorithms run on powerful quantum servers be confidential, free from harm and verifiable. Hence, delegated quantum computing is an important pathway to extending QC usefulness. Security protocols for blind and verifiable QC do exist and it has been shown that bounded-error quantum polynomial (BQP) computations can be verified with little overhead, other than computational repetitions, are composable and secure with toleration to constant noise, called Robust Blind Verified Quantum Computing (RBVQC). To emulate these known results, we introduce the Julia package, `RobustBlindVerification.jl` (RBV). RBV is a quantum verification emulator using Julia and the C library `QuEST` (for QC emulation and noise modelling). To explore the theoretical nature of RBVQC numerically, this software implements measurement based quantum computing (MBQC), universal blind MBQC (UBQC) and an RBVQC protocol.
 
-
-
-
-Refine and proof ... [@PRXQuantum.2.040302]
-
-
-
-
-
-
+**Refine and proof ... [@PRXQuantum.2.040302]**
 
 
 # Statement of need
 
-The rise of quantum computers gives rise to a variety of path dependent access points to such computers. Delegated quantum computing may likely be the dominant means most can access a quantum computer. One party's access may require secrecy in their computation. Another party, or the same, may need to verify results or computations are trustworty. Formal methods in quantum verification have been developed in theory. Many of these methods rely on quantum networks, mid-circuit measurement and qubit capabilities beyond the current near-term offering. In preparation for the aforementioned to become reality, quanutm emulators offer cheap computational access in many toy problems, along with an ability to test theoretical results.
+
+
+The rise of quantum computers gives rise to a variety of path dependent access points. Delegated quantum computing may likely be the dominant means most can use to access a quantum computer. One party's access may require secrecy in their computation. Another party, or the same, may need to verify results that computations are trustworty. Formal methods in quantum verification have been developed in theory. Many of these methods rely on quantum networks, mid-circuit measurement and qubit capabilities beyond the current near-term offering. In preparation for the aforementioned to become a reality, quanutm emulators offer cheap computational access in many toy problems, along with an ability to test theoretical results. High performance computation utilises multiple CPUs or GPUs to approach the arymptotic limit of classical computation in the emulation of the quantum computers.
+
+Most verification protocols rely on MBQC, due to the ability to separate computational components through the use of projective measurements. Herein lies a pain point. Many quantum computers today do not readily offer mid-circuit measurement, which is key to MBQC. Furth there are few MBQC emulators, and the ones that do exist (CITE Grapix, others ...) do not consider the paradigm of RBVQC. Specifically, there is no impelementation to separate the concerns of the a so-call "client" and "server", nor is there the usage of interactive computation between two parties. 
 
 RBV is to-date (and at the authors undersatnding) the only emulator which implements a simulated blind quantum computation, let alone the verification protool [cite]. Many quantum computing emulators also only focus on the gate-based model, whilst some implement MBQC [Cite] many do not allow for noise models beyond uncorrelated models, which do not utilise density matrix backends. Many emulators are also focused on python-based libraries [cite]. RBV is based in Julia and calls on a C library. QuEST is a remarkable library that is capable of use agnostically to the machinery accessing the library.
 
 What else .... 
 Cite    .....
 
-# State of the field
 
-Verification is becoming a core component in the quatnum computing stack, in addition to confirming computation is done as expected, verification can act to determine the noisyness of a give n machine. 
-
-Add more here ...
 
 # Core features and functionality
- 
-Core features:
 
-1. Run MBQC
-2. Run UBQC
-3. Run Verification noiseless
-4. Run Verification with server that changes the measurement angle (malicious)
-5. Run Verification with suite of standard decoherence models with Kraus maps and density matrix mixing
-6. Run test rounds on random graphs for general analysis
-7. Should be useful in multithreading/cores
-8. Could be used with GPU with certain algorithms
-9. ...
-10. Uses Julia's multiple dispatch to implement different noise models efficiently
-11. Should have a generic idea of noise if user wants to implement their own
+The root QC paradigm of RVBQC is MBQC. Hence, a user, after initial implementations, is able to run their given MBQC circuit and obtain noiseless results. Further, without impelementing the multiple rounds of the verification protocol, the user can take that same circuit and run it blindly. The main feature of RBV is the implementation of the protocol (**CITE and reference in some consistent way**). Here the user is able to run the protocol with no noise, uncorrelated noise, and specific noise models. 
 
-# Examples
+RBV uses QuEST, as has been mentioned. Further to this, QuEST was compiled into the Julia package QuEST_jll. This was done with BinaryBuilder.jl, and so is completely reproducible and even accessible from the Julia general registry, if users wish to have direct access. The package was compile with the default CMake options from the QuEST GitHub repository (cite). Further, we created QuEST.jl to specifically call all of the functions in the QuEST header file, making QuEST.jl a completely wrapped package for users to emulate other functions at their desire. [**Needs to be completed and tested, or expression of limitations made**] Users are able to also call multiple threads if needed in these computations. [**What does this mean**] As QuEST is runnable in HPC a future Julia release will include this functionality.
 
-1. Present examples using simple graphs
-2. Present Grover MBQC as example
-3. Present Rgover in verification
-4. Present Random graphs in noise expression
+We present a basic tutorial on the usage of RBV along with targeted functions explained.
 
-Activate the Julia project of the local directory location
+To begin, if not already done so, download and install Julia in your preferred method. Though lately JuliaUP is recommended. Then activate the Julia project of the local directory location
 
 ```julia
 using Pkg; Pkg.activate(".")
@@ -430,30 +409,17 @@ Now we come back to pushing the `client_meta_graph`,  which now holds all of the
     push!(round_graphs,client_meta_graph)
 ```
 
+The result is a vector of rounds. Further explanation is found at the GitHub repository.
 
-# Citations
+**To Do**
+1. Finish QuEST.jl to acceptable degree
+2. Add and complete documentation to package
+3. Provide tutorials
+4. Get QuEST.jl linked on QuEST homepage
+5. Edit paper
+6. Get checklist for JOSS
+7. Complete checklist
 
-Leave here for reference
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
 
 # Acknowledgements
 
