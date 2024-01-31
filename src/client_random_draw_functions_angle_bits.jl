@@ -6,18 +6,29 @@
 #           : number and angles
 #           :
 ##################################################################
-
-# Draw random bit 0 or 1
+"""
+    Draw random bit 0 or 1
+"""
 draw_bit()::Int64 = rand([0,1])
 
-# Draw random interger between 0 and 7
+"""
+    Draw random interger between 0 and 7
+"""
 rand_k_0_7()::Float64 = rand(0:7)
 
-# For draw θ a multiple of kπ/4, k ∈ 0..7
+"""
+    For draw θ a multiple of kπ/4, k ∈ 0..7
+"""
 draw_θᵥ()::Float64 = rand_k_0_7()*π/4.0
 
-# For draw random bits for use in verification
+"""
+    Draw random bit 0 or 1 for trap
+"""
 draw_rᵥ()::Int64 = draw_bit()
+
+"""
+    Draw random bit 0 or 1 for dummy
+"""
 draw_dᵥ()::Int64 = draw_bit()
 
 

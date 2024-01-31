@@ -1,16 +1,16 @@
-using QuESTMbqcBqpVerification
+using RobustBlindVerification
 using Documenter
 
-DocMeta.setdocmeta!(QuESTMbqcBqpVerification, :DocTestSetup, :(using QuESTMbqcBqpVerification); recursive=true)
+DocMeta.setdocmeta!(RobustBlindVerification, :DocTestSetup, :(using RobustBlindVerification); recursive=true)
 
 makedocs(;
-    modules=[QuESTMbqcBqpVerification],
+    modules=[RobustBlindVerification],
     authors="Jonathan Miller",
-    repo="https://github.com/fieldofnodes/QuESTMbqcBqpVerification.jl/blob/{commit}{path}#{line}",
-    sitename="QuESTMbqcBqpVerification.jl",
+    repo="https://github.com/fieldofnodes/RobustBlindVerification.jl/blob/{commit}{path}#{line}",
+    sitename="RobustBlindVerification.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://fieldofnodes.github.io/QuESTMbqcBqpVerification.jl",
+        canonical="https://fieldofnodes.github.io/RobustBlindVerification.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/fieldofnodes/QuESTMbqcBqpVerification.jl",
+    repo="github.com/fieldofnodes/RobustBlindVerification.jl",
     devbranch="main",
 )

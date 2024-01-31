@@ -23,7 +23,8 @@ end
 
 
 
-"""
+
+#=
 Computation of δᵥ
 Cases
 1. Round ≡ Test ∩ Qubit ≡ Dummy
@@ -34,7 +35,7 @@ Cases
     → δᵥ = ϕᵥ + (θᵥ + xᵥπ) + rᵥπ
 4. Roiund ≡ Computation ∩ Qubiut ∉ Input set
     → δᵥ = ϕᵥ′ + θᵥ + rᵥπ
-"""
+=#
 
 
 
