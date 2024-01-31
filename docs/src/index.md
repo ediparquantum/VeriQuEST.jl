@@ -1,4 +1,4 @@
-
+Docs for package
 ```@docs
     InputQubits
 ```
@@ -149,4 +149,3 @@ draw_dᵥ()::Int64
 ```@docs
     compute_angle_δᵥ(::MBQC,::Union{NoInputQubits,InputQubits},ϕ,Sx,Sz)
 ```
-
