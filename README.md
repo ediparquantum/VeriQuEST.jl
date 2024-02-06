@@ -6,8 +6,11 @@
 [![Build Status](https://travis-ci.com/fieldofnodes/RobustBlindVerification.jl.svg?branch=main)](https://travis-ci.com/fieldofnodes/RobustBlindVerification.jl)
 [![Coverage](https://codecov.io/gh/fieldofnodes/RobustBlindVerification.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/fieldofnodes/RobustBlindVerification.jl)
 
-## Use branch: `software_user_exploration` to explore the following code.
+### Use branch: `software_user_exploration` to explore the following code.
 
+# Quantum emulation
+
+Quantum computation is an exciting field. There are many research institutes and companies working hard to push the state of the art into the era beyond the noisy intermediate-scale quantum (NISQ) era. This package is designed to emulate quantum computation classically. Specifically, `RobustBlindVerification.jl` is an emulator of measurement based quantum computation (MBQC).
 
 Implementation of protocol 1 from Leichtle et al ([Verifying BQP Computations on Noisy Devices with Minimal Overhead](https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.2.040302)).
 
