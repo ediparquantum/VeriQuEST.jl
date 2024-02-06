@@ -45,9 +45,9 @@ jobs:
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
           using Documenter: DocMeta, doctest
-          using QuESTMbqcBqpVerification
-          DocMeta.setdocmeta!(QuESTMbqcBqpVerification, :DocTestSetup, :(using QuESTMbqcBqpVerification); recursive=true)
-          doctest(QuESTMbqcBqpVerification)
+          using RobustBlindVerification
+          DocMeta.setdocmeta!(RobustBlindVerification, :DocTestSetup, :(using RobustBlindVerification); recursive=true)
+          doctest(RobustBlindVerification)
           include("docs/make.jl")'
       after_success: skip
 after_success:
