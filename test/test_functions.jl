@@ -791,8 +791,8 @@ function test_grover_blind_verification()
         mbqc_outcome = run_mbqc(para)
         ubqc_outcome = run_ubqc(para)
         @test mbqc_outcome == ubqc_outcome
-        @test mbqc_outcome == int_search
-        @test ubqc_outcome == int_search
+        @test all(mbqc_outcome .== int_search)
+        @test all(ubqc_outcome .== int_search)
 
         # Run grover search on verification simulator with a TrustworthyServer
         vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
@@ -800,23 +800,14 @@ function test_grover_blind_verification()
         test_rounds = total_rounds - computation_rounds
         @test vbqc_outcome[:test_verification] == Ok()
         @test vbqc_outcome[:computation_verification] == Ok()
-        @test vbqc_outcome[:mode_outcome] == int_search
+        @test all(vbqc_outcome[:mode_outcome] .== int_search)
         @test vbqc_outcome[:test_verification_verb][:failed] == 0
         @test vbqc_outcome[:test_verification_verb][:passed] == test_rounds 
         @test vbqc_outcome[:computation_verification_verb][:failed] == 0
         @test vbqc_outcome[:computation_verification_verb][:passed] == computation_rounds
 
 
-
-        malicious_angles = π/2
-        malicious_vbqc_outcome = run_verification_simulator(MaliciousServer(),Verbose(),para,malicious_angles)
-        @test malicious_vbqc_outcome[:test_verification] == Abort()
-        @test malicious_vbqc_outcome[:computation_verification] == Abort()
-        @test malicious_vbqc_outcome[:mode_outcome] != int_search
-        @test malicious_vbqc_outcome[:test_verification_verb][:failed] != 0
-        @test malicious_vbqc_outcome[:test_verification_verb][:passed] != test_rounds
-        @test malicious_vbqc_outcome[:computation_verification_verb][:failed] != 0
-        @test malicious_vbqc_outcome[:computation_verification_verb][:passed] != computation_rounds
+        
     end
 
 

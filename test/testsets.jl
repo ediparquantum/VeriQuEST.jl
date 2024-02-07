@@ -146,7 +146,6 @@ end
 end
 
 @testset "test_grover_blind_verification()" begin
-
     test_grover_blind_verification()
 end
 
