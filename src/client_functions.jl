@@ -1,6 +1,6 @@
 
 """
-create_quantum_env(client::Client)
+    create_quantum_env(client::Client)
 
 Create a new quantum environment using the QuEST environment creation function.
 
@@ -20,7 +20,7 @@ create_quantum_env(::Client) = createQuESTEnv()
 
 
 """
-create_quantum_state(client::Client, state::StateVector, quantum_env, num_qubits)
+    create_quantum_state(client::Client, state::StateVector, quantum_env, num_qubits)
 
 Create a new quantum state as a state vector using the QuEST function `createQureg`.
 

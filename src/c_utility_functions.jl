@@ -8,7 +8,7 @@
 ##################################################################
 
 """
-c_shift_index(n::Int)
+    c_shift_index(n::Int)
 
 Compute the shifted index `n-1` for circular indexing.
 
@@ -34,7 +34,7 @@ end
 
 
 """
-c_iterator(N)
+    c_iterator(N)
 
 Create a C based index iterator that generates numbers from 0 to `N-1`.
 

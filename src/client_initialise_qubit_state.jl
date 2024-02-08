@@ -1,34 +1,34 @@
-
-###### Initialise qubits
-
 """
-init_plus_phase_state!(qureg,qᵢ,φᵢ)
+    init_plus_phase_state!(phase::Phase, qureg, qᵢ, φᵢ)
 
-    Applies a Hadamard gate (|+⟩) then a phase rotation gate (|+_ϕ⟩)
-    - ψ: State vector or density matrix
-    - qᵢ: Qubit to be applied gates to, index must be 1 based as c_shift_index is called.
-    - φᵢ: Angle for phase shift
+This function initializes a quantum state to a superposition state (|+⟩ state) with a specified phase. 
+It first applies a Hadamard gate to the qubit, putting it into a superposition state. 
+Then it applies a Z rotation to the qubit, adding the specified phase.
+
+# Arguments
+- `phase::Phase`: The phase object.
+- `qureg`: The quantum register containing the qubit.
+- `qᵢ`: The index of the qubit in the quantum register.
+- `φᵢ`: The phase to be added to the qubit.
+
+# Examples
+```julia
+phase = Phase()
+qureg = createQureg(1, env)
+qᵢ = 1
+φᵢ = π/2
+init_plus_phase_state!(phase, qureg, qᵢ, φᵢ)
+```
 """
 function init_plus_phase_state!(::Phase,qureg,qᵢ,φᵢ)
-    #qᵢ = c_shift_index(qᵢ)
     hadamard(qureg,qᵢ)
     rotateZ(qureg,qᵢ,φᵢ)
-    #phaseShift(qureg,qᵢ,φᵢ)
 end
 
 
 
-"""
-    plusState(qureg, qᵢ)
 
-    Applies a Hadamard gate (|+⟩) to the specified qubit.
-
-    # Arguments
-    - `qureg`: State vector or density matrix.
-    - `qᵢ`: Qubit index to which the Hadamard gate is applied. Index must be 1-based, as `c_shift_index` is called.
-"""
 function init_plus_phase_state!(::NoPhase,qureg,qᵢ)
-    #qᵢ = c_shift_index(qᵢ)
     hadamard(qureg,qᵢ)
 end
 
