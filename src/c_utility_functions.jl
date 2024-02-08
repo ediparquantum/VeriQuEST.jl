@@ -8,24 +8,24 @@
 ##################################################################
 
 """
-    c_shift_index(n::Int)
+c_shift_index(n::Int)
 
-    Compute the shifted index `n-1` for circular indexing.
+Compute the shifted index `n-1` for circular indexing.
 
-    # Arguments
-    
-    - `n::Int`: The input index.
+# Arguments
 
-    # Returns
-    The shifted index `n-1` for circular indexing.
+- `n::Int`: The input index.
 
-    # Examples
+# Returns
+The shifted index `n-1` for circular indexing.
 
-    ```julia
-    # Compute the shifted index
-    n = 3
-    shifted_index = c_shift_index(n)
-    ```
+# Examples
+
+```julia
+# Compute the shifted index
+n = 3
+shifted_index = c_shift_index(n)
+```
 
 """
 function c_shift_index(n)
@@ -34,22 +34,25 @@ end
 
 
 """
-    c_iterator(N)
+c_iterator(N)
 
-    Create a circular iterator that generates numbers from 0 to `N-1`.
+Create a circular iterator that generates numbers from 0 to `N-1`.
 
-    # Arguments
-    - `N`: The upper limit for the circular iterator.
+# Arguments
 
-    # Returns
-    A circular iterator that generates numbers from 0 to `N-1`.
+- `N`: The upper limit for the circular iterator.
 
-    # Examples
-    ```julia
-    # Create a circular iterator
-    N = 5
-    iterator = c_iterator(N)
-    ```
+# Returns
+
+A circular iterator that generates numbers from 0 to `N-1`.
+
+# Examples
+
+```julia
+# Create a circular iterator
+N = 5
+iterator = c_iterator(N)
+```
 
 """
 function c_iterator(N)
