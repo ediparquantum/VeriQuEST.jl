@@ -36,7 +36,7 @@ end
 """
 c_iterator(N)
 
-Create a circular iterator that generates numbers from 0 to `N-1`.
+Create a C based index iterator that generates numbers from 0 to `N-1`.
 
 # Arguments
 
