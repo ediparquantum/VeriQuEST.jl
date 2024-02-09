@@ -14,6 +14,25 @@
 
 
 
+"""
+    update_ϕ(ϕ, Sx, Sz)
+
+Base function to update the angle `ϕ` based on the values of `Sx` and `Sz`.
+
+# Arguments
+- `ϕ`: The current angle.
+- `Sx`: The value of Sx.
+- `Sz`: An array of values representing Sz.
+
+# Returns
+- The updated angle.
+
+# Examples
+```julia
+julia> update_ϕ(0, 0, [0, 0, 0])
+0
+```
+"""
 # Base function to update angle 
 function update_ϕ(ϕ,Sx,Sz)
     #return (-1)^Sx*ϕ + π*sum(Sz)
@@ -42,9 +61,26 @@ Cases
 
 """
 Computation of δᵥ
-Case
+
+This function computes the angle δᵥ based on the given parameters.
+
+Arguments:
+- ::TestRound: The test round object.
+- ::DummyQubit: The dummy qubit object.
+- θᵥ: The input angle.
+
+Returns:
+- δᵥ: The computed angle δᵥ.
+
+Case:
 1. Round ≡ Test ∩ Qubit ≡ Dummy
     → δᵥ = {kπ/r | k ∼ U(0..7)}
+
+# Examples
+```julia    
+julia> compute_angle_δᵥ(TestRound(),DummyQubit(),0)
+0
+```
 """
 function compute_angle_δᵥ(::TestRound,::DummyQubit,θᵥ)
     return θᵥ
@@ -52,10 +88,29 @@ end
 
 
 """
+    compute_angle_δᵥ(::TestRound, ::TrapQubit, θᵥ, rᵥ)
+
+Compute the angle δᵥ for the case where the round is a test round and the qubit is a trap qubit.
+
 Computation of δᵥ
 Case
 2. Round ≡ Test ∩ Qubit ≡ Trap
     → δᵥ = θᵥ + rᵥπ
+
+# Arguments
+- `::TestRound`: The type representing a test round.
+- `::TrapQubit`: The type representing a trap qubit.
+- `θᵥ`: The angle θᵥ.
+- `rᵥ`: The coefficient rᵥ.
+
+# Returns
+The computed angle δᵥ.
+
+# Example
+```julia
+julia> compute_angle_δᵥ(TestRound(), TrapQubit(), 0, 0)
+0
+```
 """
 function compute_angle_δᵥ(::TestRound,::TrapQubit,θᵥ,rᵥ)
     return θᵥ + rᵥ*π
@@ -63,11 +118,34 @@ end
 
 
 
+
 """
 Computation of δᵥ
+
+This function computes the value of δᵥ based on the given parameters.
+
 Case
 3. Round ≡ Computation ∩ Qubit ∈ Input set
     → δᵥ = ϕᵥ + (θᵥ + xᵥπ) + rᵥπ
+
+Arguments:
+- `::ComputationRound`: The computation round.
+- `::InputQubits`: The input qubits.
+- `ϕ`: The value of ϕ.
+- `Sx`: The value of Sx.
+- `Sz`: The value of Sz.
+- `θᵥ`: The value of θᵥ.
+- `rᵥ`: The value of rᵥ.
+- `xᵥ`: The value of xᵥ.
+
+Returns:
+- `δᵥ`: The computed value of δᵥ.
+
+# Examples
+```julia
+julia> compute_angle_δᵥ(ComputationRound(),InputQubits(),0,0,[0,0,0],0,0,0)
+0
+```
 """
 function compute_angle_δᵥ(::ComputationRound,::InputQubits,ϕ,Sx,Sz,θᵥ,rᵥ,xᵥ)
     ϕᵥ = update_ϕ(ϕ,Sx,Sz)
@@ -78,11 +156,34 @@ end
 
 
 
+
 """
+    compute_angle_δᵥ(::ComputationRound,::NoInputQubits,ϕ,Sx,Sz,θᵥ,rᵥ)
+
+Compute the angle δᵥ based on the given parameters.
+
 Computation of δᵥ
 Case
 4. Round ≡ Computation ∩ Qubit ∉ Input set
     → δᵥ = ϕᵥ′ + θᵥ + rᵥπ
+
+# Arguments
+- `::ComputationRound`: The computation round.
+- `::NoInputQubits`: The number of input qubits.
+- `ϕ`: The value of ϕ.
+- `Sx`: The value of Sx.
+- `Sz`: The value of Sz.
+- `θᵥ`: The value of θᵥ.
+- `rᵥ`: The value of rᵥ.
+
+# Returns
+- `δᵥ`: The computed angle δᵥ.
+
+# Example
+```julia
+julia> compute_angle_δᵥ(ComputationRound(),NoInputQubits(),0,0,[0,0,0],0,0)
+0
+```
 """
 function compute_angle_δᵥ(::ComputationRound,::NoInputQubits,ϕ,Sx,Sz,θᵥ,rᵥ)
     ϕᵥ = update_ϕ(ϕ,Sx,Sz)
@@ -90,8 +191,29 @@ function compute_angle_δᵥ(::ComputationRound,::NoInputQubits,ϕ,Sx,Sz,θᵥ,r
     return δᵥ
 end
 
+
+
+
 """
-    MBQC compute updated angle
+    compute_angle_δᵥ(mbqc, qubits, ϕ, Sx, Sz)
+
+Compute the angle δᵥ for the given MBQC, qubits, ϕ, Sx, and Sz.
+
+# Arguments
+- `mbqc`: The MBQC object.
+- `qubits`: The qubits object, either `NoInputQubits` or `InputQubits`.
+- `ϕ`: The angle ϕ.
+- `Sx`: The Sx value.
+- `Sz`: The Sz value.
+
+# Returns
+- The updated angle δᵥ.
+
+# Example
+```julia
+julia> compute_angle_δᵥ(MBQC(), NoInputQubits(), 0, 0, [0, 0, 0])
+0
+```
 """
 function compute_angle_δᵥ(::MBQC,::Union{NoInputQubits,InputQubits},ϕ,Sx,Sz)
     return update_ϕ(ϕ,Sx,Sz)
