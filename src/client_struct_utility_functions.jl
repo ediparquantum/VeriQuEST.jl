@@ -353,6 +353,22 @@ end
 
 
 
+"""
+    get_graph(resource::MBQCResourceState)
+
+Get the graph associated with the given `MBQCResourceState`.
+
+# Arguments
+- `resource::MBQCResourceState`: The resource state object.
+
+# Returns
+- The graph associated with the resource state.
+
+# Examples
+```julia
+graph = get_graph(resource) # Returns the graph associated with the resource
+```
+"""
 function get_graph(resource::MBQCResourceState)
     return resource.graph.graph
 end
@@ -360,6 +376,21 @@ end
 
 
 
+"""
+    get_flow(flow_type::BackwardFlow, resource::MBQCResourceState)
+
+Get the backward flow of a given resource.
+
+# Arguments
+- `flow_type::BackwardFlow`: The type of flow to retrieve.
+- `resource::MBQCResourceState`: The resource state to retrieve the flow from.
+
+# Returns
+The backward flow of the resource.
+
+# Examples
+```julia
+"""
 function get_flow(::BackwardFlow,resource::MBQCResourceState)
     return resource.flow.backward_flow
 end
@@ -368,6 +399,21 @@ end
 
 
 
+"""
+    get_flow(flow_type, resource)
+
+Get the flow of a given resource.
+
+# Arguments
+- `flow_type`: The type of flow (e.g., `ForwardFlow`, `BackwardFlow`).
+- `resource`: The resource state.
+
+# Returns
+The flow of the resource.
+
+# Examples
+```julia
+"""
 function get_flow(::ForwardFlow,resource::MBQCResourceState)
     return resource.flow.forward_flow
 end
@@ -377,6 +423,29 @@ end
 
 
 
+"""
+    get_verified_flow_output(T, resource, vertex)
+
+Get the verified flow output for a given vertex in a MBQC resource state.
+
+# Arguments
+- `T`: The type of flow, which must be either `ForwardFlow` or `BackwardFlow`.
+- `resource`: The MBQC resource state.
+- `vertex`: The vertex for which to get the verified flow output.
+
+# Returns
+- If the flow output is a valid vertex in the neighborhood of the given vertex, it returns the verified flow output.
+- If the flow output is `Nothing`, it returns `nothing`.
+- If the flow type is neither `ForwardFlow` nor `BackwardFlow`, it throws an error.
+
+# Examples
+```julia
+T = ForwardFlow()
+resource = MBQCResourceState(...)
+vertex = 1
+output = get_verified_flow_output(T, resource, vertex) # Returns the verified flow output for the given vertex
+```
+"""
 function get_verified_flow_output(T,resource::MBQCResourceState,vertex::Int64)
     flow = get_flow(T,resource)
     neighs = get_vertex_neighbours(resource,vertex)
@@ -409,6 +478,28 @@ function get_verified_flow_output(T,resource::MBQCResourceState,vertex::Int64)
     end
 end
 
+
+
+
+"""
+    get_verified_flow(T, resource::MBQCResourceState)
+
+Create a function that returns the verified flow output for a given vertex.
+
+# Arguments
+- `T`: The flow graph.
+- `resource`: The MBQC resource state.
+
+# Returns
+A function `f` that takes a vertex as input and returns the verified flow output.
+
+# Example
+```julia
+T = ForwardFlow()
+resource = MBQCResourceState(...)
+f = get_verified_flow(T, resource) # Returns a function that takes a vertex as input and returns the verified flow output
+```
+"""
 function get_verified_flow(T,resource::MBQCResourceState)
     f(vertex) = get_verified_flow_output(T,resource,vertex)
     return f
@@ -416,16 +507,67 @@ end
 
 
 
+"""
+    get_input_size(resource::MBQCResourceState)::Int64
+
+Get the size of the input for the given `MBQCResourceState`.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+
+# Returns
+- `Int64`: The size of the input.
+
+# Examples
+```julia
+size = get_input_size(resource) # Returns the size of the input
+```
+"""
 function get_input_size(resource::MBQCResourceState)::Int64
     return length(resource.graph.input.indices)
 end
 
+
+
+
+"""
+    get_output_size(resource::MBQCResourceState)::Int64
+
+Get the size of the output for a given `MBQCResourceState`.
+
+# Arguments
+- `resource::MBQCResourceState`: The resource state for which to get the output size.
+
+# Returns
+- `Int64`: The size of the output.
+
+# Examples
+```julia
+size = get_output_size(resource) # Returns the size of the output
+```
+"""
 function get_output_size(resource::MBQCResourceState)::Int64
     return length(resource.graph.output.indices)
 end
 
 
 
+"""
+    get_minimum_vertex_index_flow(resource::MBQCResourceState)
+
+Get the minimum vertex index flow for a given `MBQCResourceState`.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+
+# Returns
+- `Int64`: The minimum vertex index flow.
+
+# Example
+```julia
+min_vertex = get_minimum_vertex_index_flow(resource) # Returns the minimum vertex index flow
+```
+"""
 function get_minimum_vertex_index_flow(resource::MBQCResourceState)::Int64
     min_num_vertices_to_skip = get_input_size(resource)
     # Return next vertex index after size of input
@@ -434,6 +576,23 @@ end
 
 
 
+
+"""
+    get_size_measurement_vector(resource::MBQCResourceState)::Int64
+
+Get the size of the measurement vector for a given `MBQCResourceState`.
+
+# Arguments
+- `resource::MBQCResourceState`: The resource state for which to calculate the measurement vector size.
+
+# Returns
+- `Int64`: The size of the measurement vector.
+
+# Examples
+```julia
+size = get_size_measurement_vector(resource) # Returns the size of the measurement vector
+```
+"""
 function get_size_measurement_vector(resource::MBQCResourceState)::Int64
     min_num_vertices_to_stop_before = get_output_size(resource)
     num_vertices = get_number_vertices(resource)
@@ -441,6 +600,26 @@ function get_size_measurement_vector(resource::MBQCResourceState)::Int64
     return num_vertices - min_num_vertices_to_stop_before
 end
 
+
+
+
+
+"""
+    get_measurement_outcome_iterator(resource::MBQCResourceState)
+
+Returns an iterator that generates indices for measuring the vertices of a MBQC resource state.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+
+# Returns
+An iterator that generates indices for measuring the vertices of the resource state.
+
+# Example
+```julia
+iterator = get_measurement_outcome_iterator(resource) # Returns an iterator that generates indices for measuring the vertices of the resource
+```
+"""
 function get_measurement_outcome_iterator(resource::MBQCResourceState)::Base.OneTo{Int64}
     total_vertices_to_measure = get_size_measurement_vector(resource)
     total_vertices_to_measure -=1
@@ -449,6 +628,22 @@ end
 
 
 
+"""
+    get_stop_start_vertices(resource::MBQCResourceState)
+
+Get the start and stop vertices for a given `MBQCResourceState`.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+
+# Returns
+- `Tuple{Int64, Int64}`: A tuple containing the start and stop vertices.
+
+# Example
+```julia
+start, stop = get_stop_start_vertices(resource) # Returns the start and stop vertices
+```
+"""
 function get_stop_start_vertices(resource::MBQCResourceState)::Tuple{Int64,Int64}
     start_vertex = get_minimum_vertex_index_flow(resource)
     stop_vertex = get_size_measurement_vector(resource)
@@ -457,6 +652,22 @@ end
 
 
 
+"""
+    init_outcomes_vector(resource::MBQCResourceState)
+
+Initialize the outcomes vector for a given MBQC resource state.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+
+# Returns
+- `outcomes_vec::Vector`: The initialized outcomes vector.
+
+# Example
+```julia
+outcomes_vec = init_outcomes_vector(resource) # Returns the initialized outcomes vector
+```
+"""
 function init_outcomes_vector(resource::MBQCResourceState)::Vector
     max_index_to_be_measured = get_size_measurement_vector(resource)    
     input_values = get_input_values(resource)
@@ -468,19 +679,107 @@ function init_outcomes_vector(resource::MBQCResourceState)::Vector
     return outcomes_vec
 end
 
-function is_vertex_in_graph(resource::MBQCResourceState,vertex::Int64)
+
+
+
+"""
+    is_vertex_in_graph(resource::MBQCResourceState, vertex::Int64)
+
+Check if a vertex is present in a graph.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+- `vertex::Int64`: The vertex to check.
+
+# Returns
+- `Bool`: `true` if the vertex is present in the graph, `false` otherwise.
+
+# Example
+```julia
+is_vertex_in_graph(resource, vertex) # Returns true if the vertex is present in the graph, false otherwise
+```
+"""
+function is_vertex_in_graph(resource::MBQCResourceState, vertex::Int64)
     verts = get_vertex_iterator(resource)
     vertex ∈ verts
 end
 
 
-function is_vertex_in_graph(resource::MBQCResourceState,novertex::Nothing)
+
+
+
+"""
+    is_vertex_in_graph(resource::MBQCResourceState, novertex::Nothing)
+
+Check if a vertex is present in the graph.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+- `novertex::Nothing`: The vertex to check.
+
+# Returns
+- `true` if the vertex is present in the graph, `false` otherwise.
+
+# Example
+```julia
+is_vertex_in_graph(resource, novertex) # Returns true if the vertex is present in the graph, false otherwise
+```
+"""
+function is_vertex_in_graph(resource::MBQCResourceState, novertex::Nothing)
     return false
 end
 
 
 
-function assert_flow(::ForwardFlow,resource::MBQCResourceState,vertex::Int64)
+"""
+    assert_flow(flow_type, resource, vertex)
+
+Check the validity of a flow in a resource graph.
+
+Arguments:
+- `flow_type`: The type of flow to assert (e.g., `ForwardFlow`, `BackwardFlow`).
+- `resource`: The resource state representing the graph.
+- `vertex`: The vertex to check the flow for.
+
+This function checks the following conditions for the given flow:
+1. The new vertex obtained by applying the flow function to the input vertex is in the graph.
+2. The input vertex is in the neighborhood of the new vertex.
+3. All vertices in the neighborhood of the new vertex are greater than or equal to the input vertex.
+
+# Examples
+```julia
+assert_flow(ForwardFlow(), resource, vertex) # Checks the validity of the forward flow
+assert_flow(BackwardFlow(), resource, vertex) # Checks the validity of the backward flow
+```
+"""
+function assert_flow(::Type{<:AbstractFlow}, resource::MBQCResourceState, vertex::Int64)
+    # function body
+end
+
+
+
+"""
+    assert_flow(flow_type, resource, vertex)
+
+Check the validity of a flow in a resource graph.
+
+Arguments:
+- `flow_type`: The type of flow to be checked.
+- `resource`: The resource state representing the graph.
+- `vertex`: The vertex to be checked.
+
+This function performs several assertions to verify the flow:
+- Checks if the flow of the given vertex is in the vertex set of the graph.
+- Checks if the given vertex is in the neighborhood of the flow of the vertex.
+- Checks if the given vertex is less than or equal to the flow of the vertex.
+- Checks if all vertices in the neighborhood of the flow of the vertex are greater than or equal to the vertex.
+
+# Examples
+```julia
+assert_flow(ForwardFlow(), resource, vertex) # Checks the validity of the forward flow
+```
+"""
+function assert_flow(::ForwardFlow, resource::MBQCResourceState, vertex::Int64)
     T = ForwardFlow()
     flow = get_flow(T,resource)
     new_vertex = flow(vertex)    
@@ -493,6 +792,29 @@ function assert_flow(::ForwardFlow,resource::MBQCResourceState,vertex::Int64)
 end
 
 
+
+"""
+    assert_flow(::BackwardFlow, resource::MBQCResourceState, vertex::Int64)
+
+Asserts the properties of a backward flow in a MBQC resource state.
+
+Arguments:
+- `::BackwardFlow`: The backward flow type.
+- `resource::MBQCResourceState`: The MBQC resource state.
+- `vertex::Int64`: The vertex to be checked.
+
+The function checks the following properties of the backward flow:
+1. The flow of the given vertex is in the vertex set of the resource state.
+2. The given vertex is in the neighborhood of the flow of the given vertex.
+3. The given vertex is less than or equal to all vertices in the neighborhood of the flow of the given vertex.
+
+Throws an error with an appropriate message if any of the properties are violated.
+
+# Examples
+```julia
+assert_flow(BackwardFlow(), resource, vertex) # Asserts the properties of the backward flow
+```
+"""
 function assert_flow(::BackwardFlow,resource::MBQCResourceState,vertex::Int64)
     T = BackwardFlow()
     flow = get_flow(T,resource)
@@ -507,6 +829,29 @@ end
 
 
 
+"""
+    get_corrections_one_neighbourhood_two_vertex_graph(resource::MBQCResourceState, vertex::Int64)
+
+This function calculates the corrections needed for a two-vertex graph in a one-neighbourhood MBQC resource state.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+- `vertex::Int64`: The vertex in the graph.
+
+# Returns
+- `corrections`: A tuple `(X=x_correction_vertex, Z=z_correction_vertices)` representing the corrections needed.
+
+# Errors
+- Throws an error if the vertex is not in the graph.
+- Throws an error if the size of the graph is not 2.
+- Throws an error if the size of the vertex neighbour set is not 1.
+- Throws an error if neither the forward flow nor the backward flow of the vertex is in the graph.
+
+# Examples
+```julia
+corrections = get_corrections_one_neighbourhood_two_vertex_graph(resource, vertex) # Returns the corrections needed for the given vertex
+```
+"""
 function get_corrections_one_neighbourhood_two_vertex_graph(resource::MBQCResourceState,vertex::Int64)
     assert_comment(is_vertex_in_graph(resource,vertex), "Vertex: $(vertex), is not in the graph, find a different function")
     g_size = get_number_vertices(resource)
@@ -537,6 +882,25 @@ end
 
 
 
+
+"""
+    get_corrections_one_neighbourhood_mulit_vertex_graph(resource::MBQCResourceState, vertex::Int64)
+
+This function calculates the corrections needed for a vertex in a multi-vertex graph with one neighbourhood.
+It takes the resource state `resource` and the vertex `vertex` as input.
+
+# Arguments
+- `resource::MBQCResourceState`: The resource state of the graph.
+- `vertex::Int64`: The vertex for which corrections are calculated.
+
+# Returns
+- `corrections::NamedTuple`: A named tuple containing the X and Z corrections for the vertex.
+
+# Example
+```julia
+corrections = get_corrections_one_neighbourhood_mulit_vertex_graph(resource, vertex) # Returns the corrections needed for the given vertex
+```
+"""
 function get_corrections_one_neighbourhood_mulit_vertex_graph(resource::MBQCResourceState,vertex::Int64)
     assert_comment(is_vertex_in_graph(resource,vertex), "Vertex: $(vertex), is not in the graph, find a different function")
     g_size = get_number_vertices(resource)
@@ -564,6 +928,23 @@ end
 
 
 
+"""
+    get_corrections_multi_neighbourhood_mulit_vertex_graph(resource::MBQCResourceState, vertex::Int64)
+
+This function calculates the corrections needed for a multi-neighbourhood multi-vertex graph in the context of MBQC (Measurement-Based Quantum Computation).
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+- `vertex::Int64`: The vertex for which the corrections are calculated.
+
+# Returns
+- `corrections`: A tuple containing the X and Z corrections.
+
+# Example
+```julia
+corrections = get_corrections_multi_neighbourhood_mulit_vertex_graph(resource, vertex) # Returns the corrections needed for the given vertex
+```
+"""
 function get_corrections_multi_neighbourhood_mulit_vertex_graph(resource::MBQCResourceState,vertex::Int64)
 
     assert_comment(is_vertex_in_graph(resource,vertex), "Vertex: $(vertex), is not in the graph, find a different function") 
@@ -593,6 +974,23 @@ end
 
 
 
+"""
+    get_correction_vertices(resource::MBQCResourceState, vertex::Int64)
+
+Returns the corrections for a given vertex in the MBQC resource state.
+
+# Arguments
+- `resource::MBQCResourceState`: The MBQC resource state.
+- `vertex::Int64`: The vertex for which to get the corrections.
+
+# Returns
+- `corrections`: A tuple containing the X and Z corrections.
+
+# Example
+```julia
+corrections = get_correction_vertices(resource, vertex) # Returns the corrections needed for the given vertex
+```
+"""
 function get_correction_vertices(resource::MBQCResourceState,vertex::Int64)
     # Assert we do not have the singleton graph. No functionality here.
     g_size = get_number_vertices(resource)
