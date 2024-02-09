@@ -21,7 +21,6 @@ function test_struct_creation()
     MR = MBQCResourceState(MG,MF,MA)
     MMO = MBQCMeasurementOutcomes(outcomes)
     C = Client()
-    S = Struct()
     P = Phase()
     NO = NoPhase()
     QIS= QubitInitialState()
@@ -44,7 +43,6 @@ function test_struct_creation()
     @test MR isa MBQCResourceState
     @test MMO isa MBQCMeasurementOutcomes
     @test C isa Client
-    @test S isa Struct
     @test P isa Phase
     @test NO isa NoPhase
     @test QIS isa QubitInitialState
