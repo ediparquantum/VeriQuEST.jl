@@ -19,7 +19,6 @@ module RobustBlindVerification
 
 export
     Client,
-    Struct,
     Phase,
     NoPhase,
     SecretAngles,
