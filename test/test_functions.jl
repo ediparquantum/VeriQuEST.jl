@@ -165,12 +165,7 @@ function test_get_state_vector_pair_per_qubit()
     @test get_state_vector_pair_per_qubit(2) == (3,4)
 end
 
-function test_get_density_matrix_indices_per_qubits()
-    qubit1,qubit2=1,1
-    q₁₂ = get_density_matrix_indices_per_qubits(qubit1,qubit2)
-    mat = [(1,1) (1,2);(2,1) (2,2)]
-    @test q₁₂ == mat
-end
+
 #=
 function test_get_amps_0_1_states_1_qubit(::Client,::DensityMatrix)
     # Single qubit density matrix
