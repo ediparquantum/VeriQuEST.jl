@@ -425,6 +425,29 @@ function add_depolarising!(::Quest,::TwoQubits,ρ,q,p)
     mixTwoQubitDepolarising(ρ,q₁,q₂,p)
 end 
 
+
+"""
+    add_pauli_noise!(::Quest,::SingleQubit,ρ,q,p)
+
+Adds a Pauli noise model to a density matrix for a single qubit.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::SingleQubit`: Indicates that the noise is applied to a single qubit.
+- `ρ::QuEST density matrix`: The density matrix to apply the noise to.
+- `q::Int64`: The qubit to apply the noise to.
+- `p::Tuple{Float64, Float64, Float64}`: The probabilities of the X, Y, and Z Pauli errors.
+
+# Examples
+```julia    
+num_qubits = 1
+q = 1
+p = (0.1, 0.2, 0.3)
+quantum_env = createQuESTEnv()
+ρ = createDensityQureg(num_qubits, quantum_env)
+add_pauli_noise!(Quest(),SingleQubit(),ρ,q,p)
+```
+"""
 function add_pauli_noise!(::Quest,::SingleQubit,ρ,q,p)
     px,py,pz = p
     prob_no_error = 1 - px - py - pz
@@ -434,17 +457,98 @@ function add_pauli_noise!(::Quest,::SingleQubit,ρ,q,p)
     mixPauli(ρ,q,px,py,pz)
 end
  
+
+"""
+    apply_kraus_map!(::Quest,::SingleQubit,::TracePreserving,ρ,q,complex_mat,num_ops)
+
+Applies a Kraus map to a density matrix for a single qubit.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::SingleQubit`: Indicates that the operation is applied to a single qubit.
+- `::TracePreserving`: Indicates that the operation is trace preserving.
+- `ρ::QuEST density matrix`: The density matrix to apply the operation to.
+- `q::Int64`: The qubit to apply the operation to.
+- `complex_mat::Array{ComplexF64, 3}`: The array of Kraus operators.
+- `num_ops::Int64`: The number of Kraus operators.
+
+# Examples
+```julia    
+num_qubits = 1
+q = 1
+num_ops = 2
+complex_mat = Array{ComplexF64, 3}(undef, 2, 2, num_ops)
+quantum_env = createQuESTEnv()
+ρ = createDensityQureg(num_qubits, quantum_env)
+apply_kraus_map!(Quest(),SingleQubit(),TracePreserving(),ρ,q,complex_mat,num_ops)
+```
+"""
 function apply_kraus_map!(::Quest,::SingleQubit,::TracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     num_ops > 4 && throw_error(ExceededNumKrausOperators())
     mixKrausMap(ρ,q,complex_mat,num_ops)
 end
+
+
+"""
+    apply_kraus_map!(::Quest,::TwoQubits,::TracePreserving,ρ,q,complex_mat,num_ops)
+
+Applies a Kraus map to a density matrix for two qubits.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::TwoQubits`: Indicates that the operation is applied to two qubits.
+- `::TracePreserving`: Indicates that the operation is trace preserving.
+- `ρ::QuEST density matrix`: The density matrix to apply the operation to.
+- `q::Tuple{Int64, Int64}`: The qubits to apply the operation to.
+- `complex_mat::Array{ComplexF64, 4}`: The array of Kraus operators.
+- `num_ops::Int64`: The number of Kraus operators.
+
+# Examples
+```julia    
+num_qubits = 2
+q = (1, 2)
+num_ops = 4
+complex_mat = Array{ComplexF64, 4}(undef, 2, 2, 2, num_ops)
+quantum_env = createQuESTEnv()
+ρ = createDensityQureg(num_qubits, quantum_env)
+apply_kraus_map!(Quest(),TwoQubits(),TracePreserving(),ρ,q,complex_mat,num_ops)
+```
+"""
 function apply_kraus_map!(::Quest,::TwoQubits,::TracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     q₁,q₂ = q
     num_ops > 16 && throw_error(ExceededNumKrausOperators())
     mixTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
 end
+
+
+"""
+    apply_kraus_map!(::Quest,::MultipleQubits,::TracePreserving,ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+
+Applies a Kraus map to a density matrix for multiple qubits.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::MultipleQubits`: Indicates that the operation is applied to multiple qubits.
+- `::TracePreserving`: Indicates that the operation is trace preserving.
+- `ρ::QuEST density matrix`: The density matrix to apply the operation to.
+- `leas_sig_qubit::Int64`: The least significant qubit.
+- `num_qubits::Int64`: The number of qubits.
+- `complex_mat::Array{ComplexF64, 3}`: The array of Kraus operators.
+- `num_ops::Int64`: The number of Kraus operators.
+
+# Examples
+```julia    
+num_qubits = 3
+leas_sig_qubit = 1
+num_ops = 8
+complex_mat = Array{ComplexF64, 3}(undef, 2, 2, num_ops)
+quantum_env = createQuESTEnv()
+ρ = createDensityQureg(num_qubits, quantum_env)
+apply_kraus_map!(Quest(),MultipleQubits(),TracePreserving(),ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+```
+"""
 function apply_kraus_map!(::Quest,::MultipleQubits,::TracePreserving,ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperators())
@@ -452,12 +556,65 @@ function apply_kraus_map!(::Quest,::MultipleQubits,::TracePreserving,ρ,leas_sig
     mixMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
 end
 
+
+
+"""
+    apply_kraus_map!(::Quest,::SingleQubit,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+
+Applies a non-trace preserving Kraus map to a density matrix for a single qubit.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::SingleQubit`: Indicates that the operation is applied to a single qubit.
+- `::NotTracePreserving`: Indicates that the operation is not trace preserving.
+- `ρ::QuEST density matrix`: The density matrix to apply the operation to.
+- `q::Int64`: The qubit to apply the operation to.
+- `complex_mat::Array{ComplexF64, 3}`: The array of Kraus operators.
+- `num_ops::Int64`: The number of Kraus operators.
+
+# Examples
+```julia    
+num_qubits = 1
+q = 1
+num_ops = 2
+complex_mat = Array{ComplexF64, 3}(undef, 2, 2, num_ops)
+quantum_env = createQuESTEnv()
+ρ = createDensityQureg(num_qubits, quantum_env)
+apply_kraus_map!(Quest(),SingleQubit(),NotTracePreserving(),ρ,q,complex_mat,num_ops)
+```
+"""
 function apply_kraus_map!(::Quest,::SingleQubit,::NotTracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     num_ops > 4 && throw_error(ExceededNumKrausOperators())
     mixNonTPKrausMap(ρ,q,complex_mat,num_ops)
 end
 
+
+"""
+    apply_kraus_map!(::Quest,::TwoQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+
+Applies a non-trace preserving Kraus map to a density matrix for two qubits.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::TwoQubits`: Indicates that the operation is applied to two qubits.
+- `::NotTracePreserving`: Indicates that the operation is not trace preserving.
+- `ρ::QuEST density matrix`: The density matrix to apply the operation to.
+- `q::Tuple{Int64, Int64}`: The qubits to apply the operation to.
+- `complex_mat::Array{ComplexF64, 4}`: The array of Kraus operators.
+- `num_ops::Int64`: The number of Kraus operators.
+
+# Examples
+```julia    
+num_qubits = 2
+q = (1, 2)
+num_ops = 4
+complex_mat = Array{ComplexF64, 4}(undef, 2, 2, 2, num_ops)
+quantum_env = createQuESTEnv()
+ρ = createDensityQureg(num_qubits, quantum_env)
+apply_kraus_map!(Quest(),TwoQubits(),NotTracePreserving(),ρ,q,complex_mat,num_ops)
+```
+"""
 function apply_kraus_map!(::Quest,::TwoQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     q₁,q₂ = q
@@ -466,6 +623,32 @@ function apply_kraus_map!(::Quest,::TwoQubits,::NotTracePreserving,ρ,q,complex_
 end
 
 
+
+"""
+    apply_kraus_map!(::Quest,::MultipleQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+
+Applies a non-trace preserving Kraus map to a density matrix for multiple qubits.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::MultipleQubits`: Indicates that the operation is applied to multiple qubits.
+- `::NotTracePreserving`: Indicates that the operation is not trace preserving.
+- `ρ::QuEST density matrix`: The density matrix to apply the operation to.
+- `q::Tuple{Int64, Int64}`: The least significant qubit and the number of qubits.
+- `complex_mat::Array{ComplexF64, 3}`: The array of Kraus operators.
+- `num_ops::Int64`: The number of Kraus operators.
+
+# Examples
+```julia    
+num_qubits = 3
+leas_sig_qubit = 1
+num_ops = 8
+complex_mat = Array{ComplexF64, 3}(undef, 2, 2, num_ops)
+quantum_env = createQuESTEnv()
+ρ = createDensityQureg(num_qubits, quantum_env)
+apply_kraus_map!(Quest(),MultipleQubits(),NotTracePreserving(),ρ,(leas_sig_qubit,num_qubits),complex_mat,num_ops)
+```
+"""
 function apply_kraus_map!(::Quest,::MultipleQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunction())
     leas_sig_qubit,num_qubits = q
@@ -476,7 +659,28 @@ end
 
 
 
- 
+"""
+    mix_two_density_matrices!(::Quest,::DensityMatrices,ρ₁,ρ₂,p)
+
+Mixes two density matrices with a given probability.
+
+# Arguments
+- `::Quest`: Indicates that this function is used in the context of a Quest environment.
+- `::DensityMatrices`: Indicates that the operation is applied to density matrices.
+- `ρ₁::QuEST density matrix`: The first density matrix.
+- `ρ₂::QuEST density matrix`: The second density matrix.
+- `p::Float64`: The probability of mixing.
+
+# Examples
+```julia    
+num_qubits = 2
+quantum_env = createQuESTEnv()
+ρ₁ = createDensityQureg(num_qubits, quantum_env)
+ρ₂ = createDensityQureg(num_qubits, quantum_env)
+p = 0.5
+mix_two_density_matrices!(Quest(),DensityMatrices(),ρ₁,ρ₂,p)
+```
+"""
 function mix_two_density_matrices!(::Quest,::DensityMatrices,ρ₁,ρ₂,p)
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
     p < 0.0 && throw_error(ProbabilityLessThanZeroError())

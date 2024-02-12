@@ -1,4 +1,22 @@
-# Permute rounds to be test of computation
+"""
+    draw_random_rounds(total_rounds, computation_rounds)
+
+Generates a random sequence of computation and test rounds. The function first calculates the number of test rounds by subtracting the number of computation rounds from the total rounds. It then creates arrays of `ComputationRound` and `TestRound` instances, and returns a shuffled concatenation of these arrays.
+
+# Arguments
+- `total_rounds`: The total number of rounds.
+- `computation_rounds`: The number of computation rounds.
+
+# Returns
+- `Array`: A shuffled array of `ComputationRound` and `TestRound` instances.
+
+# Examples
+```julia    
+total_rounds = 10
+computation_rounds = 5
+rounds = draw_random_rounds(total_rounds, computation_rounds)
+```
+"""
 function draw_random_rounds(total_rounds,computation_rounds)
     test_rounds = total_rounds - computation_rounds
     crs = fill(ComputationRound(),computation_rounds)
@@ -7,19 +25,85 @@ function draw_random_rounds(total_rounds,computation_rounds)
 end
 
 
+"""
+    is_round_OK(trap_results)
 
+Checks if a round is successful by examining the trap results. The function filters out the trap results that are equal to 0 (indicating a failure), and checks if the length of the failed traps is less than 1. If there is at least one failed trap, the function returns `false`, indicating that the round is not OK.
+
+# Arguments
+- `trap_results`: An array of trap results.
+
+# Returns
+- `Bool`: `true` if the round is OK (no failed traps), `false` otherwise.
+
+# Examples
+```julia    
+trap_results = [1, 0, 1]
+round_OK = is_round_OK(trap_results)
+```
+"""
 function is_round_OK(trap_results)
     # At least one trap result is 0 (failed)
     failed_traps = filter(x->x==0,trap_results)
     !(length(failed_traps) >= 1)
 end
 
+
+"""
+    compute_trap_round_fail_threshold(total_rounds, computational_rounds, number_different_test_rounds, inherent_bounded_error::InherentBoundedError)
+
+Computes the threshold for trap round failures. The function first calculates the number of test rounds by subtracting the number of computational rounds from the total rounds. It then uses this number, the number of different test rounds, and the inherent bounded error to calculate the threshold, which is then floored to the nearest integer.
+
+# Arguments
+- `total_rounds`: The total number of rounds.
+- `computational_rounds`: The number of computational rounds.
+- `number_different_test_rounds`: The number of different test rounds.
+- `inherent_bounded_error::InherentBoundedError`: An instance of `InherentBoundedError` representing the inherent bounded error.
+
+# Returns
+- `Int`: The floored threshold for trap round failures.
+
+# Examples
+```julia    
+total_rounds = 10
+computational_rounds = 5
+number_different_test_rounds = 3
+inherent_bounded_error = InherentBoundedError(0.33)
+threshold = compute_trap_round_fail_threshold(total_rounds, computational_rounds, number_different_test_rounds, inherent_bounded_error)
+```
+"""
 function compute_trap_round_fail_threshold(total_rounds,computational_rounds,number_different_test_rounds,inherent_bounded_error::InherentBoundedError) 
     t = total_rounds - computational_rounds #number of test rounds
     k,p = number_different_test_rounds,inherent_bounded_error.p
     floor((t/k)*(2*p - 1)/(2*p - 2))
 end
 
+
+"""
+    run_computation(client::Client, server::Union{Server,NoisyServer}, client_meta_graph, num_qubits_from_server, server_quantum_state)
+
+Runs a computation on a server from a client's perspective. The function iterates over the number of qubits from the server, updates the client's ϕ, measures along the ϕ basis on the server, updates the measurement on the client, and stores the measurement outcome on the client. The updated client meta graph is returned.
+
+# Arguments
+- `client::Client`: A `Client` instance.
+- `server::Union{Server,NoisyServer}`: A `Server` or `NoisyServer` instance.
+- `client_meta_graph`: The client's meta graph.
+- `num_qubits_from_server`: The number of qubits from the server.
+- `server_quantum_state`: The quantum state of the server.
+
+# Returns
+- `client_meta_graph`: The updated client meta graph.
+
+# Examples
+```julia    
+client = Client()
+server = NoisyServer(noise_model)
+client_meta_graph = create_graph(client, 3)
+num_qubits_from_server = 3
+server_quantum_state = create_quantum_state(server, num_qubits_from_server)
+updated_client_meta_graph = run_computation(client, server, client_meta_graph, num_qubits_from_server, server_quantum_state)
+```
+"""
 function run_computation(client::Client,server::Union{Server,NoisyServer},client_meta_graph,num_qubits_from_server,server_quantum_state)
     for q in Base.OneTo(num_qubits_from_server)  
         ϕ = get_updated_ϕ!(client,client_meta_graph,q)
@@ -30,6 +114,29 @@ function run_computation(client::Client,server::Union{Server,NoisyServer},client
     client_meta_graph
 end
 
+
+
+"""
+    run_computation(client_meta_graph, num_qubits_from_server, server_quantum_state)
+
+Runs a computation by creating a new `Client` instance for each qubit from the server. The function iterates over the number of qubits from the server, updates the client's ϕ, measures along the ϕ basis on the client, updates the measurement on the client, and stores the measurement outcome on the client. The updated client meta graph is returned.
+
+# Arguments
+- `client_meta_graph`: The client's meta graph.
+- `num_qubits_from_server`: The number of qubits from the server.
+- `server_quantum_state`: The quantum state of the server.
+
+# Returns
+- `client_meta_graph`: The updated client meta graph.
+
+# Examples
+```julia    
+client_meta_graph = create_graph(Client(), 3)
+num_qubits_from_server = 3
+server_quantum_state = create_quantum_state(Client(), num_qubits_from_server)
+updated_client_meta_graph = run_computation(client_meta_graph, num_qubits_from_server, server_quantum_state)
+```
+"""
 function run_computation(client_meta_graph,num_qubits_from_server,server_quantum_state)
     for q in Base.OneTo(num_qubits_from_server)  
         ϕ = get_updated_ϕ!(Client(),client_meta_graph,q)
@@ -40,6 +147,30 @@ function run_computation(client_meta_graph,num_qubits_from_server,server_quantum
     client_meta_graph
 end
 
+
+"""
+    run_verification(::Client, ::Server, round_types, client_resource, state_type)
+
+Runs a verification process between a client and a server. For each round type, the function generates a client meta graph, extracts the graph and quantum register (qureg) from the client, creates server resources, runs a computation, initializes a blank quantum state on the server, and stores the client meta graph in a list. The list of client meta graphs is returned.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::Server`: A `Server` instance.
+- `round_types`: The types of rounds to run.
+- `client_resource`: The client's resources.
+- `state_type`: The type of state.
+
+# Returns
+- `Array`: An array of client meta graphs.
+
+# Examples
+```julia    
+round_types = ["round1", "round2"]
+client_resource = create_resource(Client())
+state_type = "state_type_example"
+round_graphs = run_verification(Client(), Server(), round_types, client_resource, state_type)
+```
+"""
 function run_verification(::Client,::Server,
     round_types,client_resource,state_type)
 
@@ -72,6 +203,27 @@ function run_verification(::Client,::Server,
     round_graphs
 end
 
+
+
+"""
+    get_output(::Client, ::Union{MBQC,ComputationRound}, mg)
+
+Retrieves the output of a computation from a client's meta graph. The function gets the output indices from the meta graph, iterates over them, gets the outcome for each index, and stores the outcomes in a list. The list of outcomes is returned.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::Union{MBQC,ComputationRound}`: An instance of `MBQC` or `ComputationRound`.
+- `mg`: The client's meta graph.
+
+# Returns
+- `Array`: An array of outcomes.
+
+# Examples
+```julia    
+mg = create_meta_graph(Client())
+outcomes = get_output(Client(), ComputationRound(), mg)
+```
+"""
 function get_output(::Client,::Union{MBQC,ComputationRound},mg)
     output_inds = get_prop(mg,:output_inds)
     outcome = []
@@ -82,6 +234,28 @@ function get_output(::Client,::Union{MBQC,ComputationRound},mg)
     outcome
 end
 
+
+
+
+"""
+    verify_round(::Client, ::TestRound, mg)
+
+Verifies a round of computation from a client's meta graph. The function iterates over the vertices of the meta graph, checks if the vertex type is a `TrapQubit`, gets the neighbors and properties of the vertex, calculates the verification result, and stores the result in a list. If all results are `TrapPass`, the function returns 1 (indicating the round is good); otherwise, it returns 0 (indicating the round is bad).
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::TestRound`: A `TestRound` instance.
+- `mg`: The client's meta graph.
+
+# Returns
+- `Int`: 1 if the round is good, 0 if the round is bad.
+
+# Examples
+```julia    
+mg = create_meta_graph(Client())
+round_verification = verify_round(Client(), TestRound(), mg)
+```
+"""
 function verify_round(::Client,::TestRound,mg)
     trap_results = []
     for v in vertices(mg)
@@ -104,6 +278,30 @@ function verify_round(::Client,::TestRound,mg)
     all([t isa TrapPass for t in trap_results]) ? 1 : 0
 end
 
+
+
+"""
+    verify_rounds(::Client, ::TestRound, ::Terse, rounds_as_graphs, pass_threshold)
+
+Verifies multiple rounds of computation from a list of client's meta graphs. The function iterates over the meta graphs, skips those with a round type of `ComputationRound`, verifies the round, and stores the outcome in a list. The function then counts the number of failed rounds. If the number of failed rounds is greater than the pass threshold, the function returns `Abort()`, otherwise it returns `Ok()`.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::TestRound`: A `TestRound` instance.
+- `::Terse`: A `Terse` instance.
+- `rounds_as_graphs`: A list of client's meta graphs.
+- `pass_threshold`: The threshold for a round to be considered as passed.
+
+# Returns
+- `Abort` or `Ok`: `Abort()` if the number of failed rounds is greater than the pass threshold, `Ok()` otherwise.
+
+# Examples
+```julia    
+rounds_as_graphs = [create_meta_graph(Client()) for _ in 1:5]
+pass_threshold = 3
+round_verification = verify_rounds(Client(), TestRound(), Terse(), rounds_as_graphs, pass_threshold)
+```
+"""
 function verify_rounds(::Client,::TestRound,::Terse,rounds_as_graphs,pass_theshold)
       
     outcomes = []
@@ -128,6 +326,8 @@ function verify_rounds(::Client,::TestRound,::Verbose,rounds_as_graphs,pass_thes
     failed_rounds = count(==(0),outcomes)
     return (failed = failed_rounds,passed = num_rounds - failed_rounds)
 end
+
+
 
 function verify_rounds(::Client,::ComputationRound,::Terse,rounds_as_graphs)
     num_computation_rounds = [
