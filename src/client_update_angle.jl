@@ -249,6 +249,9 @@ function update_ϕ!(::TestRound,::DummyQubit,::NoInputQubits,meta_graph,vertex)
     return meta_graph
 end
 
+
+
+
 """
     update_ϕ!(::TestRound, ::TrapQubit, ::NoInputQubits, meta_graph, vertex)
 
@@ -279,6 +282,26 @@ function update_ϕ!(::TestRound,::TrapQubit,::NoInputQubits,meta_graph,vertex)
 end
 
 
+"""
+    update_ϕ!(::ComputationRound, ::ComputationQubit, ::InputQubits, meta_graph, vertex)
+
+Updates the ϕ value of a given vertex in the `meta_graph` during a computation round with a computation qubit and input qubits. The new ϕ value is computed based on several properties of the vertex including its initial qubit, secret angle, classical input, X correction, and Z correction.
+
+# Arguments
+- `::ComputationRound`: Indicates that this function is used during a computation round.
+- `::ComputationQubit`: Indicates that a computation qubit is used.
+- `::InputQubits`: Indicates that there are input qubits.
+- `meta_graph`: The graph to be updated.
+- `vertex`: The vertex in the graph for which the ϕ value is to be updated.
+
+# Returns
+- The updated `meta_graph`.
+
+# Examples
+```julia
+updated_graph = update_ϕ!(ComputationRound(), ComputationQubit(), InputQubits(), meta_graph, vertex) # Updates the ϕ value of the specified vertex in the graph
+```
+"""
 function update_ϕ!(::ComputationRound,::ComputationQubit,::InputQubits,meta_graph,vertex)
     θᵥ = get_prop(meta_graph,vertex,:init_qubit)
     ϕᵥ = get_prop(meta_graph,vertex,:secret_angle)
@@ -300,6 +323,26 @@ end
 
 
 
+"""
+    update_ϕ!(::ComputationRound, ::ComputationQubit, ::NoInputQubits, meta_graph, vertex)
+
+Updates the ϕ value of a given vertex in the `meta_graph` during a computation round with a computation qubit and no input qubits. The new ϕ value is computed based on several properties of the vertex including its initial qubit, secret angle, X correction, and Z correction.
+
+# Arguments
+- `::ComputationRound`: Indicates that this function is used during a computation round.
+- `::ComputationQubit`: Indicates that a computation qubit is used.
+- `::NoInputQubits`: Indicates that there are no input qubits.
+- `meta_graph`: The graph to be updated.
+- `vertex`: The vertex in the graph for which the ϕ value is to be updated.
+
+# Returns
+- The updated `meta_graph`.
+
+# Examples
+```julia
+updated_graph = update_ϕ!(ComputationRound(), ComputationQubit(), NoInputQubits(), meta_graph, vertex) # Updates the ϕ value of the specified vertex in the graph
+```
+"""
 function update_ϕ!(::ComputationRound,::ComputationQubit,::NoInputQubits,meta_graph,vertex)
     θᵥ = get_prop(meta_graph,vertex,:init_qubit)
     ϕᵥ = get_prop(meta_graph,vertex,:secret_angle)
@@ -317,6 +360,30 @@ function update_ϕ!(::ComputationRound,::ComputationQubit,::NoInputQubits,meta_g
     set_prop!(meta_graph,vertex,:one_time_pad_int, rᵥ)
 end
 
+
+
+
+"""
+    update_ϕ!(::MBQC, ::ComputationQubit, qT::Union{NoInputQubits,InputQubits}, meta_graph, vertex)
+
+Updates the ϕ value of a given vertex in the `meta_graph` during a computation round in a Measurement-Based Quantum Computing (MBQC) model with a computation qubit and either no input qubits or input qubits. The new ϕ value is computed based on several properties of the vertex including its secret angle, X correction, and Z correction.
+
+# Arguments
+- `::MBQC`: Indicates that this function is used in the MBQC model.
+- `::ComputationQubit`: Indicates that a computation qubit is used.
+- `qT::Union{NoInputQubits,InputQubits}`: Indicates that either no input qubits or input qubits are used.
+- `meta_graph`: The graph to be updated.
+- `vertex`: The vertex in the graph for which the ϕ value is to be updated.
+
+# Returns
+- The updated `meta_graph`.
+
+# Examples
+```julia
+updated_graph = update_ϕ!(MBQC(), ComputationQubit(), NoInputQubits(), meta_graph, vertex) # Updates the ϕ value of the specified vertex in the graph
+updated_graph = update_ϕ!(MBQC(), ComputationQubit(), InputQubits(), meta_graph, vertex) # Updates the ϕ value of the specified vertex in the graph
+```
+"""
 function update_ϕ!(::MBQC,::ComputationQubit,qT::Union{NoInputQubits,InputQubits},meta_graph,vertex)
     ϕᵥ = get_prop(meta_graph,vertex,:secret_angle)
     X = get_prop(meta_graph,vertex,:X_correction)
@@ -332,13 +399,50 @@ function update_ϕ!(::MBQC,::ComputationQubit,qT::Union{NoInputQubits,InputQubit
 end
 
 
+"""
+    get_updated_ϕ!(RountType, QubitType, QubitIOType, client_meta_graph, qubit)
+
+Updates the ϕ value of a given qubit in the `client_meta_graph` using the `update_ϕ!` function and then retrieves the updated ϕ value.
+
+# Arguments
+- `RountType`: The type of the computation round.
+- `QubitType`: The type of the computation qubit.
+- `QubitIOType`: The type of the input qubits.
+- `client_meta_graph`: The graph to be updated.
+- `qubit`: The qubit in the graph for which the ϕ value is to be updated and retrieved.
+
+# Returns
+- The updated ϕ value of the specified qubit.
+
+# Examples
+```julia
+updated_ϕ = get_updated_ϕ!(ComputationRound, ComputationQubit, NoInputQubits, client_meta_graph, qubit) # Updates the ϕ value of the specified qubit in the graph and retrieves it
+```
+"""
 function get_updated_ϕ!(RountType,QubitType,QubitIOType,client_meta_graph,qubit)
     update_ϕ!(RountType,QubitType,QubitIOType,client_meta_graph,qubit)
     get_prop(client_meta_graph,qubit,:updated_ϕ)
 end
 
 
+"""
+    get_updated_ϕ!(::Client, mg, qubit)
 
+In the context of a client, updates the ϕ value of a given qubit in the `mg` graph using the `get_updated_ϕ!` function and then retrieves the updated ϕ value. The round type, vertex type, and vertex IO type are determined from the properties of the graph and the qubit.
+
+# Arguments
+- `::Client`: Indicates that this function is used in the context of a client.
+- `mg`: The graph to be updated.
+- `qubit`: The qubit in the graph for which the ϕ value is to be updated and retrieved.
+
+# Returns
+- The updated ϕ value of the specified qubit.
+
+# Examples
+```julia
+updated_ϕ = get_updated_ϕ!(Client(), mg, qubit) # Updates the ϕ value of the specified qubit in the graph and retrieves it
+```
+"""
 function get_updated_ϕ!(::Client,mg,qubit)
     round_type = get_prop(mg,:round_type)
     v_type = get_prop(mg,qubit,:vertex_type)
