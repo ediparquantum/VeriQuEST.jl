@@ -11,17 +11,14 @@
 
 
 phase(θ) = Complex.([1 0; 0 exp(im*θ)])
+
+
 ident_2x2() = Matrix{Complex{Float64}}(I, 2, 2)
 
 
 get_state_vector_pair_per_qubit(x) = (2*x - 1, 2*x)
 
-function get_density_matrix_indices_per_qubits(qubit1,qubit2)
-    q₁ = get_state_vector_pair_per_qubit(qubit1)
-    q₂ = get_state_vector_pair_per_qubit(qubit2)
-    Iterators.product(q₁,q₂) |> collect
-    
-end
+
 
 
 

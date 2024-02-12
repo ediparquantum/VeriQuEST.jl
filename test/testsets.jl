@@ -43,10 +43,6 @@ end
     test_get_state_vector_pair_per_qubit()
 end
 
-@testset "test_get_density_matrix_indices_per_qubits()" begin
-    test_get_density_matrix_indices_per_qubits()
-end
-
 #=
 @testset "test_get_amps_0_1_states_1_qubit(::Client,::DensityMatrix)" begin
     test_get_amps_0_1_states_1_qubit(Client(),DensityMatrix())
