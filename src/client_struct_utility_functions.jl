@@ -731,31 +731,6 @@ end
 
 
 
-"""
-    assert_flow(flow_type, resource, vertex)
-
-Check the validity of a flow in a resource graph.
-
-Arguments:
-- `flow_type`: The type of flow to assert (e.g., `ForwardFlow`, `BackwardFlow`).
-- `resource`: The resource state representing the graph.
-- `vertex`: The vertex to check the flow for.
-
-This function checks the following conditions for the given flow:
-1. The new vertex obtained by applying the flow function to the input vertex is in the graph.
-2. The input vertex is in the neighborhood of the new vertex.
-3. All vertices in the neighborhood of the new vertex are greater than or equal to the input vertex.
-
-# Examples
-```julia
-assert_flow(ForwardFlow(), resource, vertex) # Checks the validity of the forward flow
-assert_flow(BackwardFlow(), resource, vertex) # Checks the validity of the backward flow
-```
-"""
-function assert_flow(::Type{<:AbstractFlow}, resource::MBQCResourceState, vertex::Int64)
-    # function body
-end
-
 
 
 """
