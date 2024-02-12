@@ -314,6 +314,29 @@ function verify_rounds(::Client,::TestRound,::Terse,rounds_as_graphs,pass_thesho
     return failed_rounds > pass_theshold ? Abort() : Ok()
 end
 
+
+"""
+    verify_rounds(::Client, ::TestRound, ::Verbose, rounds_as_graphs, pass_threshold)
+
+Verifies multiple rounds of computation from a list of client's meta graphs. The function iterates over the meta graphs, skips those with a round type of `ComputationRound`, verifies the round, and stores the outcome in a list. The function then counts the number of failed rounds and returns a tuple with the number of failed and passed rounds.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::TestRound`: A `TestRound` instance.
+- `::Verbose`: A `Verbose` instance.
+- `rounds_as_graphs`: A list of client's meta graphs.
+- `pass_threshold`: The threshold for a round to be considered as passed.
+
+# Returns
+- `Tuple`: A tuple with the number of failed and passed rounds.
+
+# Examples
+```julia    
+rounds_as_graphs = [create_meta_graph(Client()) for _ in 1:5]
+pass_threshold = 3
+round_verification = verify_rounds(Client(), TestRound(), Verbose(), rounds_as_graphs, pass_threshold)
+```
+"""
 function verify_rounds(::Client,::TestRound,::Verbose,rounds_as_graphs,pass_theshold)
       
     outcomes = []
@@ -328,7 +351,26 @@ function verify_rounds(::Client,::TestRound,::Verbose,rounds_as_graphs,pass_thes
 end
 
 
+"""
+    verify_rounds(::Client, ::ComputationRound, ::Terse, rounds_as_graphs)
 
+Verifies multiple rounds of computation from a list of client's meta graphs. The function counts the number of computation rounds, collects the outputs of the computation rounds, calculates the mode of the outputs, and counts the number of outputs that match the mode. If the number of outputs that match the mode is greater than half the number of computation rounds, the function returns `Ok()`, otherwise it returns `Abort()`.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::ComputationRound`: A `ComputationRound` instance.
+- `::Terse`: A `Terse` instance.
+- `rounds_as_graphs`: A list of client's meta graphs.
+
+# Returns
+- `Ok` or `Abort`: `Ok()` if the number of outputs that match the mode is greater than half the number of computation rounds, `Abort()` otherwise.
+
+# Examples
+```julia    
+rounds_as_graphs = [create_meta_graph(Client()) for _ in 1:5]
+round_verification = verify_rounds(Client(), ComputationRound(), Terse(), rounds_as_graphs)
+```
+"""
 function verify_rounds(::Client,::ComputationRound,::Terse,rounds_as_graphs)
     num_computation_rounds = [
         get_prop(mg,:round_type) == ComputationRound() ? 1 : nothing
@@ -348,6 +390,26 @@ function verify_rounds(::Client,::ComputationRound,::Terse,rounds_as_graphs)
     num_match_mode > num_computation_rounds/2 ? Ok() : Abort()
 end
 
+"""
+    verify_rounds(::Client, ::ComputationRound, ::Verbose, rounds_as_graphs)
+
+Verifies multiple rounds of computation from a list of client's meta graphs. The function counts the number of computation rounds, collects the outputs of the computation rounds, calculates the mode of the outputs, and counts the number of outputs that match the mode. The function then returns a tuple with the number of failed and passed rounds.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::ComputationRound`: A `ComputationRound` instance.
+- `::Verbose`: A `Verbose` instance.
+- `rounds_as_graphs`: A list of client's meta graphs.
+
+# Returns
+- `Tuple`: A tuple with the number of failed and passed rounds.
+
+# Examples
+```julia    
+rounds_as_graphs = [create_meta_graph(Client()) for _ in 1:5]
+round_verification = verify_rounds(Client(), ComputationRound(), Verbose(), rounds_as_graphs)
+```
+"""
 function verify_rounds(::Client,::ComputationRound,::Verbose,rounds_as_graphs)
     num_computation_rounds = [
         get_prop(mg,:round_type) == ComputationRound() ? 1 : nothing
@@ -369,6 +431,25 @@ function verify_rounds(::Client,::ComputationRound,::Verbose,rounds_as_graphs)
 end
 
 
+"""
+    get_mode_output(::Client, ::ComputationRound, rounds_as_graphs::Vector)
+
+Collects the outputs of computation rounds from a list of client's meta graphs and returns the mode of the outputs. The function iterates over the meta graphs, skips those with a round type of `TestRound`, gets the output of the computation round, and stores it in a list. The function then calculates and returns the mode of the outputs.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::ComputationRound`: A `ComputationRound` instance.
+- `rounds_as_graphs::Vector`: A list of client's meta graphs.
+
+# Returns
+- `mode(outputs)`: The mode of the outputs.
+
+# Examples
+```julia    
+rounds_as_graphs = [create_meta_graph(Client()) for _ in 1:5]
+mode_output = get_mode_output(Client(), ComputationRound(), rounds_as_graphs)
+```
+"""
 function get_mode_output(::Client,::ComputationRound,rounds_as_graphs::Vector)
 
     outputs = []
@@ -380,6 +461,28 @@ function get_mode_output(::Client,::ComputationRound,rounds_as_graphs::Vector)
    mode(outputs)
 end
 
+
+"""
+    get_ubqc_output(::Client, ::ComputationRound, mg::MetaGraphs.MetaGraph)
+
+Gets the output of a computation round from a client's meta graph. The function checks if the round type of the meta graph is `TestRound`, and if so, it throws an error. Otherwise, it gets and returns the output of the computation round.
+
+# Arguments
+- `::Client`: A `Client` instance.
+- `::ComputationRound`: A `ComputationRound` instance.
+- `mg::MetaGraphs.MetaGraph`: A client's meta graph.
+
+# Returns
+- The output of the computation round.
+
+# Errors
+- Throws an error if the round type of the meta graph is `TestRound`.
+
+# Examples
+```julia    
+ubqc_output = get_ubqc_output(Client(), ComputationRound(), mg)
+```
+"""
 function get_ubqc_output(::Client,::ComputationRound,mg::MetaGraphs.MetaGraph)
 
         get_prop(mg,:round_type) == TestRound() && error("This function is for computational rounds only, not test rounds")
@@ -387,6 +490,29 @@ function get_ubqc_output(::Client,::ComputationRound,mg::MetaGraphs.MetaGraph)
 end
 
 
+"""
+    create_ubqc_resource(para)
+
+Creates a UBQC (Universal Blind Quantum Computation) resource using the provided parameters. The function initializes the test and computation colours, computes the backward flow, and creates a dictionary with the parameters. It then calls the `create_graph_resource` function with the created dictionary as an argument.
+
+# Arguments
+- `para`: A dictionary containing the parameters for the UBQC resource. It should include the following keys: `:input`, `:output`, `:graph`, `:secret_angles`, and `:forward_flow`.
+
+# Returns
+- The result of the `create_graph_resource` function.
+
+# Examples
+```julia    
+para = Dict(
+    :input => Dict(:indices => [1, 2], :values => [0, 1]),
+    :output => [3, 4],
+    :graph => create_graph(5),
+    :secret_angles => [0.5, 0.6, 0.7, 0.8, 0.9],
+    :forward_flow => [1, 2, 3, 4, 5]
+)
+ubqc_resource = create_ubqc_resource(para)
+```
+"""
 function create_ubqc_resource(para)
     
     test_colours = []#get_vector_graph_colors(para[:graph];reps=reps)
