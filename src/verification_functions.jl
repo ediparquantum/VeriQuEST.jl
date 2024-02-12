@@ -503,13 +503,7 @@ Creates a UBQC (Universal Blind Quantum Computation) resource using the provided
 
 # Examples
 ```julia    
-para = Dict(
-    :input => Dict(:indices => [1, 2], :values => [0, 1]),
-    :output => [3, 4],
-    :graph => create_graph(5),
-    :secret_angles => [0.5, 0.6, 0.7, 0.8, 0.9],
-    :forward_flow => [1, 2, 3, 4, 5]
-)
+para = (args)::NamedTuple # function specific args
 ubqc_resource = create_ubqc_resource(para)
 ```
 """
@@ -533,6 +527,24 @@ function create_ubqc_resource(para)
     create_graph_resource(p)
 end
 
+
+"""
+    run_ubqc(para)
+
+Runs a Universal Blind Quantum Computation (UBQC) using the provided parameters. The function creates a UBQC resource, generates a client meta graph, extracts the graph and quantum register (qureg) from the client, creates server resources, runs the computation, and gets the UBQC output.
+
+# Arguments
+- `para`: A dictionary containing the parameters for the UBQC. It should include the key `:state_type`.
+
+# Returns
+- The output of the UBQC, obtained by calling `get_ubqc_output`.
+
+# Examples
+```julia    
+para = (args)::NamedTuple # function specific args
+ubqc_output = run_ubqc(para)
+```
+"""
 function run_ubqc(para)
     
    state_type = para[:state_type]
@@ -558,7 +570,23 @@ function run_ubqc(para)
    return get_ubqc_output(Client(),ComputationRound(),client_meta_graph)
 end
 
+"""
+    run_mbqc(para)
 
+Runs a Measurement-Based Quantum Computation (MBQC) using the provided parameters. The function creates a UBQC resource, generates a client meta graph, extracts the quantum state from the client meta graph, runs the computation, and gets the output.
+
+# Arguments
+- `para`: A dictionary containing the parameters for the MBQC. It should include the key `:state_type`.
+
+# Returns
+- The output of the MBQC, obtained by calling `get_output`.
+
+# Examples
+```julia    
+para = (args)::NamedTuple # function specific args
+mbqc_output = run_mbqc(para)
+```
+"""
 function run_mbqc(para)
     resource = create_ubqc_resource(para)
     client_meta_graph = generate_property_graph!(
@@ -570,7 +598,25 @@ function run_mbqc(para)
 end
 
 
+"""
+    run_verification_simulator(::TrustworthyServer, ::Terse, para)
 
+Runs a verification simulator for a TrustworthyServer in a Terse mode. The function defines colouring, computes the backward flow, creates a client resource, draws random rounds, runs the verification, verifies the rounds, gets the mode output, and returns the verification results and mode outcome.
+
+# Arguments
+- `::TrustworthyServer`: An instance of `TrustworthyServer`.
+- `::Terse`: An instance of `Terse`.
+- `para`: A dictionary containing the parameters for the verification simulator. It should include the keys `:graph`, `:input`, `:output`, `:secret_angles`, `:forward_flow`, `:total_rounds`, and `:computation_rounds`.
+
+# Returns
+- A tuple containing the test verification result, the computation verification result, and the mode outcome.
+
+# Examples
+```julia    
+para = (args)::NamedTuple # function specific args
+result = run_verification_simulator(TrustworthyServer(), Terse(), para)
+```
+"""
 function run_verification_simulator(::TrustworthyServer,::Terse,para)
     # Define colouring
     reps = 100
@@ -618,7 +664,23 @@ function run_verification_simulator(::TrustworthyServer,::Terse,para)
 end
 
 
+"""
+    run_mbqc(para)
 
+Runs a Measurement-Based Quantum Computation (MBQC) using the provided parameters. The function creates a UBQC resource, generates a client meta graph, extracts the quantum state from the client meta graph, runs the computation, and gets the output.
+
+# Arguments
+- `para`: A NamedTuple containing the parameters for the MBQC.
+
+# Returns
+- The output of the MBQC, obtained by calling `get_output`.
+
+# Examples
+```julia    
+para = (args)::NamedTuple # function specific args
+mbqc_output = run_mbqc(para)
+```
+"""
 function run_verification_simulator(::TrustworthyServer,::Verbose,para)
     # Define colouring
     reps = 100
