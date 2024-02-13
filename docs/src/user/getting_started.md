@@ -42,6 +42,8 @@ para::NamedTuple= (
 ```
 ## Using `para`
 
+The `NamedTuple` with variable name `para` is the entry point for all operations developed in this package. 
+
 ### Basic computation
 
 To simply run the algorithm, unblinded, then call `run_mbqc`
@@ -178,3 +180,26 @@ model = Kraus(Quest(),SingleQubit(),p)
 server = NoisyServer(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
+
+##### Double qubit
+
+Many of the above noise models are also available as pairwise operations. These are not yet ready for production.
+
+##### $N$ Qubit and Density operators
+
+The Kraus maps can be generalised for $N$ qubit operations. These are not yet ready for production.
+
+There is also density matrix mixing noise. These are not yet ready for production.
+
+### Data analysis
+
+Once verification is complete, it is helpful to have some sense of the results.
+
+**TO DO:** Add examples of statistical/numericalresults
+
+
+### Hardware specific 
+
+**Definitely a future to do.**
+
+
