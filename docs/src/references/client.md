@@ -1,4 +1,4 @@
-# Client Functions
+# Client functions
 
 ```@autodocs
 Modules = [RobustBlindVerification]

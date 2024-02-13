@@ -15,7 +15,7 @@ makedocs(;
         size_threshold = 1_000_000,
     ),
     pages=[
-        "Introduction to VeriQuEST.jl" => "index.md",
+        "Introduction to RobustBlindVerification.jl" => "index.md",
         "User Guide" => [
             "Getting Started" => "user/getting_started.md",
             "Interface with QuEST" => "user/interface_with_quest.md",
@@ -26,7 +26,15 @@ makedocs(;
             "Quantum Noise" => "user/quantum_noise.md",
         ],
         "References" => [
-            "Functions" => "references/api.md",
+            "QuEST functions" => "references/quest.md",
+            "Noise functions" => "references/noise_functions.md",
+            "Client functions" => "references/client.md",
+            "Server functions" => "references/server.md",
+            "Client-Server functions" => "references/client_server.md",
+            "Malicious server functions" => "references/malicious_server.md",
+            "Noisy server functions" => "references/noisy_server.md",
+            "Verification functions" => "references/verification.md",
+            "General or helper functions" => "references/general.md"
         ]
     ],
 )
