@@ -1,0 +1,726 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage[utf8]{inputenc}
+\DeclareUnicodeCharacter{03C0}{$\pi$}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={VeriQuEST.jl: Emulating quantum verification with QuEST},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{VeriQuEST.jl: Emulating quantum verification with QuEST}
+\author{}
+\date{29 Jan 2024}
+
+\begin{document}
+\maketitle
+
+\section{Summary}\label{summary}
+
+Verification of delegated quantum computations is a challenging task in
+both theory and implementation. To address the theory, methods and
+protocols have been developed that ouline abstract verification.
+Implementation will likely require a quantum network in place for
+certain protocols. In the mean time, specialised emulators have been
+developed to perform quantum computation, offering a possibility to
+explore verifcation numerically. Many emulators rely solely on the gate
+base model and do not allow for projective, mid-circuit measurements, a
+key component in most quantum verification protocols. In response, we
+present the Julia package, \texttt{RobustBlindVerification.jl} (RBV).
+RBV aims to emulate blind measurement based quantum computing (MBQC and
+UBQC) with interactive verfication in place. Quantum computation is
+emulated in RBV with the Julia package \texttt{QuEST.jl}, which in turn
+is a wrapper package, \texttt{QuEST\_jll}, developed with
+\texttt{BinaryBuilder.jl} {[}@BinaryBuilder2022{]} to reproducibally
+call the \texttt{C} library, \texttt{QuEST} {[}@QuESTJones2019{]}. RBV
+is developed based on the work by @PRXQuantum.2.040302, herein referred
+to as `the protocol'. The protocol is an example of robust blind quantum
+computation (RBVQC). It is a formal verification protocol with minimal
+overhead, beyond computational repetition and resistant to constant
+noise whilst mainting security.
+
+\section{Statement of need}\label{statement-of-need}
+
+Quantum computing appears to be on a course that leads to the need for
+efficient, secure and verifiable delegated access through some
+client-server relationship. The so-called client-server paradigm in use
+for current classical computation via cloud or high performance
+computing is the current analogue. Trust in the security, data usages,
+compuation and algorithm implementation is not a given for delegated QC.
+Many protocols have been implemented to address these issues.
+Advancements in verification has relied on verification assuming only
+uncorrelated noise {[}@Gheorghiu\_2019{]}, verification assuming
+reliable state preparation per qubit
+{[}@Kapourniotis2019nonadaptivefault{]}, verification requiring more
+than one server and entanglement distillation {[}@MorimaeFujii2013{]} or
+verification with the assumption that a verifier has access to
+post-quantum cryptography unbeakable by a quantum prover
+{[}@Mahadev2022ClassicalVerification{]}. Such results fall short of a
+robust verification protocol that does not suffer from costly process or
+are inflexible to noise. To respond to these shortcomings, the protocol
+addresses the problem for bounded-error quantum polynomial (BQP)
+computations {[}@PRXQuantum.2.040302{]}. It is known that the complexity
+class BQP can efficiently solve binary descision problems with quantum
+computers. Further, the protocol is robust to constant noise and
+maintain security.
+
+The protocol is designed such that verification is separated into the
+execution of rounds. The content of each round has its own requirements.
+After some specified number of rounds, a classical analysis is conducted
+and a result computed whether the server and/or the computation were to
+be trusted. Each round is either a round of the required computation,
+called a \emph{computation} round, or the round is used to test the
+server, called a \emph{test} round. The computation round is prepared
+and executed with UBQC, whereas the test rounds utilise a trapification
+strategy to conduct tests against the server. The test rounds use a
+strategy that splits some qubits into traps and some into dummies. The
+traps and the dummies are prepared according to some randomness, which
+though the UBQC will have determinsitic outcomes that can me tested. The
+outcome to these tests for each round are aggregated. The aggregate
+count of test rounds that passed the test must exceed a predetermined
+amount, based on parameters of the protocol. The mode repsonse for the
+computation round must be greater than half the number of computation
+rounds. The results of the test and computation rounds dictate the trust
+of the server. RBV implements the protocol under these requirements. For
+an in depth understanding see @@PRXQuantum.2.040302.
+
+\section{Core features and
+functionality}\label{core-features-and-functionality}
+
+The root QC paradigm of RVBQC is MBQC. Hence, a user, after initial
+implementations, is able to run their given MBQC circuit and obtain
+noiseless results. Further, without impelementing the multiple rounds of
+the verification protocol, the user can take that same circuit and run
+it blindly (UBQC). The main feature of RBV is the implementation of the
+protocol. Here the user is able to run the protocol with no noise,
+uncorrelated noise, and specific noise models.
+
+We present a basic tutorial on the usage of RBV along with targeted
+functions explained.
+
+To begin, if not already done so, download and install Julia in your
+preferred method. Though lately JuliaUP is recommended. Then activate
+the Julia project of the local directory location
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{using} \BuiltInTok{Pkg;}\NormalTok{ Pkg.activate(".")}
+\end{Highlighting}
+\end{Shaded}
+
+Add \texttt{RobustBlindVerification.jl}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{] add RobustBlindVerification}
+\end{Highlighting}
+\end{Shaded}
+
+To run, first decide the computational backend, either a state vector or
+density matrix. These are \texttt{structs} named \texttt{StateVector}
+and \texttt{DensityMatrix}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{state\_type }\OperatorTok{=} \FunctionTok{DensityMatrix}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+Choose the number of rounds and the number of computational rounds (the
+number of test rounds is the difference of computation from total).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{total\_rounds,computation\_rounds }\OperatorTok{=} \FloatTok{100}\NormalTok{,}\FloatTok{50}
+\end{Highlighting}
+\end{Shaded}
+
+RBV uses \texttt{Graphs.jl} and \texttt{MetaGraphs.jl}, so defining a
+graph uses that syntax. In this example we use the MBQC version of the 2
+qubit Gover oracle algorithm.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    num\_vertices }\OperatorTok{=} \FloatTok{8}
+\NormalTok{    graph }\OperatorTok{=} \FunctionTok{Graph}\NormalTok{(num\_vertices)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{1}\NormalTok{,}\FloatTok{2}\NormalTok{)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{2}\NormalTok{,}\FloatTok{3}\NormalTok{)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{3}\NormalTok{,}\FloatTok{6}\NormalTok{)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{6}\NormalTok{,}\FloatTok{7}\NormalTok{)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{1}\NormalTok{,}\FloatTok{4}\NormalTok{)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{4}\NormalTok{,}\FloatTok{5}\NormalTok{)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{5}\NormalTok{,}\FloatTok{8}\NormalTok{)}
+    \FunctionTok{add\_edge!}\NormalTok{(graph,}\FloatTok{7}\NormalTok{,}\FloatTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+We can specify any classical inputs to be loaded into the algorithm as
+well the output qubits.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    input }\OperatorTok{=}\NormalTok{ (indices }\OperatorTok{=}\NormalTok{ (),values }\OperatorTok{=}\NormalTok{ ())}
+\NormalTok{    output }\OperatorTok{=}\NormalTok{ (}\FloatTok{7}\NormalTok{,}\FloatTok{8}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+There are algorithms for automatic flow detection, these have not been
+implemented, so the user defines a function for the so-called
+\emph{forward flow}. The function is used to determine the
+\emph{backward flow}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \KeywordTok{function} \FunctionTok{forward\_flow}\NormalTok{(vertex)}
+\NormalTok{        v\_str }\OperatorTok{=} \FunctionTok{string}\NormalTok{(vertex)}
+\NormalTok{        forward }\OperatorTok{=} \FunctionTok{Dict}\NormalTok{(}
+            \StringTok{"1"} \OperatorTok{=\textgreater{}}\FloatTok{4}\NormalTok{,}
+            \StringTok{"2"} \OperatorTok{=\textgreater{}}\FloatTok{3}\NormalTok{,}
+            \StringTok{"3"} \OperatorTok{=\textgreater{}}\FloatTok{6}\NormalTok{,}
+            \StringTok{"4"} \OperatorTok{=\textgreater{}}\FloatTok{5}\NormalTok{,}
+            \StringTok{"5"} \OperatorTok{=\textgreater{}}\FloatTok{8}\NormalTok{,}
+            \StringTok{"6"} \OperatorTok{=\textgreater{}}\FloatTok{7}\NormalTok{,}
+            \StringTok{"7"} \OperatorTok{=\textgreater{}}\FloatTok{0}\NormalTok{,}
+            \StringTok{"8"} \OperatorTok{=\textgreater{}}\FloatTok{0}\NormalTok{)}
+\NormalTok{        forward[v\_str]}
+    \KeywordTok{end}
+\end{Highlighting}
+\end{Shaded}
+
+Note: the internal structure of the \texttt{forward\_flow} does not
+matter, as long as vertex input returns vertex output (\texttt{Int}
+type) and these values correspond to the graph, then the user can define
+its choice of I/O for that function.
+
+The secret angles are defined next. For the Grover algorithm, the angles
+are curcial in its operation.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \KeywordTok{function} \FunctionTok{generate\_grover\_secret\_angles}\NormalTok{(search}\OperatorTok{::}\DataTypeTok{String}\NormalTok{)}
+
+        \FunctionTok{Dict}\NormalTok{(}\StringTok{"00"}\OperatorTok{=\textgreater{}}\NormalTok{(}\FloatTok{1.0}\OperatorTok{*}\ConstantTok{π}\NormalTok{,}\FloatTok{1.0}\OperatorTok{*}\ConstantTok{π}\NormalTok{),}\StringTok{"01"}\OperatorTok{=\textgreater{}}\NormalTok{(}\FloatTok{1.0}\OperatorTok{*}\ConstantTok{π}\NormalTok{,}\FloatTok{0}\NormalTok{),}\StringTok{"10"}\OperatorTok{=\textgreater{}}\NormalTok{(}\FloatTok{0}\NormalTok{,}\FloatTok{1.0}\OperatorTok{*}\ConstantTok{π}\NormalTok{),}\StringTok{"11"}\OperatorTok{=\textgreater{}}\NormalTok{(}\FloatTok{0}\NormalTok{,}\FloatTok{0}\NormalTok{)) }\OperatorTok{|\textgreater{}}
+\NormalTok{        x }\OperatorTok{{-}\textgreater{}}\NormalTok{ x[search] }\OperatorTok{|\textgreater{}}
+\NormalTok{        x }\OperatorTok{{-}\textgreater{}}\NormalTok{ [}\FloatTok{0}\NormalTok{,}\FloatTok{0}\NormalTok{,}\FloatTok{1.0}\OperatorTok{*}\NormalTok{x[}\FloatTok{1}\NormalTok{],}\FloatTok{1.0}\OperatorTok{*}\NormalTok{x[}\FloatTok{2}\NormalTok{],}\FloatTok{0}\NormalTok{,}\FloatTok{0}\NormalTok{,}\FloatTok{1.0}\OperatorTok{*}\ConstantTok{π}\NormalTok{,}\FloatTok{1.0}\OperatorTok{*}\ConstantTok{π}\NormalTok{] }\OperatorTok{|\textgreater{}}
+\NormalTok{        x }\OperatorTok{{-}\textgreater{}} \FunctionTok{Float64}\NormalTok{.(x)}
+    \KeywordTok{end}
+\end{Highlighting}
+\end{Shaded}
+
+The function \texttt{generate\_grover\_secret\_angles} defines the
+angles associated to each vertex in the \texttt{graph} which is
+dependent on the \texttt{search} input. Here we will define search as
+\texttt{11}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    search }\OperatorTok{=} \StringTok{"11"}
+\NormalTok{    secret\_angles }\OperatorTok{=} \FunctionTok{generate\_grover\_secret\_angles}\NormalTok{(search)}
+\end{Highlighting}
+\end{Shaded}
+
+Names of inputs can vary, but they are all stored in a
+\texttt{NamedTuple} as
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    para}\OperatorTok{=}\NormalTok{ (}
+\NormalTok{        graph}\OperatorTok{=}\NormalTok{graph,}
+\NormalTok{        forward\_flow }\OperatorTok{=}\NormalTok{ forward\_flow,}
+\NormalTok{        input }\OperatorTok{=}\NormalTok{ input,}
+\NormalTok{        output }\OperatorTok{=}\NormalTok{ output,}
+\NormalTok{        secret\_angles}\OperatorTok{=}\NormalTok{secret\_angles,}
+\NormalTok{        state\_type }\OperatorTok{=}\NormalTok{ state\_type,}
+\NormalTok{        total\_rounds }\OperatorTok{=}\NormalTok{ total\_rounds,}
+\NormalTok{        computation\_rounds }\OperatorTok{=}\NormalTok{ computation\_rounds)}
+\end{Highlighting}
+\end{Shaded}
+
+To run the MBQC and UBQC we only need \texttt{para}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    mbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_mbqc}\NormalTok{(para)}
+\NormalTok{    ubqc\_outcome }\OperatorTok{=} \FunctionTok{run\_ubqc}\NormalTok{(para)}
+\end{Highlighting}
+\end{Shaded}
+
+For the verification protocol we specify the type of \emph{Server}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(}\FunctionTok{TrustworthyServer}\NormalTok{(),}\FunctionTok{Verbose}\NormalTok{(),para)}
+\NormalTok{    vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(}\FunctionTok{TrustworthyServer}\NormalTok{(),}\FunctionTok{Terse}\NormalTok{(),para)}
+\end{Highlighting}
+\end{Shaded}
+
+Here the server is \texttt{TrustworthyServer}, so all results are done
+in a noiseless state and the server agent (simulated server not real
+one) is not interfering with the computation. The \texttt{Verbose} flag
+dictates the output to include extra details of the results {[}add
+content{]}. The \texttt{Terse} flag returns only whether the computation
+was \texttt{Ok} or \texttt{Abort}. For a \texttt{MaliciousServer},
+meaning one that adds an additional angle to the updated angle basis for
+measurement.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    malicious\_angles }\OperatorTok{=} \ConstantTok{π}\OperatorTok{/}\FloatTok{2}
+\NormalTok{    malicious\_vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(}\FunctionTok{MaliciousServer}\NormalTok{(),}\FunctionTok{Verbose}\NormalTok{(),para,malicious\_angles)}
+\end{Highlighting}
+\end{Shaded}
+
+The \texttt{malicious\_angles} can be a single angle, applied uniformly
+to all qubits, or a vector of angles applied specifically to each qubit
+according to order from \texttt{1} to \texttt{num\_vertices}.
+
+To add noise to the verification, there are some ready-made models to
+choose from, damping, dephasing, depolarising, pauli, (need to finalise
+these: Kraus, two qubit, density matrix mixing, N qubit kruas).
+
+Depending on the noise, there are constraints based on the theory of the
+noise, so lets scale noise \texttt{p\_scale\ =\ 0.05}. Lets do a damping
+noise model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    p }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_scale*rand}\NormalTok{() for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    model }\OperatorTok{=} \FunctionTok{Damping}\NormalTok{(}\FunctionTok{Quest}\NormalTok{(),}\FunctionTok{SingleQubit}\NormalTok{(),p)}
+\NormalTok{    server }\OperatorTok{=} \FunctionTok{NoisyServer}\NormalTok{(model)}
+\NormalTok{    vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(server,}\FunctionTok{Verbose}\NormalTok{(),para)}
+\end{Highlighting}
+\end{Shaded}
+
+Here we generate \texttt{n} random probabilities, which will be applied
+to each qubit in the graph. A noise model is defined by the
+\texttt{struct} representing the noise, in this case,
+\texttt{Damping()}. Each noise model only takes three arguments. In
+future plans different quantum computing backends will be used (BYOQ -
+Bring Your Own Quantum), so the QC emulator is specified, \texttt{Quest}
+in this case. The noise model is applied to individual qubits, the
+second argument is \texttt{SingleQubit}, as opposed to \texttt{TwoQubit}
+or \texttt{NQubit}, the latter are not in use yet. Finally, the
+probability, like before this can be a scalar or a vector, the scalar
+being applied uniformly as before. The \texttt{model} is a container,
+which is stored inside the type of server, here \texttt{NoisyServer}.
+Then the same simulator is called \texttt{run\_verification\_simulator}
+to run the protocol, but with the specified noise model. The following
+show a similar implementation.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \CommentTok{\# Dephasing}
+\NormalTok{    p }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_scale*rand}\NormalTok{() for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    model }\OperatorTok{=} \FunctionTok{Dephasing}\NormalTok{(}\FunctionTok{Quest}\NormalTok{(),}\FunctionTok{SingleQubit}\NormalTok{(),p)}
+\NormalTok{    server }\OperatorTok{=} \FunctionTok{NoisyServer}\NormalTok{(model)}
+\NormalTok{    vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(server,}\FunctionTok{Verbose}\NormalTok{(),para)}
+
+    \CommentTok{\# Depolarising}
+\NormalTok{    p }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_scale*rand}\NormalTok{() for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    model }\OperatorTok{=} \FunctionTok{Depolarising}\NormalTok{(}\FunctionTok{Quest}\NormalTok{(),}\FunctionTok{SingleQubit}\NormalTok{(),p)}
+\NormalTok{    server }\OperatorTok{=} \FunctionTok{NoisyServer}\NormalTok{(model)}
+\NormalTok{    vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(server,}\FunctionTok{Verbose}\NormalTok{(),para)}
+
+    \CommentTok{\# Pauli}
+    \FunctionTok{p\_xyz}\NormalTok{(p\_scale) }\OperatorTok{=}\NormalTok{ p\_scale }\OperatorTok{.*}\NormalTok{ [}\FunctionTok{rand}\NormalTok{(),}\FunctionTok{rand}\NormalTok{(),}\FunctionTok{rand}\NormalTok{()]}
+\NormalTok{    p }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_xyz}\NormalTok{(p\_scale) for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    model }\OperatorTok{=} \FunctionTok{Pauli}\NormalTok{(}\FunctionTok{Quest}\NormalTok{(),}\FunctionTok{SingleQubit}\NormalTok{(),p)}
+\NormalTok{    server }\OperatorTok{=} \FunctionTok{NoisyServer}\NormalTok{(model)}
+\NormalTok{    vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(server,}\FunctionTok{Verbose}\NormalTok{(),para)}
+\end{Highlighting}
+\end{Shaded}
+
+The Pauli noise acts on the x,y and z axis to there are three
+probabilities for each qubit. In addition to each simulator being able
+to run a single noise model, we can run a list of noise models.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \CommentTok{\# Vector of noise models}
+\NormalTok{    model\_vec }\OperatorTok{=}\NormalTok{ [Damping,Dephasing,Depolarising,Pauli]}
+\NormalTok{    p\_damp }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_scale*rand}\NormalTok{() for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    p\_deph }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_scale*rand}\NormalTok{() for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    p\_depo }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_scale*rand}\NormalTok{() for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    p\_pauli }\OperatorTok{=}\NormalTok{ [}\FunctionTok{p\_xyz}\NormalTok{(p\_scale) for i }\KeywordTok{in} \FunctionTok{vertices}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph])]}
+\NormalTok{    prob\_vec }\OperatorTok{=}\NormalTok{ [p\_damp,p\_deph,p\_depo,p\_pauli]}
+
+\NormalTok{    models }\OperatorTok{=} \FunctionTok{Vector}\DataTypeTok{\{NoiseModels\}}\NormalTok{()}
+    \ControlFlowTok{for}\NormalTok{ m }\KeywordTok{in} \FunctionTok{eachindex}\NormalTok{(model\_vec)        }\FunctionTok{push!}\NormalTok{(models,model\_vec[m](}\FunctionTok{Quest}\NormalTok{(),}\FunctionTok{SingleQubit}\NormalTok{(),prob\_vec[m]))}
+    \ControlFlowTok{end}
+\NormalTok{    server }\OperatorTok{=} \FunctionTok{NoisyServer}\NormalTok{(models)}
+\NormalTok{    vbqc\_outcome }\OperatorTok{=} \FunctionTok{run\_verification\_simulator}\NormalTok{(server,}\FunctionTok{Verbose}\NormalTok{(),para)}
+\end{Highlighting}
+\end{Shaded}
+
+If we want to run general Kraus maps, we can do so on single, double and
+\texttt{n} qubit levels - \textbf{NEED TO DO}. If we have a density
+matrix with a specified noise model, we can mix that with the algorithm
+as well - \textbf{NEED TO DO}.
+
+\subsection{Inside the verification
+simulator}\label{inside-the-verification-simulator}
+
+Let us look closer at the \texttt{TrustWorthy} \texttt{Verbose}
+simulator function.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \KeywordTok{function} \FunctionTok{run\_verification\_simulator}\NormalTok{(}\OperatorTok{::}\DataTypeTok{TrustworthyServer}\NormalTok{,}\OperatorTok{::}\DataTypeTok{Verbose}\NormalTok{,para)}
+    \OperatorTok{...}
+    \KeywordTok{end}
+\end{Highlighting}
+\end{Shaded}
+
+Currently, the trapification strategy is to generate a random colouring
+of the presented graph, based on a greedy heuristic {[}Cite graphs
+package?{]}. Naively the choice is made such that out of \texttt{100}
+repetitions, the best coloring is picked. The computation round is
+simply one colour for all vertices.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    computation\_colours }\OperatorTok{=} \FunctionTok{ones}\NormalTok{(}\FunctionTok{nv}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph]))}
+\end{Highlighting}
+\end{Shaded}
+
+For each coloured vertex, a 2-colour graph is formed, that of the
+colored vertex and a colour for the remaining vertices. Hence, a
+4-colour graph, can be split into 4 distinct graphs according to the
+colouring.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    test\_colours }\OperatorTok{=} \FunctionTok{get\_vector\_graph\_colors}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph];reps}\OperatorTok{=}\NormalTok{reps)}
+\end{Highlighting}
+\end{Shaded}
+
+To determine the number of acceptable failed rounds a value is computed
+dependent on the BQP error, the number of colours and the distribution
+of test rounds to total rounds.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    chroma\_number }\OperatorTok{=} \FunctionTok{length}\NormalTok{(test\_colours)}
+\NormalTok{    bqp }\OperatorTok{=} \FunctionTok{InherentBoundedError}\NormalTok{(}\FloatTok{1}\OperatorTok{/}\FloatTok{3}\NormalTok{)}
+\NormalTok{    test\_rounds\_theshold }\OperatorTok{=} \FunctionTok{compute\_trap\_round\_fail\_threshold}\NormalTok{(para[}\OperatorTok{:}\NormalTok{total\_rounds],para[}\OperatorTok{:}\NormalTok{computation\_rounds],chroma\_number,bqp) }
+\end{Highlighting}
+\end{Shaded}
+
+Recall that the \texttt{forward\_flow} is user defined, then the
+\texttt{backward\_flow} is numerically computed./
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \FunctionTok{backward\_flow}\NormalTok{(vertex) }\OperatorTok{=} \FunctionTok{compute\_backward\_flow}\NormalTok{(para[}\OperatorTok{:}\NormalTok{graph],para[}\OperatorTok{:}\NormalTok{forward\_flow],vertex)}
+\end{Highlighting}
+\end{Shaded}
+
+These computations along with the remaining values from \texttt{para}
+are stored in a \texttt{NamedTuple} which is used to create a
+\texttt{struct} wrapping all variables in a defined type.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    p }\OperatorTok{=}\NormalTok{ (}
+\NormalTok{        input\_indices }\OperatorTok{=}\NormalTok{  para[}\OperatorTok{:}\NormalTok{input][}\OperatorTok{:}\NormalTok{indices],}
+\NormalTok{        input\_values }\OperatorTok{=}\NormalTok{ para[}\OperatorTok{:}\NormalTok{input][}\OperatorTok{:}\NormalTok{values],}
+\NormalTok{        output\_indices }\OperatorTok{=}\NormalTok{para[}\OperatorTok{:}\NormalTok{output],}
+\NormalTok{        graph}\OperatorTok{=}\NormalTok{para[}\OperatorTok{:}\NormalTok{graph],}
+\NormalTok{        computation\_colours}\OperatorTok{=}\NormalTok{computation\_colours,}
+\NormalTok{        test\_colours}\OperatorTok{=}\NormalTok{test\_colours,}
+\NormalTok{        secret\_angles}\OperatorTok{=}\NormalTok{para[}\OperatorTok{:}\NormalTok{secret\_angles],}
+\NormalTok{        forward\_flow }\OperatorTok{=}\NormalTok{ para[}\OperatorTok{:}\NormalTok{forward\_flow],}
+\NormalTok{        backward\_flow}\OperatorTok{=}\NormalTok{backward\_flow)}
+        
+\NormalTok{    client\_resource }\OperatorTok{=} \FunctionTok{create\_graph\_resource}\NormalTok{(p)}
+\end{Highlighting}
+\end{Shaded}
+
+The \texttt{round\_types} is a random permutation of \texttt{structs}
+\texttt{ComputationRound} and \texttt{TestRound} on the exact number of
+each.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    round\_types }\OperatorTok{=} \FunctionTok{draw\_random\_rounds}\NormalTok{(para[}\OperatorTok{:}\NormalTok{total\_rounds],para[}\OperatorTok{:}\NormalTok{computation\_rounds])}
+\end{Highlighting}
+\end{Shaded}
+
+The type held by \texttt{round\_types} is a \texttt{Vector}, which is
+iterated through to execute rounds determined by element of the
+iterator. The function \texttt{run\_verification} executes the protocol
+for each round and return a vector of \texttt{MetaGraphs} for each
+round.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    rounds\_as\_graphs }\OperatorTok{=} \FunctionTok{run\_verification}\NormalTok{(}
+        \FunctionTok{Client}\NormalTok{(),}\FunctionTok{Server}\NormalTok{(),}
+\NormalTok{        round\_types,client\_resource,}
+\NormalTok{        para[}\OperatorTok{:}\NormalTok{state\_type])}
+\end{Highlighting}
+\end{Shaded}
+
+The \texttt{MetaGraph} is the core data structure for any given MBQC
+computation. Due to it's inherent graph and vertex properties, mulitple
+dispatch was used to perform appropriate computation across vertices in
+a graph. Results for the \texttt{Verbose} flag ar the outcomes with the
+results for acceptable round or failed round.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{        test\_verification }\OperatorTok{=} \FunctionTok{verify\_rounds}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),}\FunctionTok{TestRound}\NormalTok{(),}\FunctionTok{Terse}\NormalTok{(),rounds\_as\_graphs,test\_rounds\_theshold)}
+\NormalTok{        computation\_verification }\OperatorTok{=} \FunctionTok{verify\_rounds}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),}\FunctionTok{ComputationRound}\NormalTok{(),}\FunctionTok{Terse}\NormalTok{(),rounds\_as\_graphs)}
+\NormalTok{        test\_verification\_verb }\OperatorTok{=} \FunctionTok{verify\_rounds}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),}\FunctionTok{TestRound}\NormalTok{(),}\FunctionTok{Verbose}\NormalTok{(),rounds\_as\_graphs,test\_rounds\_theshold)}
+\NormalTok{        computation\_verification\_verb }\OperatorTok{=} \FunctionTok{verify\_rounds}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),}\FunctionTok{ComputationRound}\NormalTok{(),}\FunctionTok{Verbose}\NormalTok{(),rounds\_as\_graphs)}
+\NormalTok{        mode\_outcome }\OperatorTok{=} \FunctionTok{get\_mode\_output}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),}\FunctionTok{ComputationRound}\NormalTok{(),rounds\_as\_graphs)}
+\end{Highlighting}
+\end{Shaded}
+
+These results are returned as a \texttt{NamedTuple}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \ControlFlowTok{return}\NormalTok{ (}
+\NormalTok{        test\_verification }\OperatorTok{=}\NormalTok{ test\_verification,}
+\NormalTok{        test\_verification\_verb }\OperatorTok{=}\NormalTok{ test\_verification\_verb,}
+\NormalTok{        computation\_verification }\OperatorTok{=}\NormalTok{ computation\_verification,}
+\NormalTok{        computation\_verification\_verb }\OperatorTok{=}\NormalTok{ computation\_verification\_verb,}
+\NormalTok{        mode\_outcome }\OperatorTok{=}\NormalTok{ mode\_outcome)}
+\end{Highlighting}
+\end{Shaded}
+
+Let's look closer at the verification function,
+\texttt{run\_verification}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+
+\KeywordTok{function} \FunctionTok{run\_verification}\NormalTok{(}\OperatorTok{::}\DataTypeTok{Client}\NormalTok{,}\OperatorTok{::}\DataTypeTok{Server}\NormalTok{,}
+\NormalTok{    round\_types,client\_resource,state\_type)}
+    \OperatorTok{...}
+\NormalTok{    round\_graphs}
+    \KeywordTok{end}
+\end{Highlighting}
+\end{Shaded}
+
+As before, we take a \texttt{Client} and a \texttt{Server} type, the
+server can be replaced with a different type given a desired
+computation. We run the verification protocol over a vector of rounds.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    round\_graphs }\OperatorTok{=}\NormalTok{ []}
+    \ControlFlowTok{for}\NormalTok{ round\_type }\KeywordTok{in}\NormalTok{ round\_types}
+        \OperatorTok{...}
+\NormalTok{        client\_meta\_graph }\OperatorTok{=} \OperatorTok{...}
+        \FunctionTok{push!}\NormalTok{(round\_graphs,client\_meta\_graph)}
+    \ControlFlowTok{end}
+\end{Highlighting}
+\end{Shaded}
+
+For each \texttt{round\_type} in the vector \texttt{round\_types}, note
+\texttt{round\_type} is either \texttt{TestRound} or
+\texttt{ComputationRound} and Julia's multiple dispatch will perform the
+appropriate functions based on said type, the computation is performed,
+details are mutated onto the property graph,
+\texttt{client\_meta\_graph} and stored in the vector
+\texttt{round\_graphs}. Within each round several computations take
+place. First,
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    client\_meta\_graph }\OperatorTok{=} \FunctionTok{generate\_property\_graph!}\NormalTok{(}
+        \FunctionTok{Client}\NormalTok{(),}
+\NormalTok{        round\_type,}
+\NormalTok{        client\_resource,}
+\NormalTok{        state\_type)}
+\end{Highlighting}
+\end{Shaded}
+
+a \texttt{client\_meta\_graph} is generated with the function
+\texttt{generate\_property\_graph!} which takes the \texttt{Client},
+\texttt{round\_type}, \texttt{client\_resoure} and \texttt{state\_type}
+as inputs. This function will be discussed further below. The
+\texttt{client\_meta\_graph} contains round specific values, the vertex
+angles, the forward and backward vertices according to the flow,
+allocation variables for measurement outcomes, the initialised state
+quatum register backed by QuEST. Note that no vertex is entangled, only
+initialised according the UBQC methdologies of client and server
+sepatation. To effect this disctinction the client quantum register and
+simple graph are extracted.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    client\_graph }\OperatorTok{=} \FunctionTok{produce\_initialised\_graph}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),client\_meta\_graph)}
+\NormalTok{    client\_qureg }\OperatorTok{=} \FunctionTok{produce\_initialised\_qureg}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),client\_meta\_graph)}
+\end{Highlighting}
+\end{Shaded}
+
+The the server resource is created, \texttt{create\_resource}, using the
+\texttt{Server}, \texttt{client\_graph} and \texttt{client\_qureg} as
+inputs. The server side resource is where noise is added if that is the
+case and where the circuit is entangled according to the edge map of the
+underlying MBQC graph structure.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    server\_resource }\OperatorTok{=} \FunctionTok{create\_resource}\NormalTok{(}\FunctionTok{Server}\NormalTok{(),client\_graph,client\_qureg)}
+\end{Highlighting}
+\end{Shaded}
+
+From here the server quantum state, or register is extracted from the
+server container, \texttt{server\_resource}, thus, separationg of the
+client and the server is effected. We even extract the number ofqubits
+based on the server register.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{    server\_quantum\_state }\OperatorTok{=}\NormalTok{ server\_resource[}\StringTok{"quantum\_state"}\NormalTok{]}
+\NormalTok{    num\_qubits\_from\_server }\OperatorTok{=}\NormalTok{ server\_quantum\_state.numQubitsRepresented}
+\end{Highlighting}
+\end{Shaded}
+
+Now for the given round, which has entirely driven the specific values
+of the propetry graph, the UBQC computation can be performed.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \FunctionTok{run\_computation}\NormalTok{(}\FunctionTok{Client}\NormalTok{(),}\FunctionTok{Server}\NormalTok{(),client\_meta\_graph,num\_qubits\_from\_server,server\_quantum\_state)}
+\end{Highlighting}
+\end{Shaded}
+
+The underlying register is still in effect, so to save loading and
+memory usage, we clear the state of the server register, ready to take
+on the next round of client side computation.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \FunctionTok{initialise\_blank\_quantum\_state!}\NormalTok{(server\_quantum\_state)}
+\end{Highlighting}
+\end{Shaded}
+
+Now we come back to pushing the \texttt{client\_meta\_graph}, which now
+holds all of the measurement outcomes, to the \texttt{round\_graphs}
+vector. This is then returned at the end of the function call.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+    \FunctionTok{push!}\NormalTok{(round\_graphs,client\_meta\_graph)}
+\end{Highlighting}
+\end{Shaded}
+
+The result is a vector of rounds. Further explanation is found at the
+GitHub repository.
+
+\textbf{To Do}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Finish QuEST.jl to acceptable degree
+\item
+  Add and complete documentation to package
+\item
+  Provide tutorials
+\item
+  Get QuEST.jl linked on QuEST homepage
+\item
+  Edit paper
+\item
+  Get checklist for JOSS
+\item
+  Complete checklist
+\end{enumerate}
+
+\section{Acknowledgements}\label{acknowledgements}
+
+We acknowledge contributions from QSL, NQCC,\ldots???
+
+\section{References}\label{references}
+
+\end{document}

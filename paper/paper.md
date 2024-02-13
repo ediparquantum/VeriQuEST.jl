@@ -2,7 +2,7 @@
 header-includes:
     - \usepackage[utf8]{inputenc}   
     - \DeclareUnicodeCharacter{03C0}{$\pi$}
-title: 'RobustBlindVerification.jl: Emulating quantum verification with QuEST'
+title: 'VeriQuEST.jl: Emulating quantum verification with QuEST'
 tags:
   - Julia
   - quantum computing
@@ -41,6 +41,7 @@ bibliography: paper.bib
 # https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
 aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
 aas-journal: Astrophysical Journal <- The name of the AAS journal.
+#pandoc paper.md --pdf-engine=pdflatex --from=markdown --output=paper.tex --bibliography=paper.bib --metadata link-citations=true 
 ---
 
 # Summary
@@ -78,6 +79,7 @@ To run, first decide the computational backend, either a state vector or density
 ```julia
 state_type = DensityMatrix()
 ```
+
 Choose the number of rounds and the number of computational rounds (the number of test rounds is the difference of computation from total).
 
 ```julia
