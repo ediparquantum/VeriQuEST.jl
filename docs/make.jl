@@ -12,6 +12,7 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://fieldofnodes.github.io/RobustBlindVerification.jl",
         assets=String[],
+        size_threshold = 1_000_000,
     ),
     pages=[
         "Introduction to VeriQuEST.jl" => "index.md",
