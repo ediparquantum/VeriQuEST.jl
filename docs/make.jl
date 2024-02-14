@@ -25,7 +25,8 @@ makedocs(;
             "Robust Blind Verification" => "user/robust_blind_verification.md",
             "Quantum Noise" => "user/quantum_noise.md",
         ],
-        "References" => [
+        "References" => 
+            ["API" => "references/api.md"],#=[
             "QuEST functions" => "references/quest.md",
             "Noise functions" => "references/noise_functions.md",
             "Client functions" => "references/client.md",
@@ -35,7 +36,7 @@ makedocs(;
             "Noisy server functions" => "references/noisy_server.md",
             "Verification functions" => "references/verification.md",
             "General or helper functions" => "references/general.md"
-        ]
+        ]=#
     ],
 )
 
