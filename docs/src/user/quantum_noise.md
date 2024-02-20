@@ -241,6 +241,8 @@ server = NoisyServer(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
+Note that the Pauli probabilities is a vector of three differently drawn values. This is to account of the $X\times Y\times Z$ directions.
+
 ### Example of Pauli directly in QuEST
 
 In QuEST directly this is called as
