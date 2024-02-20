@@ -21,6 +21,18 @@ Note that some of the above models are available is two qubit and $N$ qubits gat
 
 ## Damping 
 
+To run a damping noise within the verification framework recall
+
+```julia
+# Damping
+p = [p_scale*rand() for i in vertices(para[:graph])]
+model = Damping(Quest(),SingleQubit(),p)
+server = NoisyServer(model)
+vbqc_outcome = run_verification_simulator(server,Verbose(),para)
+```  
+
+### Example of Damping directly in QuEST
+
 Damping noise induces single qubit amplitude decay through the use of two Kraus operators. Take density matrix, $\rho$ to represent the qureg. With probability, $p$ amplitudes are damped from the $1$ to the $0$ state.
 
 $$\rho \rightarrow K_1\rho K_1^{\dagger} + K_2\rho K_2^{\dagger}$$
@@ -80,3 +92,135 @@ Note that the function `get_qureg_matrix(qureg::Qureg)` will return the state ve
 
 
 ## Dephasing
+
+To run a dephasing noise within the verification framework recall
+
+```julia
+# Dephasing
+p = [p_scale*rand() for i in vertices(para[:graph])]
+model = Dephasing(Quest(),SingleQubit(),p)
+server = NoisyServer(model)
+vbqc_outcome = run_verification_simulator(server,Verbose(),para)
+```
+
+### Example of Dephasing directly in QuEST
+
+With probability, $0 \le p \le 1/2$ a Paulia $Z$ gate is mixed with a density matrix qureg, $\rho$ to results in a single qubit dephasing noise on qubit, $q$. 
+
+$$\rho \rightarrow (1-p)\rho +p Z_q \rho Z_q$$
+
+We set up a density qureg.
+
+```julia
+env = createQuESTEnv()
+num_qubits = 1
+qureg = createDensityQureg(num_qubits,env)
+```    
+Get the details of the state
+
+```julia
+2×2 Matrix{ComplexF64}:
+ 1.0+0.0im  0.0+0.0im
+ 0.0+0.0im  0.0+0.0im
+```
+Apply a Pauli $Y$ gate,
+
+```julia
+rotateY(qureg,1,π/4)
+```
+with state details,
+
+```julia
+2×2 Matrix{ComplexF64}:
+ 0.853553+0.0im  0.353553+0.0im
+ 0.353553+0.0im  0.146447+0.0im
+```
+then apply a maximally mixed dephasing gate
+
+```julia
+p = 0.5
+mixDephasing(qureg,1,p)
+```
+
+with new state now
+
+```julia
+2×2 Matrix{ComplexF64}:
+ 0.853553+0.0im       0.0+0.0im
+      0.0+0.0im  0.146447+0.0im
+```
+
+### Key takeaways for the dephasing decoherence model
+
+
+
+
+## Depolarising 
+
+To run a depolarising noise within the verification framework recall
+
+```julia
+# Depolarising
+p = [p_scale*rand() for i in vertices(para[:graph])]
+model = Depolarising(Quest(),SingleQubit(),p)
+server = NoisyServer(model)
+vbqc_outcome = run_verification_simulator(server,Verbose(),para)
+```
+
+### Example of depolarising directly in QuEST
+
+
+
+In QuEST directly this is called as
+
+```julia
+env = createQuESTEnv()
+num_qubits = 1
+qureg = createDensityQureg(num_qubits,env)
+```
+The density matrix is
+
+```julia
+2×2 Matrix{ComplexF64}:
+ 1.0+0.0im  0.0+0.0im
+ 0.0+0.0im  0.0+0.0im
+```
+
+
+### Key takeaways for the depolarising decoherence model
+
+
+
+## Pauli
+
+To run a Pauli noise within the verification framework recall
+
+
+```julia
+# Pauli
+p_xyz(p_scale) = p_scale .* [rand(),rand(),rand()]
+p = [p_xyz(p_scale) for i in vertices(para[:graph])]
+model = Pauli(Quest(),SingleQubit(),p)
+server = NoisyServer(model)
+vbqc_outcome = run_verification_simulator(server,Verbose(),para)
+```
+
+### Example of Pauli directly in QuEST
+
+In QuEST directly this is called as
+
+```julia
+env = createQuESTEnv()
+num_qubits = 1
+qureg = createDensityQureg(num_qubits,env)
+```
+The density matrix is
+
+```julia
+2×2 Matrix{ComplexF64}:
+ 1.0+0.0im  0.0+0.0im
+ 0.0+0.0im  0.0+0.0im
+```
+
+
+### Key takeaways for the Pauli decoherence model
