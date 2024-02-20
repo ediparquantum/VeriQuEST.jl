@@ -169,7 +169,15 @@ vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 
 ### Example of depolarising directly in QuEST
 
+Depolarising noise mixes a density qureg to result in single-qubit homogeneous depolarising noise. Like Dephasing noise, with probability $p$ a uniformly random noise is appied to qubit $q$. The applied noise is either Pauli $X$, $Y$, or $Z$ to $q$.
 
+$$\rho \rightarrow (1-p)\rho +\frac{p}{3} X_q \rho X_q + Y_q \rho Y_q + Z_q \rho Z_q,$$
+
+note that $p$ has an upper bound of $3/4$, where maximal mixing occurs and is equivalent to
+
+$$\rho \rightarrow \left(1 - \frac{4}{3}p\right)\rho + \left(\frac{4}{3}p \right)\frac{\bar{1}}{2},$$
+
+where $\frac{\bar{1}}{2}$ is the maximally mixed state of $q$.
 
 In QuEST directly this is called as
 
@@ -185,6 +193,34 @@ The density matrix is
  1.0+0.0im  0.0+0.0im
  0.0+0.0im  0.0+0.0im
 ```
+
+Apply, as before a $Y$ gate,
+
+
+```julia
+rotateY(qureg,1,π/4)
+```
+which has state,
+
+```julia
+2×2 Matrix{ComplexF64}:
+ 0.853553+0.0im  0.353553+0.0im
+ 0.353553+0.0im  0.146447+0.0im
+```
+then apply a depolarising noise,
+
+```julia
+p = 0.5
+mixDepolarising(qureg,1,p)
+```
+which has state
+
+```julia
+2×2 Matrix{ComplexF64}:
+0.617851+0.0im  0.117851+0.0im
+0.117851+0.0im  0.382149+0.0im
+```
+
 
 
 ### Key takeaways for the depolarising decoherence model
