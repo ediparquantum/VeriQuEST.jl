@@ -1,16 +1,15 @@
-# RobustBlindVerification.jl
+# VeriQuEST.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://fieldofnodes.github.io/RobustBlindVerification.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://fieldofnodes.github.io/RobustBlindVerification.jl/dev/)
-[![Build Status](https://github.com/fieldofnodes/RobustBlindVerification.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/fieldofnodes/RobustBlindVerification.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Build Status](https://travis-ci.com/fieldofnodes/RobustBlindVerification.jl.svg?branch=main)](https://travis-ci.com/fieldofnodes/RobustBlindVerification.jl)
-[![Coverage](https://codecov.io/gh/fieldofnodes/RobustBlindVerification.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/fieldofnodes/RobustBlindVerification.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://fieldofnodes.github.io/VeriQuEST.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://fieldofnodes.github.io/VeriQuEST.jl/dev/)
+[![Build Status](https://github.com/fieldofnodes/VeriQuEST.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/fieldofnodes/VeriQuEST.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://travis-ci.com/fieldofnodes/VeriQuEST.jl.svg?branch=main)](https://travis-ci.com/fieldofnodes/VeriQuEST.jl)
+[![Coverage](https://codecov.io/gh/fieldofnodes/VeriQuEST.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/fieldofnodes/VeriQuEST.jl)
 
-### Use branch: `software_user_exploration` to explore the following code.
 
 # Quantum emulation
 
-Quantum computation is an exciting field. There are many research institutes and companies working hard to push the state of the art into the era beyond the noisy intermediate-scale quantum (NISQ) era. This package is designed to emulate quantum computation classically. Specifically, `RobustBlindVerification.jl` is an emulator of measurement based quantum computation (MBQC). Different to the gate model, MBQC relies on entangled states, projective measurements and adaptivity to perform quantum computation.
+Quantum computation is an exciting field. There are many research institutes and companies working hard to push the state of the art into the era beyond the noisy intermediate-scale quantum (NISQ) era. This package is designed to emulate quantum computation classically. Specifically, `VeriQuEST.jl` is an emulator of measurement based quantum computation (MBQC). Different to the gate model, MBQC relies on entangled states, projective measurements and adaptivity to perform quantum computation.
 
 Implementation of protocol 1 from Leichtle et al ([Verifying BQP Computations on Noisy Devices with Minimal Overhead](https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.2.040302)).
 
@@ -30,7 +29,7 @@ using Test
 using StatsBase
 using Graphs
 using CairoMakie
-using RobustBlindVerification
+using VeriQuEST
 ```
 Define the quantum state type, either a state vector backend (`StateVector()`) or a density matrix backend (`DensityMatrix()`)
 
