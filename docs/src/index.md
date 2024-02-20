@@ -1,41 +1,46 @@
-# Introduction to RobustBlindVerification.jl
+# Introduction to VeriQuEST.jl
 
-RobustBlindVerification.jl is a Julia package emulating a special subset of quantum computation called verification. This is the process of determining if a quantum computation split between at least two parties, traditionaly an "Alice" and "Bob" client-server model, can be secure. Alice, the client, uses Bob, the server, to complete quantum compuation she can not. Alice does not want Bob to know anything private about her computation. She also want assurannces that Bob is not malicious nor too noisy. If Bob is either, than Alice wants to know this is the case, then she can choose how to proceed, typically aborting the job.
+VeriQuEST.jl is a Julia package emulating a special subset of quantum computation called verification. This is the process of determining if a quantum computation split between at least two parties, traditionaly an "Alice" and "Bob" client-server model, can be secure. Alice, the client, uses Bob, the server, to complete quantum compuation she can not. Alice does not want Bob to know anything private about her computation. She also wants assurannces that Bob is not malicious nor too noisy. If Bob is either, than Alice wants to know this is the case, then she can choose how to proceed, typically aborting the job.
 
-Verification relies, among other things, on universal blind quantum computing (UBQC), a subset of the measurement-based quantum computing (MBQC) paradigm. This paradigm, unlike the common "gate-based" model, relies on entanglement, mid-circuit measurement and interactive solving to compute. MBQC and UBQC compute algorirthms that are easily represented by a graph of vertices and edges. Each vertex represents a qubit and each edge is an entangling gate. Qubits are measured during the algorithm's execution (e.g., mid-circuit measurement), with outcomes informing measurement basis for future measurements. Security is gauranteed through blindness, the act of hiding specif qubit states by the client from the server. By repeating the same graph multiple times, with the caveat that a secret proportion of repetitions are actually tests to gauge the server, vertification can be ensured. This method is even robust to constant noise by increasing repetitions. Analysis of the repetitions as a whole will yield the trustworthyness, maliciousness and noisyness of Bob.
+Verification relies, among other things, on universal blind quantum computing (UBQC), a subset of the measurement-based quantum computing (MBQC) paradigm. This paradigm, unlike the common "gate-based" model, relies on entanglement, mid-circuit measurement and interactive solving to compute. MBQC and UBQC compute algorirthms that are easily represented by a graph of vertices and edges. Each vertex represents a qubit and each edge is an entangling gate. Qubits are measured during the algorithm's execution (e.g., mid-circuit measurement), with outcomes informing measurement basis for future measurements. Security is gauranteed through blindness, the act of hiding specific qubit states by the client from the server. By repeating the same graph multiple times, with the caveat that a secret proportion of repetitions are actually tests to gauge the server, vertification can be ensured. This method is even robust to constant noise by increasing the number of repetitions. Analysis of the repetitions as a whole will yield the trustworthyness, maliciousness and noisyness of Bob.
 
-Quantum operations are emulated with the QuEST library [QuEST's GitHub](https://github.com/QuEST-Kit/QuEST). QuEST is a C library capable of emulating quantum computation classically, agnostic of most hardware. RobustBlindVerification uses [QuEST.jl](https://github.com/fieldofnodes/QuEST.jl) to access the C library through [QuEST_jll.jl](https://github.com/JuliaBinaryWrappers/QuEST_jll.jl) a binary generated with [BinaryBuilder.jl](https://github.com/JuliaPackaging/BinaryBuilder.jl).
+Quantum operations are emulated with the QuEST library [QuEST's GitHub](https://github.com/QuEST-Kit/QuEST). QuEST is a C library capable of emulating quantum computation classically, agnostic of most hardware. VeriQuEST uses [QuEST.jl](https://github.com/fieldofnodes/QuEST.jl) to access the C library through [QuEST_jll.jl](https://github.com/JuliaBinaryWrappers/QuEST_jll.jl) a binary generated with [BinaryBuilder.jl](https://github.com/JuliaPackaging/BinaryBuilder.jl).
 
 ## Package features
 
 * Can run standard MBQC algorithms
 * Can run UBQC
-* Verification emulation in noiseles and noisy conditions
-* Uncorrelated noise model
+* Verification emulation in specific conditions:
+  * Ideal pure states
+  * Mixed noiseless states
+  * Uncorrelated noise
+  * Single qubit pre-entanglement noise
+  * (in development) multiple qubit noise models
+  * (in development) hardware specific realistic noise models 
 * Noise models include: damping, dephasing, depolarising, Pauli, density matrix mixing and Kraus maps
 
 ## Quick start
 
-RobustBlindVerification is on the general registry.
+VeriQuEST is on the general registry.
 
 ```julia
 using Pkg
-Pkg.add("RobustBlindVerification")
+Pkg.add("VeriQuEST")
 ```
 
 or
 
 ```julia
-] add RobustBlindVerification
+] add VeriQuEST
 ```
 
 Then, 
 
 ```julia
-using RobustBlindVerification
+using VeriQuEST
 ```
 
-A generic template, currently these names are mandatory.
+A generic template, currently these variable names are mandatory.
 
 ```julia
 # Choose backend and round counts

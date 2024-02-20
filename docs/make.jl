@@ -1,21 +1,21 @@
-using RobustBlindVerification
+using VeriQuEST
 using Documenter
 
-DocMeta.setdocmeta!(RobustBlindVerification, :DocTestSetup, :(using RobustBlindVerification); recursive=true)
+DocMeta.setdocmeta!(VeriQuEST, :DocTestSetup, :(using VeriQuEST); recursive=true)
 
 makedocs(;
-    modules=[RobustBlindVerification],
+    modules=[VeriQuEST],
     authors="Jonathan Miller",
-    repo="https://github.com/fieldofnodes/RobustBlindVerification.jl/blob/{commit}{path}#{line}",
-    sitename="RobustBlindVerification.jl",
+    repo="https://github.com/fieldofnodes/VeriQuEST.jl/blob/{commit}{path}#{line}",
+    sitename="VeriQuEST.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://fieldofnodes.github.io/RobustBlindVerification.jl",
+        canonical="https://fieldofnodes.github.io/VeriQuEST.jl",
         assets=String[],
         size_threshold = 1_000_000,
     ),
     pages=[
-        "Introduction to RobustBlindVerification.jl" => "index.md",
+        "Introduction to VeriQuEST.jl" => "index.md",
         "User Guide" => [
             "Getting Started" => "user/getting_started.md",
             "Interface with QuEST" => "user/interface_with_quest.md",
@@ -41,7 +41,7 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/fieldofnodes/RobustBlindVerification.jl", 
+    repo="github.com/fieldofnodes/VeriQuEST.jl", 
     devbranch = "main",
     devurl="dev",
     target = "build",
