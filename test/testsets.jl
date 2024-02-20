@@ -26,41 +26,6 @@ end
     test_create_complex_identity()
 end
 
-#=
-@testset "test_qubit_initialisation(Client(),DensityMatrix(),DummyQubit(),NoInputQubits())" begin
-    test_qubit_initialisation(Client(),DensityMatrix(),DummyQubit(),NoInputQubits()) 
-end
-
-
-
-@testset "test_qubit_initialisation(::Client,::DensityMatrix,vertex_type::Union{TrapQubit,ComputationQubit},vertex_io_type::Union{InputQubits,NoInputQubits},tolerance)" begin
-    vert_type = [TrapQubit(),ComputationQubit()]
-    vert_io_type = [NoInputQubits(),InputQubits()]
-    [test_qubit_initialisation(Client(),DensityMatrix(),vt,io,tolerance) for io in vert_io_type, vt in vert_type]
-end
-=#
-@testset "test_get_state_vector_pair_per_qubit()" begin
-    test_get_state_vector_pair_per_qubit()
-end
-
-@testset "test_get_density_matrix_indices_per_qubits()" begin
-    test_get_density_matrix_indices_per_qubits()
-end
-
-#=
-@testset "test_get_amps_0_1_states_1_qubit(::Client,::DensityMatrix)" begin
-    test_get_amps_0_1_states_1_qubit(Client(),DensityMatrix())
-end
-
-@testset "test_get_amps_plus_phase_states_1_qubit(::Client,::DensityMatrix,tolerance)" begin
-    test_get_amps_plus_phase_states_1_qubit(Client(),DensityMatrix(),tolerance)
-end
-
-
-@testset "test_get_amps_n_qubit(::Client,::DensityMatrix,tolerance)" begin
-    test_get_amps_n_qubit(Client(),DensityMatrix(),tolerance)
-end
-=#
 
 
 
@@ -146,7 +111,6 @@ end
 end
 
 @testset "test_grover_blind_verification()" begin
-
     test_grover_blind_verification()
 end
 

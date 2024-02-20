@@ -19,7 +19,6 @@ module RobustBlindVerification
 
 export
     Client,
-    Struct,
     Phase,
     NoPhase,
     SecretAngles,
@@ -128,9 +127,7 @@ export
     entangle_graph!,
     generate_property_graph!,
     generate_random_greedy_color,
-    get_state_vector_pair_per_qubit,    
-    get_density_matrix_indices_per_qubits,  
-    get_all_amps,
+    get_state_vector_pair_per_qubit,     
     get_noise_model,
     get_vector_graph_colors,
     get_number_vertices,

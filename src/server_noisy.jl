@@ -8,26 +8,22 @@
 ##################################################################
 
 
-#=
-function add_noise!(
-    ::Server,
-    model::Union{Damping,Dephasing,Depolarising,Pauli,Kraus},
-    params::Union{QubitNoiseParameters,KrausMapNoiseParameters})
-    !(model.type isa SingleQubit) && 
-        throw_error(OnlySingleQubitNoiseInUseError())
-    qubit_range = Base.OneTo(params.ρ.numQubitsRepresented)
-    for q in qubit_range
-        params.q = q
-        add_noise!(model,params)
-    end
-end
+"""
+    add_noise!(server::NoisyServer, server_qureg)
 
-function add_noise!(::Server,
-    model::MixtureDensityMatrices,
-    params::DensityMatrixMixtureParameters)
-    add_noise!(model,params)
-end
-=#
+Adds noise to a quantum register (`server_qureg`) based on the noise model(s) defined in a `NoisyServer`. The function supports both single and multiple noise models. For each noise model, it retrieves the parameters using `get_noise_model_params` and applies the noise to each qubit in the quantum register.
+
+# Arguments
+- `server::NoisyServer`: A `NoisyServer` instance that contains the noise model(s) to be applied.
+- `server_qureg`: The quantum register to which the noise will be applied.
+
+# Examples
+```julia    
+server = NoisyServer(noise_model)
+server_qureg = QuantumRegister(3)
+add_noise!(server, server_qureg)
+```
+"""
 function add_noise!(
     server::NoisyServer,
     server_qureg)
@@ -75,7 +71,27 @@ end
 
 
 
+"""
+    create_resource(server::NoisyServer, client_graph, client_qureg)
 
+Creates a resource for a `NoisyServer` by cloning the client's graph and quantum register, adding noise to the server's quantum register, and entangling the server's graph. Returns a dictionary containing the server's quantum environment, quantum state, and graph.
+
+# Arguments
+- `server::NoisyServer`: A `NoisyServer` instance to which the resource will be created.
+- `client_graph`: The client's graph to be cloned.
+- `client_qureg`: The client's quantum register to be cloned.
+
+# Returns
+- `Dict`: A dictionary containing the server's quantum environment (`"env"`), quantum state (`"quantum_state"`), and graph (`"graph"`).
+
+# Examples
+```julia    
+server = NoisyServer(noise_model)
+client_graph = create_graph(Client(), 3)
+client_qureg = QuantumRegister(3)
+resource = create_resource(server, client_graph, client_qureg)
+```
+"""
 function create_resource(server::NoisyServer,client_graph,client_qureg)
     # Server copies/clones data and structures
     server_graph = clone_graph(Server(),client_graph)
@@ -93,6 +109,31 @@ function create_resource(server::NoisyServer,client_graph,client_qureg)
 end
 
 
+"""
+    run_verification(client::Client, server::NoisyServer, round_types, client_resource, state_type)
+
+Runs a verification process between a client and a noisy server. For each round type, it generates a property graph for the client, extracts the graph and quantum register from the client, creates resources for the server, runs the computation, initializes a blank quantum state for the server, and stores the client's meta graph. Returns a list of all client meta graphs.
+
+# Arguments
+- `client::Client`: A `Client` instance participating in the verification process.
+- `server::NoisyServer`: A `NoisyServer` instance participating in the verification process.
+- `round_types`: The types of rounds to be run in the verification process.
+- `client_resource`: The resources available to the client.
+- `state_type`: The type of state used in the verification process.
+
+# Returns
+- `Array`: An array of client meta graphs for each round type.
+
+# Examples
+```julia    
+client = Client()
+server = NoisyServer(noise_model)
+round_types = [ComputationRound(), TestRound()]
+client_resource = create_resource(client, client_graph, client_qureg)
+state_type = :state1
+round_graphs = run_verification(client, server, round_types, client_resource, state_type)
+```
+"""
 function run_verification(client::Client,server::NoisyServer,
     round_types,client_resource,state_type)
 
@@ -129,7 +170,26 @@ function run_verification(client::Client,server::NoisyServer,
 end
 
 
+"""
+    run_verification_simulator(server::NoisyServer, ::Terse, para)
 
+Runs a verification simulator on a `NoisyServer`. It defines colorings for computation and test rounds, computes the threshold for test rounds, creates a client resource, draws random rounds, runs the verification, verifies the rounds, and gets the mode outcome. Returns a tuple containing the results of the test verification, computation verification, and mode outcome.
+
+# Arguments
+- `server::NoisyServer`: A `NoisyServer` instance on which the verification simulator will be run.
+- `::Terse`: A verbosity level for the verification process.
+- `para`: A dictionary containing parameters for the verification process.
+
+# Returns
+- `Tuple`: A tuple containing the results of the test verification (`test_verification`), computation verification (`computation_verification`), and mode outcome (`mode_outcome`).
+
+# Examples
+```julia    
+server = NoisyServer(noise_model)
+para = Dict(:graph => create_graph(Client(), 3), :input => Dict(:indices => [1, 2], :values => [0, 1]), :output => [3], :secret_angles => [0.5, 0.5], :forward_flow => [0.5, 0.5], :total_rounds => 10, :computation_rounds => 5, :state_type => :state1)
+results = run_verification_simulator(server, Terse(), para)
+```
+"""
 function run_verification_simulator(server::NoisyServer,::Terse,para)
     # Define colouring
     reps = 100
@@ -171,7 +231,26 @@ function run_verification_simulator(server::NoisyServer,::Terse,para)
 end
 
 
+"""
+    run_verification_simulator(server::NoisyServer, ::Verbose, para)
 
+Runs a verification simulator on a `NoisyServer` with verbose output. It defines colorings for computation and test rounds, computes the threshold for test rounds, creates a client resource, draws random rounds, runs the verification, verifies the rounds in both terse and verbose modes, and gets the mode outcome. Returns a tuple containing the results of the test verification, computation verification, verbose test verification, verbose computation verification, and mode outcome.
+
+# Arguments
+- `server::NoisyServer`: A `NoisyServer` instance on which the verification simulator will be run.
+- `::Verbose`: A verbosity level for the verification process.
+- `para`: A dictionary containing parameters for the verification process.
+
+# Returns
+- `Tuple`: A tuple containing the results of the test verification (`test_verification`), verbose test verification (`test_verification_verb`), computation verification (`computation_verification`), verbose computation verification (`computation_verification_verb`), and mode outcome (`mode_outcome`).
+
+# Examples
+```julia    
+server = NoisyServer(noise_model)
+para = Dict(:graph => create_graph(Client(), 3), :input => Dict(:indices => [1, 2], :values => [0, 1]), :output => [3], :secret_angles => [0.5, 0.5], :forward_flow => [0.5, 0.5], :total_rounds => 10, :computation_rounds => 5, :state_type => :state1)
+results = run_verification_simulator(server, Verbose(), para)
+```
+"""
 function run_verification_simulator(server::NoisyServer,::Verbose,para)
    
     # Define colouring
