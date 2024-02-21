@@ -1,4 +1,4 @@
-name = "RobustBlindVerification"
+name = "VeriQuEST"
 uuid = "ad0bff4b-71b6-4e12-8247-dbf9ae5b697f"
 authors = ["Jonathan Miller"]
 version = "1.0.0"
