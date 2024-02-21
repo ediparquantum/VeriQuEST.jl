@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+                  "JATS-publishing1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+<journal-title>Journal of Open Source Software</journal-title>
+<abbrev-journal-title>JOSS</abbrev-journal-title>
+</journal-title-group>
+<issn publication-format="electronic">2475-9066</issn>
+<publisher>
+<publisher-name>Open Journals</publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<article-id pub-id-type="publisher-id">0</article-id>
+<article-id pub-id-type="doi">N/A</article-id>
+<title-group>
+<article-title>VeriQuEST.jl: Emulating quantum verification with
+QuEST</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author" equal-contrib="yes">
+<contrib-id contrib-id-type="orcid">https://orcid.org/0000-0002-5836-1736</contrib-id>
+<name>
+<surname>Miller</surname>
+<given-names>Jonathan</given-names>
+</name>
+<xref ref-type="aff" rid="aff-1"/>
+</contrib>
+<contrib contrib-type="author" equal-contrib="yes">
+<name>
+<surname>Gustiani</surname>
+<given-names>Cica</given-names>
+</name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Leichtle</surname>
+<given-names>Dominik</given-names>
+</name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Kashefi</surname>
+<given-names>Elham</given-names>
+</name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<aff id="aff-1">
+<institution-wrap>
+<institution>School of Informatics, University of Edinburgh, 10 Crichton
+Street, Edinburgh EH8 9AB, United Kingdom</institution>
+</institution-wrap>
+</aff>
+<aff id="aff-2">
+<institution-wrap>
+<institution>Laboratoire d’Informatique de Paris 6, CNRS, Sorbonne
+Université, 4 Place Jussieu, Paris 75005, France</institution>
+</institution-wrap>
+</aff>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2024-01-29">
+<day>29</day>
+<month>1</month>
+<year>2024</year>
+</pub-date>
+<volume>¿VOL?</volume>
+<issue>¿ISSUE?</issue>
+<fpage>¿PAGE?</fpage>
+<permissions>
+<copyright-statement>Authors of papers retain copyright and release the
+work under a Creative Commons Attribution 4.0 International License (CC
+BY 4.0)</copyright-statement>
+<copyright-year>2022</copyright-year>
+<copyright-holder>The article authors</copyright-holder>
+<license license-type="open-access" xlink:href="https://creativecommons.org/licenses/by/4.0/">
+<license-p>Authors of papers retain copyright and release the work under
+a Creative Commons Attribution 4.0 International License (CC BY
+4.0)</license-p>
+</license>
+</permissions>
+<kwd-group kwd-group-type="author">
+<kwd>Julia</kwd>
+<kwd>quantum computing</kwd>
+<kwd>measurement based quantum computing</kwd>
+<kwd>blind quantum computing</kwd>
+<kwd>quantum verification</kwd>
+<kwd>emulation</kwd>
+<kwd>noise</kwd>
+<kwd>decoherence</kwd>
+</kwd-group>
+</article-meta>
+</front>
+<body>
+<sec id="summary">
+  <title>Summary</title>
+  <p>Verification of delegated quantum computations is a challenging
+  task in both theory and implementation. To address the theory, methods
+  and protocols have been developed that ouline abstract verification.
+  Implementation will likely require a quantum network in place for
+  certain protocols. In the mean time, specialised emulators have been
+  developed to perform quantum computation, offering a possibility to
+  explore verifcation numerically. Many emulators rely solely on the
+  gate base model and do not allow for projective, mid-circuit
+  measurements, a key component in most quantum verification protocols.
+  In response, we present the Julia package,
+  <monospace>RobustBlindVerification.jl</monospace> (RBV). RBV aims to
+  emulate blind measurement based quantum computing (MBQC and UBQC) with
+  interactive verfication in place. Quantum computation is emulated in
+  RBV with the Julia package <monospace>QuEST.jl</monospace>, which in
+  turn is a wrapper package, <monospace>QuEST_jll</monospace>, developed
+  with <monospace>BinaryBuilder.jl</monospace>
+  (<xref alt="Contributors, 2022" rid="ref-BinaryBuilder2022" ref-type="bibr">Contributors,
+  2022</xref>) to reproducibally call the <monospace>C</monospace>
+  library, <monospace>QuEST</monospace>
+  (<xref alt="Jones et al., 2019" rid="ref-QuESTJones2019" ref-type="bibr">Jones
+  et al., 2019</xref>). RBV is developed based on the work by Leichtle
+  et al.
+  (<xref alt="2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">2021</xref>),
+  herein referred to as ‘the protocol’. The protocol is an example of
+  robust blind quantum computation (RBVQC). It is a formal verification
+  protocol with minimal overhead, beyond computational repetition and
+  resistant to constant noise whilst mainting security.</p>
+</sec>
+<sec id="statement-of-need">
+  <title>Statement of need</title>
+  <p>Quantum computing appears to be on a course that leads to the need
+  for efficient, secure and verifiable delegated access through some
+  client-server relationship. The so-called client-server paradigm in
+  use for current classical computation via cloud or high performance
+  computing is the current analogue. Trust in the security, data usages,
+  compuation and algorithm implementation is not a given for delegated
+  QC. Many protocols have been implemented to address these issues.
+  Advancements in verification has relied on verification assuming only
+  uncorrelated noise
+  (<xref alt="Gheorghiu et al., 2018" rid="ref-Gheorghiu_2019" ref-type="bibr">Gheorghiu
+  et al., 2018</xref>), verification assuming reliable state preparation
+  per qubit
+  (<xref alt="Kapourniotis &amp; Datta, 2019" rid="ref-Kapourniotis2019nonadaptivefault" ref-type="bibr">Kapourniotis
+  &amp; Datta, 2019</xref>), verification requiring more than one server
+  and entanglement distillation
+  (<xref alt="Morimae &amp; Fujii, 2013" rid="ref-MorimaeFujii2013" ref-type="bibr">Morimae
+  &amp; Fujii, 2013</xref>) or verification with the assumption that a
+  verifier has access to post-quantum cryptography unbeakable by a
+  quantum prover
+  (<xref alt="Mahadev, 2022" rid="ref-Mahadev2022ClassicalVerification" ref-type="bibr">Mahadev,
+  2022</xref>). Such results fall short of a robust verification
+  protocol that does not suffer from costly process or are inflexible to
+  noise. To respond to these shortcomings, the protocol addresses the
+  problem for bounded-error quantum polynomial (BQP) computations
+  (<xref alt="Leichtle et al., 2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">Leichtle
+  et al., 2021</xref>). It is known that the complexity class BQP can
+  efficiently solve binary descision problems with quantum computers.
+  Further, the protocol is robust to constant noise and maintain
+  security.</p>
+  <p>The protocol is designed such that verification is separated into
+  the execution of rounds. The content of each round has its own
+  requirements. After some specified number of rounds, a classical
+  analysis is conducted and a result computed whether the server and/or
+  the computation were to be trusted. Each round is either a round of
+  the required computation, called a <italic>computation</italic> round,
+  or the round is used to test the server, called a
+  <italic>test</italic> round. The computation round is prepared and
+  executed with UBQC, whereas the test rounds utilise a trapification
+  strategy to conduct tests against the server. The test rounds use a
+  strategy that splits some qubits into traps and some into dummies. The
+  traps and the dummies are prepared according to some randomness, which
+  though the UBQC will have determinsitic outcomes that can me tested.
+  The outcome to these tests for each round are aggregated. The
+  aggregate count of test rounds that passed the test must exceed a
+  predetermined amount, based on parameters of the protocol. The mode
+  repsonse for the computation round must be greater than half the
+  number of computation rounds. The results of the test and computation
+  rounds dictate the trust of the server. RBV implements the protocol
+  under these requirements. For an in depth understanding see @Leichtle
+  et al.
+  (<xref alt="2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">2021</xref>).</p>
+</sec>
+<sec id="core-features-and-functionality">
+  <title>Core features and functionality</title>
+  <p>Core features include MBQC and UBQC capability along with running
+  the RVBQC algorithm. An ideal setting can be used with pure state
+  vectors or density matrices. Uncorrelated noise along with single
+  qubit noise models can be called. <italic>Client and server blindness
+  is implemented through bell-state teleportation from a single qubit
+  repeatedly re-used to the corresponding qubit on a different section
+  of the quantum state</italic> (<bold>In italics as this is still being
+  implemented</bold>).</p>
+</sec>
+<sec id="acknowledgements">
+  <title>Acknowledgements</title>
+  <p>We acknowledge contributions from QSL, NQCC,…???</p>
+</sec>
+</body>
+<back>
+<ref-list>
+  <ref id="ref-PRXQuantum.2.040302">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Leichtle</surname><given-names>Dominik</given-names></name>
+        <name><surname>Music</surname><given-names>Luka</given-names></name>
+        <name><surname>Kashefi</surname><given-names>Elham</given-names></name>
+        <name><surname>Ollivier</surname><given-names>Harold</given-names></name>
+      </person-group>
+      <article-title>Verifying BQP computations on noisy devices with minimal overhead</article-title>
+      <source>PRX Quantum</source>
+      <publisher-name>American Physical Society</publisher-name>
+      <year iso-8601-date="2021-10">2021</year><month>10</month>
+      <volume>2</volume>
+      <uri>https://link.aps.org/doi/10.1103/PRXQuantum.2.040302</uri>
+      <pub-id pub-id-type="doi">10.1103/PRXQuantum.2.040302</pub-id>
+      <fpage>040302</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-Gheorghiu_2019">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Gheorghiu</surname><given-names>Alexandru</given-names></name>
+        <name><surname>Hoban</surname><given-names>Matty J</given-names></name>
+        <name><surname>Kashefi</surname><given-names>Elham</given-names></name>
+      </person-group>
+      <article-title>A simple protocol for fault tolerant verification of quantum computation</article-title>
+      <source>Quantum Science and Technology</source>
+      <publisher-name>IOP Publishing</publisher-name>
+      <year iso-8601-date="2018-11">2018</year><month>11</month>
+      <volume>4</volume>
+      <issue>1</issue>
+      <uri>https://dx.doi.org/10.1088/2058-9565/aaeeb3</uri>
+      <pub-id pub-id-type="doi">10.1088/2058-9565/aaeeb3</pub-id>
+      <fpage>015009</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-Kapourniotis2019nonadaptivefault">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Kapourniotis</surname><given-names>Theodoros</given-names></name>
+        <name><surname>Datta</surname><given-names>Animesh</given-names></name>
+      </person-group>
+      <article-title>Nonadaptive fault-tolerant verification of quantum supremacy with noise</article-title>
+      <source>Quantum</source>
+      <publisher-name>Verein zur Förderung des Open Access Publizierens in den Quantenwissenschaften</publisher-name>
+      <year iso-8601-date="2019-07">2019</year><month>07</month>
+      <volume>3</volume>
+      <issn>2521-327X</issn>
+      <uri>https://doi.org/10.22331/q-2019-07-12-164</uri>
+      <pub-id pub-id-type="doi">10.22331/q-2019-07-12-164</pub-id>
+      <fpage>164</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-MorimaeFujii2013">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Morimae</surname><given-names>Tomoyuki</given-names></name>
+        <name><surname>Fujii</surname><given-names>Keisuke</given-names></name>
+      </person-group>
+      <article-title>Secure entanglement distillation for double-server blind quantum computation</article-title>
+      <source>Phys. Rev. Lett.</source>
+      <publisher-name>American Physical Society</publisher-name>
+      <year iso-8601-date="2013-07">2013</year><month>07</month>
+      <volume>111</volume>
+      <uri>https://link.aps.org/doi/10.1103/PhysRevLett.111.020502</uri>
+      <pub-id pub-id-type="doi">10.1103/PhysRevLett.111.020502</pub-id>
+      <fpage>020502</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-Mahadev2022ClassicalVerification">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Mahadev</surname><given-names>Urmila</given-names></name>
+      </person-group>
+      <article-title>Classical verification of quantum computations</article-title>
+      <source>SIAM Journal on Computing</source>
+      <year iso-8601-date="2022">2022</year>
+      <volume>51</volume>
+      <issue>4</issue>
+      <uri>https://doi.org/10.1137/20M1371828</uri>
+      <pub-id pub-id-type="doi">10.1137/20M1371828</pub-id>
+      <fpage>1172</fpage>
+      <lpage>1229</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-QuESTJones2019">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Jones</surname><given-names>Tyson</given-names></name>
+        <name><surname>Brown</surname><given-names>Anna</given-names></name>
+        <name><surname>Bush</surname><given-names>Ian</given-names></name>
+        <name><surname>Benjamin</surname><given-names>Simon C.</given-names></name>
+      </person-group>
+      <article-title>QuEST and high performance simulation of quantum computers</article-title>
+      <source>Scientific Reports</source>
+      <year iso-8601-date="2019">2019</year>
+      <volume>9</volume>
+      <issue>1</issue>
+      <uri>https://doi.org/10.1038/s41598-019-47174-9</uri>
+      <pub-id pub-id-type="doi">10.1038/s41598-019-47174-9</pub-id>
+      <fpage>10736</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-BinaryBuilder2022">
+    <element-citation>
+      <person-group person-group-type="author">
+        <name><surname>Contributors</surname><given-names>BinaryBuilder</given-names></name>
+      </person-group>
+      <article-title>BinaryBuilder.jl</article-title>
+      <source>GitHub repository</source>
+      <publisher-name>https://github.com/JuliaPackaging/BinaryBuilder.jl; GitHub</publisher-name>
+      <year iso-8601-date="2022">2022</year>
+    </element-citation>
+  </ref>
+</ref-list>
+</back>
+</article>
