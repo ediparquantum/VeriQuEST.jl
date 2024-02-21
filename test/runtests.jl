@@ -1,4 +1,4 @@
-using RobustBlindVerification
+using VeriQuEST
 using Test
 using StatsBase
 using Graphs
