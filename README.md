@@ -7,9 +7,9 @@
 [![Coverage](https://codecov.io/gh/fieldofnodes/VeriQuEST.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/fieldofnodes/VeriQuEST.jl)
 
 
-# Quantum emulation
+## Introduction
 
-Quantum computation is an exciting field. There are many research institutes and companies working hard to push the state of the art into the era beyond the noisy intermediate-scale quantum (NISQ) era. This package is designed to emulate quantum computation classically. Specifically, `VeriQuEST.jl` is an emulator of measurement based quantum computation (MBQC). Different to the gate model, MBQC relies on entangled states, projective measurements and adaptivity to perform quantum computation.
+`VeriQuEST.jl` is a measurement based quantum computing package. To complete the quatnum emulation, the C library [QuEST](https://github.com/QuEST-Kit/QuEST), is used. VeriQuEST's purpose is to emulate noisy verification protocols.
 
 
 ## Quick start
