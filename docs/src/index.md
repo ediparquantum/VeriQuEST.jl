@@ -8,6 +8,8 @@ Quantum operations are emulated with the QuEST library [QuEST's GitHub](https://
 
 ## Package features
 
+Features present in the VerifQuEST package:
+
 * Can run standard MBQC algorithms
 * Can run UBQC
 * Verification emulation in specific conditions:
