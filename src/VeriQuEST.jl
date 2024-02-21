@@ -1,4 +1,4 @@
-module RobustBlindVerification
+module VeriQuEST
 
     using Reexport
  
