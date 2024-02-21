@@ -4,7 +4,7 @@ Documention generated automatically with `@audotdocs`.
 
 Docs for package
 ```@autodocs
-Modules = [RobustBlindVerification]
+Modules = [VeriQuEST]
 Order   = [:type, :constant, :macro, :function,]
 ```
 
