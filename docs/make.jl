@@ -18,7 +18,7 @@ makedocs(;
         "Introduction to VeriQuEST.jl" => "index.md",
         "User Guide" => [
             "Getting Started" => "user/getting_started.md",
-            "Quantum Noise" => "user/quantum_noise.md",
+            "Notes on Noise" => "user/quantum_noise.md",
         ],
         "References" => 
             ["API" => "references/api.md"]
