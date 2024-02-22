@@ -1,6 +1,8 @@
 ---
-# To run locally 
+# To run locally as a JOSS paper
 # docker run --rm --volume $PWD:/data --user $(id -u):$(id -g) --env JOURNAL=joss openjournals/inara
+# To run locally just as compiled pdf
+# pandoc paper.md --pdf-engine=pdflatex --from=markdown --output=draft_paper.pdf --bibliography=paper.bib --metadata link-citations=true 
 title: 'VeriQuEST.jl: Emulating quantum verification with QuEST'
 tags:
   - Julia
@@ -38,9 +40,9 @@ bibliography: paper.bib
 
 # Optional fields if submitting to a AAS journal too, see this blog post:
 # https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
-aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
-aas-journal: Astrophysical Journal <- The name of the AAS journal.
-#pandoc paper.md --pdf-engine=pdflatex --from=markdown --output=paper.tex --bibliography=paper.bib --metadata link-citations=true 
+#aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
+#aas-journal: Astrophysical Journal <- The name of the AAS journal.
+
 ---
 
 # Summary
