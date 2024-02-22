@@ -51,7 +51,7 @@ output = ()::Tuple # Output qubits classical outcomes BQP
 function forward_flow(vertex::Int)
     v_str = string(vertex)
     forward = Dict(
-        "current" =>future,
+        #current =>future,
         "1" => 0) # indicates vertex 1 does not have a flow, specify all qubits. 
     forward[v_str]
 end
