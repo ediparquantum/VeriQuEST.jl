@@ -19,6 +19,12 @@ which creates the pure state ``| 0 \rightangle\leftangle 0 |``. By default `QuES
 
 Note that some of the above models are available is two qubit and $N$ qubits gates.
 
+Set a scaling factor to ensure noise is not randomly chosen above threshold.
+
+```julia
+p_scale = 0.1
+```
+
 ## Damping 
 
 To run a damping noise within the verification framework recall
