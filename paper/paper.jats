@@ -129,15 +129,19 @@ a Creative Commons Attribution 4.0 International License (CC BY
 </sec>
 <sec id="statement-of-need">
   <title>Statement of need</title>
-  <p>Quantum computing appears to be on a course that leads to the need
-  for efficient, secure and verifiable delegated access through some
-  client-server relationship. The so-called client-server paradigm in
-  use for current classical computation via cloud or high performance
-  computing is the current analogue. Trust in the security, data usages,
-  compuation and algorithm implementation is not a given for delegated
-  QC. Many protocols have been implemented to address these issues.
-  Advancements in verification has relied on verification assuming only
-  uncorrelated noise
+  <p>There are many quantum computing paradigms, notably the gate or
+  circuit based model is the most popular [<bold>Cite</bold>]. It is
+  limited by most hardware providers not capable of performing
+  mid-circuit, adpative and projective measurements [<bold>Cite</bold>].
+  The measurement-base quantum computing (MBQC) paradigm conversely is
+  predicated on this very capability [<bold>Cite</bold>]. It turns out
+  that MBQC can utilise projective measurements to offer secure
+  delegated QC over a quantum network between clients and servers. This
+  leads to the need for efficient, secure and verifiable delegated
+  access. Trust in the security, data usages, compuation and algorithm
+  implementation is not a given for delegated QC. Many protocols have
+  been implemented to address these issues. Advancements in verification
+  has relied on verification assuming only uncorrelated noise
   (<xref alt="Gheorghiu et al., 2018" rid="ref-Gheorghiu_2019" ref-type="bibr">Gheorghiu
   et al., 2018</xref>), verification assuming reliable state preparation
   per qubit
@@ -151,46 +155,121 @@ a Creative Commons Attribution 4.0 International License (CC BY
   (<xref alt="Mahadev, 2022" rid="ref-Mahadev2022ClassicalVerification" ref-type="bibr">Mahadev,
   2022</xref>). Such results fall short of a robust verification
   protocol that does not suffer from costly process or are inflexible to
-  noise. To respond to these shortcomings, the protocol addresses the
-  problem for bounded-error quantum polynomial (BQP) computations
-  (<xref alt="Leichtle et al., 2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">Leichtle
+  noise. To respond to these shortcomings and to address the problem for
+  bounded-error quantum polynomial (BQP) computations a verification
+  protocol is
+  implemented(<xref alt="Leichtle et al., 2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">Leichtle
   et al., 2021</xref>). It is known that the complexity class BQP can
   efficiently solve binary descision problems with quantum computers.
   Further, the protocol is robust to constant noise and maintain
   security.</p>
+  <p>The basis for this verification protocol is universal blind quantum
+  computation (UBQC), which extends meaurement based quantum
+  computation. Commonly, a client with minimal quantum capabilities,
+  maybe only state preparation or only measurement is theorised, and an
+  all powerful conceptual server is connected to this client over a
+  quantum network. MBQC works by updating the basis angle qubits are
+  measured in by the outcomes of previous qubits. By keeping a set of
+  secret basis angles which are incorpoarated into measurement basis,
+  the client can perform its quantum computation free from the server
+  being able to ascertain any informatoin [<bold>CHECK</bold>]. So a
+  qubit is initialised by the client as <inline-formula><alternatives>
+  <tex-math><![CDATA[|+_{\theta}\rangle]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:msub><mml:mo>+</mml:mo><mml:mi>θ</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\theta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
+  is the rotational angle, but there is another angle,
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[\delta]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>δ</mml:mi></mml:math></alternatives></inline-formula>
+  such that when the basis for measurment is updated, the server is told
+  to measure with <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{\theta} + \delta + r\pi]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>+</mml:mo><mml:mi>δ</mml:mi><mml:mo>+</mml:mo><mml:mi>r</mml:mi><mml:mi>π</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
+  where <inline-formula><alternatives>
+  <tex-math><![CDATA[\tilde{\theta}]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+  is the updated angle based on previous measurement outcomes and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[r]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>r</mml:mi></mml:math></alternatives></inline-formula>
+  is a one time pad random bit used to help correct measurements
+  [<bold>CITE BLIND</bold>]. To turn UBQC into robust verification
+  quantum computation (RVBQC), the protocol calls for the use of
+  multiple rounds to run the computation along with some test
+  rounds.</p>
   <p>The protocol is designed such that verification is separated into
-  the execution of rounds. The content of each round has its own
-  requirements. After some specified number of rounds, a classical
-  analysis is conducted and a result computed whether the server and/or
-  the computation were to be trusted. Each round is either a round of
-  the required computation, called a <italic>computation</italic> round,
-  or the round is used to test the server, called a
-  <italic>test</italic> round. The computation round is prepared and
-  executed with UBQC, whereas the test rounds utilise a trapification
-  strategy to conduct tests against the server. The test rounds use a
-  strategy that splits some qubits into traps and some into dummies. The
-  traps and the dummies are prepared according to some randomness, which
-  though the UBQC will have determinsitic outcomes that can me tested.
-  The outcome to these tests for each round are aggregated. The
-  aggregate count of test rounds that passed the test must exceed a
-  predetermined amount, based on parameters of the protocol. The mode
-  repsonse for the computation round must be greater than half the
-  number of computation rounds. The results of the test and computation
-  rounds dictate the trust of the server. RBV implements the protocol
-  under these requirements. For an in depth understanding see @Leichtle
-  et al.
+  the execution of <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  rounds, <inline-formula><alternatives>
+  <tex-math><![CDATA[C]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>
+  rounds are the algorithm to be run (e.g., the computation round) and
+  <inline-formula><alternatives>
+  <tex-math><![CDATA[T = N-C]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>T</mml:mi><mml:mo>=</mml:mo><mml:mi>N</mml:mi><mml:mo>−</mml:mo><mml:mi>C</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+  test rounds. Test rounds contain traps which can detect malicious or
+  noisy behaviour of the server. The algorithm for test rounds has the
+  same underlying stucture save for state initialisations and the method
+  of adaptive basis updates. After <inline-formula><alternatives>
+  <tex-math><![CDATA[N]]></tex-math>
+  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
+  rounds, a classical analysis is conducted and a result computed
+  whether the server and/or the computation were to be trusted. The
+  computation round is prepared and executed with UBQC, whereas the test
+  rounds utilise a trapification strategy to conduct tests against the
+  server. The test rounds use a strategy that splits some qubits into
+  traps and some into dummies. The traps and the dummies are prepared
+  according to some randomness, which though the UBQC will have
+  determinsitic outcomes that can me tested. For each test round the
+  traps and the dummies are compared such that all trap qubit outcomes
+  must pass a verification equation, if any one trap fails the whole
+  test round fails. The outcome to these tests for each round are
+  aggregated. The aggregate count of test rounds that passed the test
+  must exceed a predetermined amount, based on parameters of the
+  protocol. The mode repsonse for the computation round must be greater
+  than half the number of computation rounds. The results of the test
+  and computation rounds dictate the trust of the server. RVBQC
+  implements the protocol under these requirements. For an in depth
+  understanding see @Leichtle et al.
   (<xref alt="2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">2021</xref>).</p>
 </sec>
 <sec id="core-features-and-functionality">
   <title>Core features and functionality</title>
-  <p>Core features include MBQC and UBQC capability along with running
-  the RVBQC algorithm. An ideal setting can be used with pure state
-  vectors or density matrices. Uncorrelated noise along with single
-  qubit noise models can be called. <italic>Client and server blindness
-  is implemented through bell-state teleportation from a single qubit
-  repeatedly re-used to the corresponding qubit on a different section
-  of the quantum state</italic> (<bold>In italics as this is still being
-  implemented</bold>).</p>
+  <p>There are three core features. Firstly, the user can simply run
+  standard MBQC if they so choose. Secondly, the user can specify to use
+  UBQC. Thirdly, the user can run the verification protocol. Since MBQC
+  and UBQC are universal [<bold>CITE</bold>] the outcomes are the same.
+  If a user wants to explore with noise models, then the RVBQC is
+  designed to seemlessly offer these by specifying the noise model in
+  the server struct (e.g., <monospace>NoisyServer(model)</monospace> for
+  <monospace>model</monospace> being the specified noise model). Julia
+  is a transparent programming language and all functionality is
+  available to the user. If one wishes to become acquainted with the
+  details see the public GitHub repository for
+  <ext-link ext-link-type="uri" xlink:href="https://github.com/fieldofnodes/VeriQuEST.jl"><monospace>VeriQuEST</monospace></ext-link>.</p>
+</sec>
+<sec id="future-plans">
+  <title>Future plans</title>
+  <p>The concept of a client and server in the quantum sense requires a
+  quantum internet. There are means to simulate a single Hilbert space
+  for the client and the server such that the client can initialise a
+  single qubit in the space and through Bell entanglement teleport qubit
+  states to select qubits in the server. The server does not know these
+  state due to the entanglement. That has not been incorporated here,
+  instead the client initalises all qubits in the state in its own
+  density matrix or state vector, then the server duplicates the state.
+  The client state is no longer considered. The server state is acted
+  upon with noise, entanglement and measurements. Here we restrict what
+  information the client sends to the server to keep the emulation of
+  blindness in tact. A future work will be to introduce this
+  client-server algorithm to better emulate the relationship.</p>
+  <p>The noise models used in this package are standard models, but may
+  not accurately capture hardware noise realistically. To address this
+  whole quantum state Kraus maps, density mixing, double qubit and more
+  custom single qubit models are being developed.</p>
 </sec>
 <sec id="acknowledgements">
   <title>Acknowledgements</title>
