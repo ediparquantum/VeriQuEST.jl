@@ -31,4 +31,4 @@ Manifest.toml
 
 # Ignore .DS_Store files in all directories
 **/.DS_Store
-.DS_Store
+.DS_Store.DS_Store
