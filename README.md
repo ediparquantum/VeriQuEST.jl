@@ -35,7 +35,7 @@ A generic template, currently these variable names are mandatory.
 
 ```julia
 # Choose backend and round counts
-state_type::DensityMatrix = DensityMatrix() #or StateVector
+state_type = DensityMatrix() #or StateVector()
 total_rounds::Int = # Number of rounds, 1...N
 computation_rounds::Int = # Number of rounds,1,...,N
 
@@ -45,7 +45,7 @@ graph = Graph(num_vertices)::Graph # Uses Graphs.jl
 # Specify graph using Graphs.jl API
 
 input = (indices = (),values = ())::NamedTuple # Input classical data
-output = ()::Tuple # Output qubits classical outcomes BQP 
+output = () # Output qubits classical outcomes BQP 
 
 # Julia is indexed 1, hence a vertex with 0 index is a flag for no flow
 function forward_flow(vertex::Int)
