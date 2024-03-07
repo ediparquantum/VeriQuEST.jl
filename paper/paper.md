@@ -13,7 +13,7 @@
 # Acknowledgement of any financial support.
 # As this short list shows, JOSS papers are only expected to contain a limited set of metadata (see example below), a Statement of need, Summary, Acknowledgements, and References sections. You can look at an example accepted paper. Given this format, a “full length” paper is not permitted, and software documentation such as API (Application Programming Interface) functionality should not be in the paper and instead should be outlined in the software documentation.
 # Further: https://joss.readthedocs.io
-title: 'VeriQuEST.jl: Emulating quantum verification with QuEST'
+title: 'VeriQuEST.jl: Emulating verification of quantum computations with QuEST'
 tags:
   - Julia
   - quantum computing
@@ -28,10 +28,6 @@ authors:
     orcid: 0000-0002-5836-1736
     equal-contrib: true
     affiliation: 1
-  - name: Cica Gustiani
-    orcid: 0000-0000-0000-0000
-    equal-contrib: false
-    affiliation: '2'
   - name: Dominik Leichtle
     orcid: 0000-0000-0000-0000
     equal-contrib: false
@@ -39,6 +35,10 @@ authors:
   - name: Elham Kashefi
     orcid: 0000-0000-0000-0000
     corresponding: false
+    affiliation: '2'
+  - name: Cica Gustiani
+    orcid: 0000-0000-0000-0000
+    equal-contrib: false
     affiliation: '2'
 affiliations:
   - name: School of Informatics, University of Edinburgh, 10 Crichton Street, Edinburgh EH8 9AB, United Kingdom
@@ -60,30 +60,76 @@ bibliography: paper.bib
 
 # Summary
 
-Verification of delegated quantum computations is a challenging task in both theory and implementation. To address the theory, methods and protocols have been developed that ouline abstract verification. Implementation will likely require a quantum network in place for certain protocols. In the mean time, specialised emulators have been developed to perform quantum computation, offering a possibility to explore verifcation numerically. Many emulators rely solely on the gate base model and do not allow for projective, mid-circuit measurements, a key component in most quantum verification protocols. In response, we present the Julia package, `RobustBlindVerification.jl` (RBV). RBV aims to emulate blind measurement based quantum computing (MBQC and UBQC) with interactive verfication in place. Quantum computation is emulated in RBV with the Julia package `QuEST.jl`, which in turn is a wrapper package, `QuEST_jll`, developed with `BinaryBuilder.jl` [@BinaryBuilder2022] to reproducibally call the `C` library, `QuEST` [@QuESTJones2019]. RBV is developed based on the work by @PRXQuantum.2.040302, herein referred to as 'the protocol'. The protocol is an example of robust blind quantum computation (RBVQC). It is a formal verification protocol with minimal overhead, beyond computational repetition and resistant to constant noise whilst mainting security. 
+Within the practical context of quantum computing, the _client-server_ framework is anticipated to become predominant in the future due to the high costs, intensive maintenance, and operational complexity of quantum computers. In this framework, a client with a very limited quantum power, so-called Alice, delegates her quantum computation to a powerful quantum server, so-called Bob, who then provides Alice her computation results. While this scenario appears practical, it raises significant security concern: how do we ensure Bob follows Alice's instructions and confirm the reliability of his quantum computer? 
+These questions undeniably pose significant challenges and remain under active investigation; _verifiable quantum computations_ is a subfield of quantum computing that aims to address these concerns. 
+
+This paper introduces `VeriQuEST.jl`, a Julia package equipped with functionalities to emulate verification protocols for quantum computation [@gheorghiu2019verification] within the framework of measurement-based quantum computations [@raussendorf2001one]. The package utilizes QuEST [@QuESTJones2019] as its backend, a versatile quantum computer emulator (including noise simulation) written in C, while supporting high-performance computations. VeriQuEST.jl is designed to aid researchers in testing their verification protocols or concepts on emulated quantum systems. This approach allows them to assess performance estimates without the need for actual hardware, which, at the time of writing this paper, is significantly limited.
+
 
 <!-- We also require that authors explain the research applications of the software. -->
 # Statement of need
 
-There are many quantum computing paradigms, notably the gate or circuit based model is the most popular [**Cite**]. It is limited by most hardware providers not capable of performing mid-circuit, adpative and projective measurements [**Cite**]. The measurement-base quantum computing (MBQC) paradigm conversely is predicated on this very capability [**Cite**]. It turns out that MBQC can utilise projective measurements to offer secure delegated QC over a quantum network between clients and servers. This leads to the need for efficient, secure and verifiable delegated access. Trust in the security, data usages, compuation and algorithm implementation is not a given for delegated QC. Many protocols have been implemented to address these issues. Advancements in verification has relied on verification assuming only uncorrelated noise [@Gheorghiu_2019], verification assuming reliable state preparation per qubit [@Kapourniotis2019nonadaptivefault], verification requiring more than one server and entanglement distillation [@MorimaeFujii2013] or verification with the assumption that a verifier has access to post-quantum cryptography unbeakable by a quantum prover  [@Mahadev2022ClassicalVerification]. Such results fall short of a robust verification protocol that does not suffer from costly process or are inflexible to noise. To respond to these shortcomings and to address the problem for bounded-error quantum polynomial (BQP) computations a verification protocol is implemented[@PRXQuantum.2.040302]. It is known that the complexity class BQP can efficiently solve binary descision problems with quantum computers. Further, the protocol is robust to constant noise and maintain security.
-
-
-The basis for this verification protocol is universal blind quantum computation (UBQC), which extends meaurement based quantum computation. Commonly, a client with minimal quantum capabilities, maybe only state preparation or only measurement is theorised, and an all powerful conceptual server is connected to this client over a quantum network. MBQC works by updating the basis angle qubits are measured in by the outcomes of previous qubits. By keeping a set of secret basis angles which are incorpoarated into measurement basis, the client can perform its quantum computation free from the server being able to ascertain any informatoin [**CHECK**]. So a qubit is initialised by the client as $|+_{\theta}\rangle$, where $\theta$ is the rotational angle, but there is another angle, $\delta$ such that when the basis for measurment is updated, the server is told to measure with $\tilde{\theta} + \delta + r\pi$, where $\tilde{\theta}$ is the updated angle based on previous measurement outcomes and $r$ is a one time pad random bit used to help correct measurements [**CITE BLIND**]. To turn UBQC into  robust verification quantum computation (RVBQC), the protocol calls for the use of multiple rounds to run the computation along with some test rounds.
-
-The protocol is designed such that verification is separated into the execution of $N$ rounds, $C$ rounds are the algorithm to be run (e.g., the computation round) and $T = N-C$ test rounds. Test rounds contain traps which can detect malicious or noisy behaviour of the server. The algorithm for test rounds has the same underlying stucture save for state initialisations and the method of adaptive basis updates. After $N$ rounds, a classical analysis is conducted and a result computed whether the server and/or the computation were to be trusted. The computation round is prepared and executed with UBQC, whereas the test rounds utilise a trapification strategy to conduct tests against the server. The test rounds use a strategy that splits some qubits into traps and some into dummies. The traps and the dummies are prepared according to some randomness, which though the UBQC will have determinsitic outcomes that can me tested. For each test round the traps and the dummies are compared such that all trap qubit outcomes must pass a verification equation, if any one trap fails the whole test round fails. The outcome to these tests for each round are aggregated. The aggregate count of test rounds that passed the test must exceed a predetermined amount, based on parameters of the protocol. The mode repsonse for the computation round must be greater than half the number of computation rounds. The results of the test and computation rounds dictate the trust of the server. RVBQC implements the protocol under these requirements. For an in depth understanding see @@PRXQuantum.2.040302.
+Our package `VeriQuEST.jl` is aimed at assisting researchers in exploring and designing their verification protocols within the paradigm of _measurement-based quantum computation_ (MBQC). The conventional way to express quantum algorithms is through a series of unitary operations and measurements, so-called _gate-based_ computations [@nielsenchuang]. On the other hand, MBQC uses a _graph state_ as the resource and a series of adaptive single-qubit measurements to realise a quantum algorithm. While gate-based emulators -- such as `QuEST` -- are predomonant, MBQC emulators remain scarce. Our package, VeriQuEST.jl, offers an interface that enables users to express their verification protocols and quantum algorithms in the native MBQC language, supporting interactive protocols, such as verifications, that require a quantum internet, powered by a performant backend `QuEST` [@QuESTJones2019].  Moreover, to this date, there is no emulator that is specifically aimed at simulating verification protocols. 
 
 # Core features and functionality
 
-There are three core features. Firstly, the user can simply run standard MBQC if they so choose. Secondly, the user can specify to use UBQC. Thirdly, the user can run the verification protocol. Since MBQC and UBQC are universal [**CITE**] the outcomes are the same. If a user wants to explore with noise models, then the RVBQC is designed to seemlessly offer these by specifying the noise model in the server struct (e.g., `NoisyServer(model)` for `model` being the specified noise model). Julia is a transparent programming language and all functionality is available to the user. If one wishes to become acquainted with the details see the public GitHub repository for [`VeriQuEST`](https://github.com/fieldofnodes/VeriQuEST.jl).
+`VeriQuEST.jl` is equipped with fundamental functionalities to support the testing of various verification protocols of quantum computations based on MBQC. The package `VeriQuEST.jl` contains three fundamental elements to support emulation of verification protocols: MBQC computations, multi-round interactions between client and server, and Hilbert space partition to realize the explicit client-server separation. The package allows for (noiseless) state vector and (noisy) density matrix simulations. In the current release, we provide several well-known MBQCs and verification protocols ready for the users to use. If one wishes to become acquainted with the details, see the public GitHub repository for [`VeriQuEST`](https://github.com/fieldofnodes/VeriQuEST.jl).
 
+
+## Software architecture
+
+[JON:Explain how the package works, where does it stand**: function call, core link (if there is any), compilation]
+
+![Architecture: here is a sketch. Some diagram would be cool.](architecture.jpg){width=50%}
+
+
+## Measurement-Based Quantum Computation (MBQC)
+
+In the MBQC framework, a quantum algorithm can be represented as a set $\{(G, I, O), \vec{\phi}\}$, where $(G, I, O)$ denotes the quantum resource and $\vec{\phi}$ is a set of measurement angles. The triplet $(G, I, O)$ signifies an _open graph_, i.e., graphs characterised by the presence of _flow_ [@danos2006determinism]. Single-qubit adaptive measurements are performed sequentially on the vertices with measurement operator $\{|+_{\theta_j}\rangle\!\langle +_{\theta_j}|,|-_{\theta_j}\rangle\!\langle -_{\theta_j}|\}$, measured on vertex $j$, where $|\pm_{\theta}\rangle\coloneq (|0\rangle\pm e^{i\theta}|1\rangle)/\sqrt{2}$ and $\theta_j=\phi_j+\delta$ for a correction $\delta$ that is calculated by our tool. For an illustration, see \autoref{fig:graph}.
+
+![The triplet $(G, I, O)$ representing graph state for the quantum resource, where $G=(V,E)$ is the graph, $I$ is a set of input nodes, and $O$ is a set of output nodes. Each node represents qubit with state $(|0\rangle+|1\rangle)/\sqrt 2$ and each edge represent controlled-$Z$ operation operated to the corresponding nodes. Measurements in the $XY$-plane of Bloch sphere are performed from the left to the right. The arrows indicate the _flow_ $f:O^c\rightarrow I^c$ which induces partial ordering of the measurements. Input nodes $I$ may be initialised to an arbitrary quantum state $\rho$ and the output nodes $O$ is the final output that can be classical or quantum -- if left unmeasured. \label{fig:graph}](graph.jpg){ width=50% }
+
+[JON:CODE: performing an MBQC]
+
+## Blind Quantum Computation (BQC)
+
+Blind Quantum Computation (BQC) is a type of cryptographic protocol that enables a client, referred to as Alice, to securely delegate her quantum computing tasks to a powerful quantum server, called Bob, while ensuring privacy. Within this setup, Bob cannot infer Alice's algorithm nor her measurement outcomes. The most notable BQC protocol is the Universal Blind Quantum Computation (UBQC)[@broadbent2009universal]. This framework allows Alice to privately delegate her MBQC algorithm to Bob through a series of quantum and classical interactions between them. 
+
+Remarkably, the UBQC promises composable security that does not rely on traditional computational assumptions [@dunjko2014composable]. Instead, the privacy stems directly from the intrinsic properties of quantum measurement. In this model, Alice requires only limited quantum resources: the ability to prepare specific quantum states, $|+_\theta\rangle$, and to send them to Bob, underscoring the necessity for a robust quantum network. The essence of maintaining Alice's privacy lies in obfuscating the measurement angles $\vec{\phi}$ and the associated outcomes through the strategic use of randomness, as illustrated in \autoref{fig:client-server}.
+
+
+![This circuit shows task separation between the client and the hiding strategy, where measurement angles $\{\phi_j\}$ and initial outcomes $\{s_j\}$ are obscured. Additional randomness (highlighted in red) is introduced for hiding the secrets, which later neutralised by adjustments in $\delta_j$ to hide the measurement angles $\phi_j$. Notice that the actual measurement outcomes $s_j$ remain exclusively accessible to Alice due to random binary $r_j$. Note that the first state $|\psi\rangle$ indicates an arbitrary input state that is encrypted by random phase $\alpha_0$ and random bit flip $t_1$; thus, $\delta_0=(-1)^{t_1}+\alpha_0+r_0$. In the MBQC language, this circuit is equivalent with the three nodes path graph with angles $\{\alpha_0,\alpha_1,\alpha_2\}$.  \label{fig:client-server}](client-server.pdf)
+
+
+In BQC, delegating quantum tasks privately highlights the importance of client state preparation, state transfer, accessibility, correctness, and security. To address these critical aspects efficiently, end users are presented with two approaches for emulating BQC algorithms:
+
+- **Implicit network emulation**. In this option, we do not explicitly emulate the quantum state of the client or the quantum network. Instead, the states prepared on the server side already take into account the state transfer. This approach is useful for studying the noise effect on the computation. For an example, see the code below.
+[JON:CODE SNIPPET with implicit client]
+
+- **Explicit network emulation**. In this option, the quantum state of the client and the state transfer are explicitly emulated. The quantum network is simulated using remote entanglement operators, which can also be specified by the end user. This is made possible by operators operating between the client and the server in the joint Hilbert space of the client and the server, denoted as $\mathcal H_c \otimes \mathcal H_s$. This approach is useful for studying the effects of noise on the protocol as well as examining security in greater detail. Additionally, users can access the state of each party: the client's state in $\mathcal H_c$ and the server's state in $\mathcal H_s$, enabled by the partial trace operation. For an example, see the code below.
+[JON:CODE SNIPPET with explicit client]
+
+
+
+## Verification protocols
+
+The verification protocol can be added on top of BQC, certifying the executed quantum algorithm.
+
+[DOM] Introduce verification. Introduce the your robust verification. Audience target: software people.
+
+[JON:Example: Code on Robust VBQC]
+
+## Noiseless and noisy simulations
+
+In the study of quantum verification protocols, it is crucial to be able to simulate both state vector and density matrix simulations. State vector simulations require less computational space, e.g., $n$-qubit system has dimension $2^n$, making it easier to check if the protocols are correct. On the other hand, density matrix simulations requires more computational space, e.g., $n$-qubit system has dimension $2^n\times 2^n$, however, they are excellent for understanding how noise impacts the whole protocol, affecting both its certification and security. Such features help researcher to ensuring their protocols are both correct and secure in the presence of noise. Some examples on the state-vector and density matrix simulations are given below.
+
+[JON:Example:CODE SNIPPET]
 
 
 # Future plans
 
-The concept of a client and server in the quantum sense requires a quantum internet. There are means to simulate a single Hilbert space for the client and the server such that the client can initialise a single qubit in the space and through Bell entanglement teleport qubit states to select qubits in the server. The server does not know these state due to the entanglement. That has not been incorporated here, instead the client initalises all qubits in the state in its own density matrix or state vector, then the server duplicates the state. The client state is no longer considered. The server state is acted upon with noise, entanglement and measurements. Here we restrict what information the client sends to the server to keep the emulation of blindness in tact. A future work will be to introduce this client-server algorithm to better emulate the relationship.
 
-The noise models used in this package are standard models, but may not accurately capture hardware noise realistically. To address this whole quantum state Kraus maps, density mixing, double qubit and more custom single qubit models are being developed. 
-
+Adding the upcoming verification protocols in the library. Multi-parties computation as per. Graph with gflow, more choice on the measurement plane. Minimal resource of MBQC (Lazy 1WQC). Integrating realistic noise. Mathematica integration.
 
 
 # Acknowledgements

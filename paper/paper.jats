@@ -18,8 +18,8 @@
 <article-id pub-id-type="publisher-id">0</article-id>
 <article-id pub-id-type="doi">N/A</article-id>
 <title-group>
-<article-title>VeriQuEST.jl: Emulating quantum verification with
-QuEST</article-title>
+<article-title>VeriQuEST.jl: Emulating verification of quantum
+computations with QuEST</article-title>
 </title-group>
 <contrib-group>
 <contrib contrib-type="author" equal-contrib="yes">
@@ -32,13 +32,6 @@ QuEST</article-title>
 </contrib>
 <contrib contrib-type="author" equal-contrib="yes">
 <name>
-<surname>Gustiani</surname>
-<given-names>Cica</given-names>
-</name>
-<xref ref-type="aff" rid="aff-2"/>
-</contrib>
-<contrib contrib-type="author">
-<name>
 <surname>Leichtle</surname>
 <given-names>Dominik</given-names>
 </name>
@@ -48,6 +41,13 @@ QuEST</article-title>
 <name>
 <surname>Kashefi</surname>
 <given-names>Elham</given-names>
+</name>
+<xref ref-type="aff" rid="aff-2"/>
+</contrib>
+<contrib contrib-type="author">
+<name>
+<surname>Gustiani</surname>
+<given-names>Cica</given-names>
 </name>
 <xref ref-type="aff" rid="aff-2"/>
 </contrib>
@@ -99,177 +99,325 @@ a Creative Commons Attribution 4.0 International License (CC BY
 <body>
 <sec id="summary">
   <title>Summary</title>
-  <p>Verification of delegated quantum computations is a challenging
-  task in both theory and implementation. To address the theory, methods
-  and protocols have been developed that ouline abstract verification.
-  Implementation will likely require a quantum network in place for
-  certain protocols. In the mean time, specialised emulators have been
-  developed to perform quantum computation, offering a possibility to
-  explore verifcation numerically. Many emulators rely solely on the
-  gate base model and do not allow for projective, mid-circuit
-  measurements, a key component in most quantum verification protocols.
-  In response, we present the Julia package,
-  <monospace>RobustBlindVerification.jl</monospace> (RBV). RBV aims to
-  emulate blind measurement based quantum computing (MBQC and UBQC) with
-  interactive verfication in place. Quantum computation is emulated in
-  RBV with the Julia package <monospace>QuEST.jl</monospace>, which in
-  turn is a wrapper package, <monospace>QuEST_jll</monospace>, developed
-  with <monospace>BinaryBuilder.jl</monospace>
-  (<xref alt="Contributors, 2022" rid="ref-BinaryBuilder2022" ref-type="bibr">Contributors,
-  2022</xref>) to reproducibally call the <monospace>C</monospace>
-  library, <monospace>QuEST</monospace>
+  <p>Within the practical context of quantum computing, the
+  <italic>client-server</italic> framework is anticipated to become
+  predominant in the future due to the high costs, intensive
+  maintenance, and operational complexity of quantum computers. In this
+  framework, a client with a very limited quantum power, so-called
+  Alice, delegates her quantum computation to a powerful quantum server,
+  so-called Bob, who then provides Alice her computation results. While
+  this scenario appears practical, it raises significant security
+  concern: how do we ensure Bob follows Alice’s instructions and confirm
+  the reliability of his quantum computer? These questions undeniably
+  pose significant challenges and remain under active investigation;
+  <italic>verifiable quantum computations</italic> is a subfield of
+  quantum computing that aims to address these concerns.</p>
+  <p>This paper introduces <monospace>VeriQuEST.jl</monospace>, a Julia
+  package equipped with functionalities to emulate verification
+  protocols for quantum computation
+  (<xref alt="Gheorghiu et al., 2019" rid="ref-gheorghiu2019verification" ref-type="bibr">Gheorghiu
+  et al., 2019</xref>) within the framework of measurement-based quantum
+  computations
+  (<xref alt="Raussendorf &amp; Briegel, 2001" rid="ref-raussendorf2001one" ref-type="bibr">Raussendorf
+  &amp; Briegel, 2001</xref>). The package utilizes QuEST
   (<xref alt="Jones et al., 2019" rid="ref-QuESTJones2019" ref-type="bibr">Jones
-  et al., 2019</xref>). RBV is developed based on the work by Leichtle
-  et al.
-  (<xref alt="2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">2021</xref>),
-  herein referred to as ‘the protocol’. The protocol is an example of
-  robust blind quantum computation (RBVQC). It is a formal verification
-  protocol with minimal overhead, beyond computational repetition and
-  resistant to constant noise whilst mainting security.</p>
+  et al., 2019</xref>) as its backend, a versatile quantum computer
+  emulator (including noise simulation) written in C, while supporting
+  high-performance computations. VeriQuEST.jl is designed to aid
+  researchers in testing their verification protocols or concepts on
+  emulated quantum systems. This approach allows them to assess
+  performance estimates without the need for actual hardware, which, at
+  the time of writing this paper, is significantly limited.</p>
 </sec>
 <sec id="statement-of-need">
   <title>Statement of need</title>
-  <p>There are many quantum computing paradigms, notably the gate or
-  circuit based model is the most popular [<bold>Cite</bold>]. It is
-  limited by most hardware providers not capable of performing
-  mid-circuit, adpative and projective measurements [<bold>Cite</bold>].
-  The measurement-base quantum computing (MBQC) paradigm conversely is
-  predicated on this very capability [<bold>Cite</bold>]. It turns out
-  that MBQC can utilise projective measurements to offer secure
-  delegated QC over a quantum network between clients and servers. This
-  leads to the need for efficient, secure and verifiable delegated
-  access. Trust in the security, data usages, compuation and algorithm
-  implementation is not a given for delegated QC. Many protocols have
-  been implemented to address these issues. Advancements in verification
-  has relied on verification assuming only uncorrelated noise
-  (<xref alt="Gheorghiu et al., 2018" rid="ref-Gheorghiu_2019" ref-type="bibr">Gheorghiu
-  et al., 2018</xref>), verification assuming reliable state preparation
-  per qubit
-  (<xref alt="Kapourniotis &amp; Datta, 2019" rid="ref-Kapourniotis2019nonadaptivefault" ref-type="bibr">Kapourniotis
-  &amp; Datta, 2019</xref>), verification requiring more than one server
-  and entanglement distillation
-  (<xref alt="Morimae &amp; Fujii, 2013" rid="ref-MorimaeFujii2013" ref-type="bibr">Morimae
-  &amp; Fujii, 2013</xref>) or verification with the assumption that a
-  verifier has access to post-quantum cryptography unbeakable by a
-  quantum prover
-  (<xref alt="Mahadev, 2022" rid="ref-Mahadev2022ClassicalVerification" ref-type="bibr">Mahadev,
-  2022</xref>). Such results fall short of a robust verification
-  protocol that does not suffer from costly process or are inflexible to
-  noise. To respond to these shortcomings and to address the problem for
-  bounded-error quantum polynomial (BQP) computations a verification
-  protocol is
-  implemented(<xref alt="Leichtle et al., 2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">Leichtle
-  et al., 2021</xref>). It is known that the complexity class BQP can
-  efficiently solve binary descision problems with quantum computers.
-  Further, the protocol is robust to constant noise and maintain
-  security.</p>
-  <p>The basis for this verification protocol is universal blind quantum
-  computation (UBQC), which extends meaurement based quantum
-  computation. Commonly, a client with minimal quantum capabilities,
-  maybe only state preparation or only measurement is theorised, and an
-  all powerful conceptual server is connected to this client over a
-  quantum network. MBQC works by updating the basis angle qubits are
-  measured in by the outcomes of previous qubits. By keeping a set of
-  secret basis angles which are incorpoarated into measurement basis,
-  the client can perform its quantum computation free from the server
-  being able to ascertain any informatoin [<bold>CHECK</bold>]. So a
-  qubit is initialised by the client as <inline-formula><alternatives>
-  <tex-math><![CDATA[|+_{\theta}\rangle]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:msub><mml:mo>+</mml:mo><mml:mi>θ</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
-  where <inline-formula><alternatives>
-  <tex-math><![CDATA[\theta]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>θ</mml:mi></mml:math></alternatives></inline-formula>
-  is the rotational angle, but there is another angle,
-  <inline-formula><alternatives>
-  <tex-math><![CDATA[\delta]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>δ</mml:mi></mml:math></alternatives></inline-formula>
-  such that when the basis for measurment is updated, the server is told
-  to measure with <inline-formula><alternatives>
-  <tex-math><![CDATA[\tilde{\theta} + \delta + r\pi]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover><mml:mo>+</mml:mo><mml:mi>δ</mml:mi><mml:mo>+</mml:mo><mml:mi>r</mml:mi><mml:mi>π</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>,
-  where <inline-formula><alternatives>
-  <tex-math><![CDATA[\tilde{\theta}]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>θ</mml:mi><mml:mo accent="true">̃</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
-  is the updated angle based on previous measurement outcomes and
-  <inline-formula><alternatives>
-  <tex-math><![CDATA[r]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>r</mml:mi></mml:math></alternatives></inline-formula>
-  is a one time pad random bit used to help correct measurements
-  [<bold>CITE BLIND</bold>]. To turn UBQC into robust verification
-  quantum computation (RVBQC), the protocol calls for the use of
-  multiple rounds to run the computation along with some test
-  rounds.</p>
-  <p>The protocol is designed such that verification is separated into
-  the execution of <inline-formula><alternatives>
-  <tex-math><![CDATA[N]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
-  rounds, <inline-formula><alternatives>
-  <tex-math><![CDATA[C]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>C</mml:mi></mml:math></alternatives></inline-formula>
-  rounds are the algorithm to be run (e.g., the computation round) and
-  <inline-formula><alternatives>
-  <tex-math><![CDATA[T = N-C]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>T</mml:mi><mml:mo>=</mml:mo><mml:mi>N</mml:mi><mml:mo>−</mml:mo><mml:mi>C</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
-  test rounds. Test rounds contain traps which can detect malicious or
-  noisy behaviour of the server. The algorithm for test rounds has the
-  same underlying stucture save for state initialisations and the method
-  of adaptive basis updates. After <inline-formula><alternatives>
-  <tex-math><![CDATA[N]]></tex-math>
-  <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>N</mml:mi></mml:math></alternatives></inline-formula>
-  rounds, a classical analysis is conducted and a result computed
-  whether the server and/or the computation were to be trusted. The
-  computation round is prepared and executed with UBQC, whereas the test
-  rounds utilise a trapification strategy to conduct tests against the
-  server. The test rounds use a strategy that splits some qubits into
-  traps and some into dummies. The traps and the dummies are prepared
-  according to some randomness, which though the UBQC will have
-  determinsitic outcomes that can me tested. For each test round the
-  traps and the dummies are compared such that all trap qubit outcomes
-  must pass a verification equation, if any one trap fails the whole
-  test round fails. The outcome to these tests for each round are
-  aggregated. The aggregate count of test rounds that passed the test
-  must exceed a predetermined amount, based on parameters of the
-  protocol. The mode repsonse for the computation round must be greater
-  than half the number of computation rounds. The results of the test
-  and computation rounds dictate the trust of the server. RVBQC
-  implements the protocol under these requirements. For an in depth
-  understanding see @Leichtle et al.
-  (<xref alt="2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">2021</xref>).</p>
+  <p>Our package <monospace>VeriQuEST.jl</monospace> is aimed at
+  assisting researchers in exploring and designing their verification
+  protocols within the paradigm of <italic>measurement-based quantum
+  computation</italic> (MBQC). The conventional way to express quantum
+  algorithms is through a series of unitary operations and measurements,
+  so-called <italic>gate-based</italic> computations
+  (<xref alt="Nielsen &amp; Chuang, 2011" rid="ref-nielsenchuang" ref-type="bibr">Nielsen
+  &amp; Chuang, 2011</xref>). On the other hand, MBQC uses a
+  <italic>graph state</italic> as the resource and a series of adaptive
+  single-qubit measurements to realise a quantum algorithm. While
+  gate-based emulators – such as <monospace>QuEST</monospace> – are
+  predomonant, MBQC emulators remain scarce. Our package, VeriQuEST.jl,
+  offers an interface that enables users to express their verification
+  protocols and quantum algorithms in the native MBQC language,
+  supporting interactive protocols, such as verifications, that require
+  a quantum internet, powered by a performant backend
+  <monospace>QuEST</monospace>
+  (<xref alt="Jones et al., 2019" rid="ref-QuESTJones2019" ref-type="bibr">Jones
+  et al., 2019</xref>). Moreover, to this date, there is no emulator
+  that is specifically aimed at simulating verification protocols.</p>
 </sec>
 <sec id="core-features-and-functionality">
   <title>Core features and functionality</title>
-  <p>There are three core features. Firstly, the user can simply run
-  standard MBQC if they so choose. Secondly, the user can specify to use
-  UBQC. Thirdly, the user can run the verification protocol. Since MBQC
-  and UBQC are universal [<bold>CITE</bold>] the outcomes are the same.
-  If a user wants to explore with noise models, then the RVBQC is
-  designed to seemlessly offer these by specifying the noise model in
-  the server struct (e.g., <monospace>NoisyServer(model)</monospace> for
-  <monospace>model</monospace> being the specified noise model). Julia
-  is a transparent programming language and all functionality is
-  available to the user. If one wishes to become acquainted with the
-  details see the public GitHub repository for
+  <p><monospace>VeriQuEST.jl</monospace> is equipped with fundamental
+  functionalities to support the testing of various verification
+  protocols of quantum computations based on MBQC. The package
+  <monospace>VeriQuEST.jl</monospace> contains three fundamental
+  elements to support emulation of verification protocols: MBQC
+  computations, multi-round interactions between client and server, and
+  Hilbert space partition to realize the explicit client-server
+  separation. The package allows for (noiseless) state vector and
+  (noisy) density matrix simulations. In the current release, we provide
+  several well-known MBQCs and verification protocols ready for the
+  users to use. If one wishes to become acquainted with the details, see
+  the public GitHub repository for
   <ext-link ext-link-type="uri" xlink:href="https://github.com/fieldofnodes/VeriQuEST.jl"><monospace>VeriQuEST</monospace></ext-link>.</p>
+  <sec id="software-architecture">
+    <title>Software architecture</title>
+    <p>[JON:Explain how the package works, where does it stand**:
+    function call, core link (if there is any), compilation]</p>
+    <fig>
+      <caption><p>Architecture: here is a sketch. Some diagram would be
+      cool.</p></caption>
+      <graphic mimetype="image" mime-subtype="jpeg" xlink:href="media/architecture.jpg" />
+    </fig>
+  </sec>
+  <sec id="measurement-based-quantum-computation-mbqc">
+    <title>Measurement-Based Quantum Computation (MBQC)</title>
+    <p>In the MBQC framework, a quantum algorithm can be represented as
+    a set <inline-formula><alternatives>
+    <tex-math><![CDATA[\{(G, I, O), \vec{\phi}\}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>G</mml:mi><mml:mo>,</mml:mo><mml:mi>I</mml:mi><mml:mo>,</mml:mo><mml:mi>O</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mover><mml:mi>ϕ</mml:mi><mml:mo accent="true">⃗</mml:mo></mml:mover><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[(G, I, O)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>G</mml:mi><mml:mo>,</mml:mo><mml:mi>I</mml:mi><mml:mo>,</mml:mo><mml:mi>O</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    denotes the quantum resource and <inline-formula><alternatives>
+    <tex-math><![CDATA[\vec{\phi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>ϕ</mml:mi><mml:mo accent="true">⃗</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    is a set of measurement angles. The triplet
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[(G, I, O)]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>G</mml:mi><mml:mo>,</mml:mo><mml:mi>I</mml:mi><mml:mo>,</mml:mo><mml:mi>O</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+    signifies an <italic>open graph</italic>, i.e., graphs characterised
+    by the presence of <italic>flow</italic>
+    (<xref alt="Danos &amp; Kashefi, 2006" rid="ref-danos2006determinism" ref-type="bibr">Danos
+    &amp; Kashefi, 2006</xref>). Single-qubit adaptive measurements are
+    performed sequentially on the vertices with measurement operator
+    <inline-formula><alternatives>
+    <tex-math><![CDATA[\{|+_{\theta_j}\rangle\!\langle +_{\theta_j}|,|-_{\theta_j}\rangle\!\langle -_{\theta_j}|\}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>θ</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mspace width="-0.167em"></mml:mspace><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>θ</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo>,</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>θ</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mspace width="-0.167em"></mml:mspace><mml:mo stretchy="false" form="prefix">⟨</mml:mo><mml:msub><mml:mo>−</mml:mo><mml:msub><mml:mi>θ</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:msub><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
+    measured on vertex <inline-formula><alternatives>
+    <tex-math><![CDATA[j]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>j</mml:mi></mml:math></alternatives></inline-formula>,
+    where <inline-formula><alternatives>
+    <tex-math><![CDATA[|\pm_{\theta}\rangle\coloneq (|0\rangle\pm e^{i\theta}|1\rangle)/\sqrt{2}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:msub><mml:mo>±</mml:mo><mml:mi>θ</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo>≔</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mn>0</mml:mn><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo>±</mml:mo><mml:msup><mml:mi>e</mml:mi><mml:mrow><mml:mi>i</mml:mi><mml:mi>θ</mml:mi></mml:mrow></mml:msup><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:msqrt><mml:mn>2</mml:mn></mml:msqrt></mml:mrow></mml:math></alternatives></inline-formula>
+    and <inline-formula><alternatives>
+    <tex-math><![CDATA[\theta_j=\phi_j+\delta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>θ</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>=</mml:mo><mml:msub><mml:mi>ϕ</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo>+</mml:mo><mml:mi>δ</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>
+    for a correction <inline-formula><alternatives>
+    <tex-math><![CDATA[\delta]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>δ</mml:mi></mml:math></alternatives></inline-formula>
+    that is calculated by our tool. For an illustration, see
+    <xref alt="[fig:graph]" rid="figU003Agraph">[fig:graph]</xref>.</p>
+    <fig>
+      <caption><p>The triplet <inline-formula><alternatives>
+      <tex-math><![CDATA[(G, I, O)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>G</mml:mi><mml:mo>,</mml:mo><mml:mi>I</mml:mi><mml:mo>,</mml:mo><mml:mi>O</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      representing graph state for the quantum resource, where
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[G=(V,E)]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>G</mml:mi><mml:mo>=</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mi>V</mml:mi><mml:mo>,</mml:mo><mml:mi>E</mml:mi><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow></mml:mrow></mml:math></alternatives></inline-formula>
+      is the graph, <inline-formula><alternatives>
+      <tex-math><![CDATA[I]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>I</mml:mi></mml:math></alternatives></inline-formula>
+      is a set of input nodes, and <inline-formula><alternatives>
+      <tex-math><![CDATA[O]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>O</mml:mi></mml:math></alternatives></inline-formula>
+      is a set of output nodes. Each node represents qubit with state
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[(|0\rangle+|1\rangle)/\sqrt 2]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mrow><mml:mo stretchy="true" form="prefix">|</mml:mo><mml:mn>0</mml:mn><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo>+</mml:mo><mml:mo stretchy="true" form="postfix">|</mml:mo></mml:mrow><mml:mn>1</mml:mn><mml:mo stretchy="false" form="postfix">⟩</mml:mo><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:mi>/</mml:mi><mml:msqrt><mml:mn>2</mml:mn></mml:msqrt></mml:mrow></mml:math></alternatives></inline-formula>
+      and each edge represent controlled-<inline-formula><alternatives>
+      <tex-math><![CDATA[Z]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>Z</mml:mi></mml:math></alternatives></inline-formula>
+      operation operated to the corresponding nodes. Measurements in the
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[XY]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>X</mml:mi><mml:mi>Y</mml:mi></mml:mrow></mml:math></alternatives></inline-formula>-plane
+      of Bloch sphere are performed from the left to the right. The
+      arrows indicate the <italic>flow</italic>
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[f:O^c\rightarrow I^c]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mi>f</mml:mi><mml:mo>:</mml:mo><mml:msup><mml:mi>O</mml:mi><mml:mi>c</mml:mi></mml:msup><mml:mo>→</mml:mo><mml:msup><mml:mi>I</mml:mi><mml:mi>c</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>
+      which induces partial ordering of the measurements. Input nodes
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[I]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>I</mml:mi></mml:math></alternatives></inline-formula>
+      may be initialised to an arbitrary quantum state
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\rho]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>ρ</mml:mi></mml:math></alternatives></inline-formula>
+      and the output nodes <inline-formula><alternatives>
+      <tex-math><![CDATA[O]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>O</mml:mi></mml:math></alternatives></inline-formula>
+      is the final output that can be classical or quantum – if left
+      unmeasured.
+      <styled-content id="figU003Agraph"></styled-content></p></caption>
+      <graphic mimetype="image" mime-subtype="jpeg" xlink:href="media/graph.jpg" />
+    </fig>
+    <p>[JON:CODE: performing an MBQC]</p>
+  </sec>
+  <sec id="blind-quantum-computation-bqc">
+    <title>Blind Quantum Computation (BQC)</title>
+    <p>Blind Quantum Computation (BQC) is a type of cryptographic
+    protocol that enables a client, referred to as Alice, to securely
+    delegate her quantum computing tasks to a powerful quantum server,
+    called Bob, while ensuring privacy. Within this setup, Bob cannot
+    infer Alice’s algorithm nor her measurement outcomes. The most
+    notable BQC protocol is the Universal Blind Quantum Computation
+    (UBQC)(<xref alt="Broadbent et al., 2009" rid="ref-broadbent2009universal" ref-type="bibr">Broadbent
+    et al., 2009</xref>). This framework allows Alice to privately
+    delegate her MBQC algorithm to Bob through a series of quantum and
+    classical interactions between them.</p>
+    <p>Remarkably, the UBQC promises composable security that does not
+    rely on traditional computational assumptions
+    (<xref alt="Dunjko et al., 2014" rid="ref-dunjko2014composable" ref-type="bibr">Dunjko
+    et al., 2014</xref>). Instead, the privacy stems directly from the
+    intrinsic properties of quantum measurement. In this model, Alice
+    requires only limited quantum resources: the ability to prepare
+    specific quantum states, <inline-formula><alternatives>
+    <tex-math><![CDATA[|+_\theta\rangle]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:msub><mml:mo>+</mml:mo><mml:mi>θ</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">⟩</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>,
+    and to send them to Bob, underscoring the necessity for a robust
+    quantum network. The essence of maintaining Alice’s privacy lies in
+    obfuscating the measurement angles <inline-formula><alternatives>
+    <tex-math><![CDATA[\vec{\phi}]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mover><mml:mi>ϕ</mml:mi><mml:mo accent="true">⃗</mml:mo></mml:mover></mml:math></alternatives></inline-formula>
+    and the associated outcomes through the strategic use of randomness,
+    as illustrated in
+    <xref alt="[fig:client-server]" rid="figU003Aclient-server">[fig:client-server]</xref>.</p>
+    <fig>
+      <caption><p>This circuit shows task separation between the client
+      and the hiding strategy, where measurement angles
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[\{\phi_j\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>ϕ</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      and initial outcomes <inline-formula><alternatives>
+      <tex-math><![CDATA[\{s_j\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>s</mml:mi><mml:mi>j</mml:mi></mml:msub><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      are obscured. Additional randomness (highlighted in red) is
+      introduced for hiding the secrets, which later neutralised by
+      adjustments in <inline-formula><alternatives>
+      <tex-math><![CDATA[\delta_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>δ</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      to hide the measurement angles <inline-formula><alternatives>
+      <tex-math><![CDATA[\phi_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ϕ</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+      Notice that the actual measurement outcomes
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[s_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>s</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+      remain exclusively accessible to Alice due to random binary
+      <inline-formula><alternatives>
+      <tex-math><![CDATA[r_j]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>r</mml:mi><mml:mi>j</mml:mi></mml:msub></mml:math></alternatives></inline-formula>.
+      Note that the first state <inline-formula><alternatives>
+      <tex-math><![CDATA[|\psi\rangle]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">|</mml:mo><mml:mi>ψ</mml:mi><mml:mo stretchy="false" form="postfix">⟩</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>
+      indicates an arbitrary input state that is encrypted by random
+      phase <inline-formula><alternatives>
+      <tex-math><![CDATA[\alpha_0]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:math></alternatives></inline-formula>
+      and random bit flip <inline-formula><alternatives>
+      <tex-math><![CDATA[t_1]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>t</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:math></alternatives></inline-formula>;
+      thus, <inline-formula><alternatives>
+      <tex-math><![CDATA[\delta_0=(-1)^{t_1}+\alpha_0+r_0]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>δ</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>=</mml:mo><mml:msup><mml:mrow><mml:mo stretchy="true" form="prefix">(</mml:mo><mml:mo>−</mml:mo><mml:mn>1</mml:mn><mml:mo stretchy="true" form="postfix">)</mml:mo></mml:mrow><mml:msub><mml:mi>t</mml:mi><mml:mn>1</mml:mn></mml:msub></mml:msup><mml:mo>+</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>+</mml:mo><mml:msub><mml:mi>r</mml:mi><mml:mn>0</mml:mn></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+      In the MBQC language, this circuit is equivalent with the three
+      nodes path graph with angles <inline-formula><alternatives>
+      <tex-math><![CDATA[\{\alpha_0,\alpha_1,\alpha_2\}]]></tex-math>
+      <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:mo stretchy="false" form="prefix">{</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>0</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>1</mml:mn></mml:msub><mml:mo>,</mml:mo><mml:msub><mml:mi>α</mml:mi><mml:mn>2</mml:mn></mml:msub><mml:mo stretchy="false" form="postfix">}</mml:mo></mml:mrow></mml:math></alternatives></inline-formula>.
+      <styled-content id="figU003Aclient-server"></styled-content></p></caption>
+      <graphic mimetype="application" mime-subtype="pdf" xlink:href="media/client-server.pdf" />
+    </fig>
+    <p>In BQC, delegating quantum tasks privately highlights the
+    importance of client state preparation, state transfer,
+    accessibility, correctness, and security. To address these critical
+    aspects efficiently, end users are presented with two approaches for
+    emulating BQC algorithms:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p><bold>Implicit network emulation</bold>. In this option, we
+        do not explicitly emulate the quantum state of the client or the
+        quantum network. Instead, the states prepared on the server side
+        already take into account the state transfer. This approach is
+        useful for studying the noise effect on the computation. For an
+        example, see the code below. [JON:CODE SNIPPET with implicit
+        client]</p>
+      </list-item>
+      <list-item>
+        <p><bold>Explicit network emulation</bold>. In this option, the
+        quantum state of the client and the state transfer are
+        explicitly emulated. The quantum network is simulated using
+        remote entanglement operators, which can also be specified by
+        the end user. This is made possible by operators operating
+        between the client and the server in the joint Hilbert space of
+        the client and the server, denoted as
+        <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal H_c \otimes \mathcal H_s]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msub><mml:mi>ℋ</mml:mi><mml:mi>c</mml:mi></mml:msub><mml:mo>⊗</mml:mo><mml:msub><mml:mi>ℋ</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:mrow></mml:math></alternatives></inline-formula>.
+        This approach is useful for studying the effects of noise on the
+        protocol as well as examining security in greater detail.
+        Additionally, users can access the state of each party: the
+        client’s state in <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal H_c]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ℋ</mml:mi><mml:mi>c</mml:mi></mml:msub></mml:math></alternatives></inline-formula>
+        and the server’s state in <inline-formula><alternatives>
+        <tex-math><![CDATA[\mathcal H_s]]></tex-math>
+        <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msub><mml:mi>ℋ</mml:mi><mml:mi>s</mml:mi></mml:msub></mml:math></alternatives></inline-formula>,
+        enabled by the partial trace operation. For an example, see the
+        code below. [JON:CODE SNIPPET with explicit client]</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="verification-protocols">
+    <title>Verification protocols</title>
+    <p>The verification protocol can be added on top of BQC, certifying
+    the executed quantum algorithm.</p>
+    <p>[DOM] Introduce verification. Introduce the your robust
+    verification. Audience target: software people.</p>
+    <p>[JON:Example: Code on Robust VBQC]</p>
+  </sec>
+  <sec id="noiseless-and-noisy-simulations">
+    <title>Noiseless and noisy simulations</title>
+    <p>In the study of quantum verification protocols, it is crucial to
+    be able to simulate both state vector and density matrix
+    simulations. State vector simulations require less computational
+    space, e.g., <inline-formula><alternatives>
+    <tex-math><![CDATA[n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-qubit
+    system has dimension <inline-formula><alternatives>
+    <tex-math><![CDATA[2^n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:msup></mml:math></alternatives></inline-formula>,
+    making it easier to check if the protocols are correct. On the other
+    hand, density matrix simulations requires more computational space,
+    e.g., <inline-formula><alternatives>
+    <tex-math><![CDATA[n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-qubit
+    system has dimension <inline-formula><alternatives>
+    <tex-math><![CDATA[2^n\times 2^n]]></tex-math>
+    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:msup><mml:mo>×</mml:mo><mml:msup><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
+    however, they are excellent for understanding how noise impacts the
+    whole protocol, affecting both its certification and security. Such
+    features help researcher to ensuring their protocols are both
+    correct and secure in the presence of noise. Some examples on the
+    state-vector and density matrix simulations are given below.</p>
+    <p>[JON:Example:CODE SNIPPET]</p>
+  </sec>
 </sec>
 <sec id="future-plans">
   <title>Future plans</title>
-  <p>The concept of a client and server in the quantum sense requires a
-  quantum internet. There are means to simulate a single Hilbert space
-  for the client and the server such that the client can initialise a
-  single qubit in the space and through Bell entanglement teleport qubit
-  states to select qubits in the server. The server does not know these
-  state due to the entanglement. That has not been incorporated here,
-  instead the client initalises all qubits in the state in its own
-  density matrix or state vector, then the server duplicates the state.
-  The client state is no longer considered. The server state is acted
-  upon with noise, entanglement and measurements. Here we restrict what
-  information the client sends to the server to keep the emulation of
-  blindness in tact. A future work will be to introduce this
-  client-server algorithm to better emulate the relationship.</p>
-  <p>The noise models used in this package are standard models, but may
-  not accurately capture hardware noise realistically. To address this
-  whole quantum state Kraus maps, density mixing, double qubit and more
-  custom single qubit models are being developed.</p>
+  <p>Adding the upcoming verification protocols in the library.
+  Multi-parties computation as per. Graph with gflow, more choice on the
+  measurement plane. Minimal resource of MBQC (Lazy 1WQC). Integrating
+  realistic noise. Mathematica integration.</p>
 </sec>
 <sec id="acknowledgements">
   <title>Acknowledgements</title>
@@ -278,93 +426,51 @@ a Creative Commons Attribution 4.0 International License (CC BY
 </body>
 <back>
 <ref-list>
-  <ref id="ref-PRXQuantum.2.040302">
+  <ref id="ref-danos2006determinism">
     <element-citation publication-type="article-journal">
       <person-group person-group-type="author">
-        <name><surname>Leichtle</surname><given-names>Dominik</given-names></name>
-        <name><surname>Music</surname><given-names>Luka</given-names></name>
-        <name><surname>Kashefi</surname><given-names>Elham</given-names></name>
-        <name><surname>Ollivier</surname><given-names>Harold</given-names></name>
-      </person-group>
-      <article-title>Verifying BQP computations on noisy devices with minimal overhead</article-title>
-      <source>PRX Quantum</source>
-      <publisher-name>American Physical Society</publisher-name>
-      <year iso-8601-date="2021-10">2021</year><month>10</month>
-      <volume>2</volume>
-      <uri>https://link.aps.org/doi/10.1103/PRXQuantum.2.040302</uri>
-      <pub-id pub-id-type="doi">10.1103/PRXQuantum.2.040302</pub-id>
-      <fpage>040302</fpage>
-      <lpage></lpage>
-    </element-citation>
-  </ref>
-  <ref id="ref-Gheorghiu_2019">
-    <element-citation publication-type="article-journal">
-      <person-group person-group-type="author">
-        <name><surname>Gheorghiu</surname><given-names>Alexandru</given-names></name>
-        <name><surname>Hoban</surname><given-names>Matty J</given-names></name>
+        <name><surname>Danos</surname><given-names>Vincent</given-names></name>
         <name><surname>Kashefi</surname><given-names>Elham</given-names></name>
       </person-group>
-      <article-title>A simple protocol for fault tolerant verification of quantum computation</article-title>
-      <source>Quantum Science and Technology</source>
-      <publisher-name>IOP Publishing</publisher-name>
-      <year iso-8601-date="2018-11">2018</year><month>11</month>
-      <volume>4</volume>
-      <issue>1</issue>
-      <uri>https://dx.doi.org/10.1088/2058-9565/aaeeb3</uri>
-      <pub-id pub-id-type="doi">10.1088/2058-9565/aaeeb3</pub-id>
-      <fpage>015009</fpage>
+      <article-title>Determinism in the one-way model</article-title>
+      <source>Physical Review A</source>
+      <publisher-name>APS</publisher-name>
+      <year iso-8601-date="2006">2006</year>
+      <volume>74</volume>
+      <issue>5</issue>
+      <pub-id pub-id-type="doi">10.1103/PhysRevA.74.052310</pub-id>
+      <fpage>052310</fpage>
       <lpage></lpage>
     </element-citation>
   </ref>
-  <ref id="ref-Kapourniotis2019nonadaptivefault">
-    <element-citation publication-type="article-journal">
+  <ref id="ref-nielsenchuang">
+    <element-citation publication-type="book">
       <person-group person-group-type="author">
-        <name><surname>Kapourniotis</surname><given-names>Theodoros</given-names></name>
-        <name><surname>Datta</surname><given-names>Animesh</given-names></name>
+        <name><surname>Nielsen</surname><given-names>Michael A.</given-names></name>
+        <name><surname>Chuang</surname><given-names>Isaac L.</given-names></name>
       </person-group>
-      <article-title>Nonadaptive fault-tolerant verification of quantum supremacy with noise</article-title>
-      <source>Quantum</source>
-      <publisher-name>Verein zur Förderung des Open Access Publizierens in den Quantenwissenschaften</publisher-name>
-      <year iso-8601-date="2019-07">2019</year><month>07</month>
-      <volume>3</volume>
-      <issn>2521-327X</issn>
-      <uri>https://doi.org/10.22331/q-2019-07-12-164</uri>
-      <pub-id pub-id-type="doi">10.22331/q-2019-07-12-164</pub-id>
-      <fpage>164</fpage>
-      <lpage></lpage>
+      <source>Quantum computation and quantum information: 10th anniversary edition</source>
+      <publisher-name>Cambridge University Press</publisher-name>
+      <year iso-8601-date="2011">2011</year>
+      <isbn>9781107002173</isbn>
+      <uri>https://www.amazon.com/Quantum-Computation-Information-10th-Anniversary/dp/1107002176?SubscriptionId=AKIAIOBINVZYXZQZ2U3A&amp;tag=chimbori05-20&amp;linkCode=xm2&amp;camp=2025&amp;creative=165953&amp;creativeASIN=1107002176</uri>
     </element-citation>
   </ref>
-  <ref id="ref-MorimaeFujii2013">
+  <ref id="ref-raussendorf2001one">
     <element-citation publication-type="article-journal">
       <person-group person-group-type="author">
-        <name><surname>Morimae</surname><given-names>Tomoyuki</given-names></name>
-        <name><surname>Fujii</surname><given-names>Keisuke</given-names></name>
+        <name><surname>Raussendorf</surname><given-names>Robert</given-names></name>
+        <name><surname>Briegel</surname><given-names>Hans J</given-names></name>
       </person-group>
-      <article-title>Secure entanglement distillation for double-server blind quantum computation</article-title>
-      <source>Phys. Rev. Lett.</source>
-      <publisher-name>American Physical Society</publisher-name>
-      <year iso-8601-date="2013-07">2013</year><month>07</month>
-      <volume>111</volume>
-      <uri>https://link.aps.org/doi/10.1103/PhysRevLett.111.020502</uri>
-      <pub-id pub-id-type="doi">10.1103/PhysRevLett.111.020502</pub-id>
-      <fpage>020502</fpage>
+      <article-title>A one-way quantum computer</article-title>
+      <source>Physical review letters</source>
+      <publisher-name>APS</publisher-name>
+      <year iso-8601-date="2001">2001</year>
+      <volume>86</volume>
+      <issue>22</issue>
+      <pub-id pub-id-type="doi">10.1103/PhysRevLett.86.5188</pub-id>
+      <fpage>5188</fpage>
       <lpage></lpage>
-    </element-citation>
-  </ref>
-  <ref id="ref-Mahadev2022ClassicalVerification">
-    <element-citation publication-type="article-journal">
-      <person-group person-group-type="author">
-        <name><surname>Mahadev</surname><given-names>Urmila</given-names></name>
-      </person-group>
-      <article-title>Classical verification of quantum computations</article-title>
-      <source>SIAM Journal on Computing</source>
-      <year iso-8601-date="2022">2022</year>
-      <volume>51</volume>
-      <issue>4</issue>
-      <uri>https://doi.org/10.1137/20M1371828</uri>
-      <pub-id pub-id-type="doi">10.1137/20M1371828</pub-id>
-      <fpage>1172</fpage>
-      <lpage>1229</lpage>
     </element-citation>
   </ref>
   <ref id="ref-QuESTJones2019">
@@ -386,15 +492,54 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <lpage></lpage>
     </element-citation>
   </ref>
-  <ref id="ref-BinaryBuilder2022">
-    <element-citation>
+  <ref id="ref-gheorghiu2019verification">
+    <element-citation publication-type="article-journal">
       <person-group person-group-type="author">
-        <name><surname>Contributors</surname><given-names>BinaryBuilder</given-names></name>
+        <name><surname>Gheorghiu</surname><given-names>Alexandru</given-names></name>
+        <name><surname>Kapourniotis</surname><given-names>Theodoros</given-names></name>
+        <name><surname>Kashefi</surname><given-names>Elham</given-names></name>
       </person-group>
-      <article-title>BinaryBuilder.jl</article-title>
-      <source>GitHub repository</source>
-      <publisher-name>https://github.com/JuliaPackaging/BinaryBuilder.jl; GitHub</publisher-name>
-      <year iso-8601-date="2022">2022</year>
+      <article-title>Verification of quantum computation: An overview of existing approaches</article-title>
+      <source>Theory of computing systems</source>
+      <publisher-name>Springer</publisher-name>
+      <year iso-8601-date="2019">2019</year>
+      <volume>63</volume>
+      <pub-id pub-id-type="doi">10.1007/s00224-018-9872-3</pub-id>
+      <fpage>715</fpage>
+      <lpage>808</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-broadbent2009universal">
+    <element-citation publication-type="paper-conference">
+      <person-group person-group-type="author">
+        <name><surname>Broadbent</surname><given-names>Anne</given-names></name>
+        <name><surname>Fitzsimons</surname><given-names>Joseph</given-names></name>
+        <name><surname>Kashefi</surname><given-names>Elham</given-names></name>
+      </person-group>
+      <article-title>Universal blind quantum computation</article-title>
+      <source>2009 50th annual IEEE symposium on foundations of computer science</source>
+      <publisher-name>IEEE</publisher-name>
+      <year iso-8601-date="2009">2009</year>
+      <pub-id pub-id-type="doi">10.1109/FOCS.2009.36</pub-id>
+      <fpage>517</fpage>
+      <lpage>526</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-dunjko2014composable">
+    <element-citation publication-type="paper-conference">
+      <person-group person-group-type="author">
+        <name><surname>Dunjko</surname><given-names>Vedran</given-names></name>
+        <name><surname>Fitzsimons</surname><given-names>Joseph F</given-names></name>
+        <name><surname>Portmann</surname><given-names>Christopher</given-names></name>
+        <name><surname>Renner</surname><given-names>Renato</given-names></name>
+      </person-group>
+      <article-title>Composable security of delegated quantum computation</article-title>
+      <source>International conference on the theory and application of cryptology and information security</source>
+      <publisher-name>Springer</publisher-name>
+      <year iso-8601-date="2014">2014</year>
+      <pub-id pub-id-type="doi">10.1007/978-3-662-45608-8_22</pub-id>
+      <fpage>406</fpage>
+      <lpage>425</lpage>
     </element-citation>
   </ref>
 </ref-list>
