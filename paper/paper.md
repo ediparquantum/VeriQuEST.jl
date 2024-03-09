@@ -111,13 +111,19 @@ In BQC, delegating quantum tasks privately highlights the importance of client s
 
 
 
-## Verification protocols
+## Verification protocols [DOM]
 
 The verification protocol can be added on top of BQC, certifying the executed quantum algorithm.
 
-[DOM] Introduce verification. Introduce the your robust verification. Audience target: software people.
+Introduce verification and.
 
-[JON:Example: Code on Robust VBQC]
+Our tool provides several verification protocols that are ready for users to use: 
+
+- Dominik's BQP verification [@PRXQuantum.2.040302]
+- Maybe Fitsimons verification with hidden trap?
+
+
+[JON:Example: Code BQP verification]
 
 ## Noiseless and noisy simulations
 
