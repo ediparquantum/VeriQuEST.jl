@@ -377,13 +377,24 @@ a Creative Commons Attribution 4.0 International License (CC BY
       </list-item>
     </list>
   </sec>
-  <sec id="verification-protocols">
-    <title>Verification protocols</title>
+  <sec id="verification-protocols-dom">
+    <title>Verification protocols [DOM]</title>
     <p>The verification protocol can be added on top of BQC, certifying
     the executed quantum algorithm.</p>
-    <p>[DOM] Introduce verification. Introduce the your robust
-    verification. Audience target: software people.</p>
-    <p>[JON:Example: Code on Robust VBQC]</p>
+    <p>Introduce verification and.</p>
+    <p>Our tool provides several verification protocols that are ready
+    for users to use:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>Dominik’s BQP verification
+        (<xref alt="Leichtle et al., 2021" rid="ref-PRXQuantum.2.040302" ref-type="bibr">Leichtle
+        et al., 2021</xref>)</p>
+      </list-item>
+      <list-item>
+        <p>Maybe Fitsimons verification with hidden trap?</p>
+      </list-item>
+    </list>
+    <p>[JON:Example: Code BQP verification]</p>
   </sec>
   <sec id="noiseless-and-noisy-simulations">
     <title>Noiseless and noisy simulations</title>
@@ -470,6 +481,25 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <issue>22</issue>
       <pub-id pub-id-type="doi">10.1103/PhysRevLett.86.5188</pub-id>
       <fpage>5188</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-PRXQuantum.2.040302">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Leichtle</surname><given-names>Dominik</given-names></name>
+        <name><surname>Music</surname><given-names>Luka</given-names></name>
+        <name><surname>Kashefi</surname><given-names>Elham</given-names></name>
+        <name><surname>Ollivier</surname><given-names>Harold</given-names></name>
+      </person-group>
+      <article-title>Verifying BQP computations on noisy devices with minimal overhead</article-title>
+      <source>PRX Quantum</source>
+      <publisher-name>American Physical Society</publisher-name>
+      <year iso-8601-date="2021-10">2021</year><month>10</month>
+      <volume>2</volume>
+      <uri>https://link.aps.org/doi/10.1103/PRXQuantum.2.040302</uri>
+      <pub-id pub-id-type="doi">10.1103/PRXQuantum.2.040302</pub-id>
+      <fpage>040302</fpage>
       <lpage></lpage>
     </element-citation>
   </ref>
