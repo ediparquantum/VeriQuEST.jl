@@ -89,7 +89,56 @@ In the MBQC framework, a quantum algorithm can be represented as a set $\{(G, I,
 
 ![The triplet $(G, I, O)$ representing graph state for the quantum resource, where $G=(V,E)$ is the graph, $I$ is a set of input nodes, and $O$ is a set of output nodes. Each node represents qubit with state $(|0\rangle+|1\rangle)/\sqrt 2$ and each edge represent controlled-$Z$ operation operated to the corresponding nodes. Measurements in the $XY$-plane of Bloch sphere are performed from the left to the right. The arrows indicate the _flow_ $f:O^c\rightarrow I^c$ which induces partial ordering of the measurements. Input nodes $I$ may be initialised to an arbitrary quantum state $\rho$ and the output nodes $O$ is the final output that can be classical or quantum -- if left unmeasured. \label{fig:graph}](graph.jpg){ width=50% }
 
-[JON:CODE: performing an MBQC]
+### Configuration
+
+In this example a simple path graph is implemented.
+
+```julia
+using Pkg
+Pkg.activate(".")
+using VeriQuEST
+state_type = DensityMatrix()
+total_rounds,computation_rounds = 100,50
+
+# Grover graph
+num_vertices = 3
+graph = Graph(num_vertices)
+add_edge!(graph,1,2) 
+add_edge!(graph,2,3) 
+
+input = (indices = (),values = ())
+output = (3) # integer separeted by comma
+
+# Julia is indexed 1, hence a vertex with 0 index is flag for no flow
+function forward_flow(vertex)
+    v_str = string(vertex)
+    forward = Dict(
+        "1" =>2, 
+        "2" =>3,
+        "3" =>0) # 0 means no future vertex
+    forward[v_str]
+end
+
+secret_angles = [π,0.0,π] # Angles secret from Bob
+
+para= (
+    graph=graph,
+    forward_flow = forward_flow,
+    input = input,
+    output = output,
+    secret_angles=secret_angles,
+    state_type = state_type,
+    total_rounds = total_rounds,
+    computation_rounds = computation_rounds)
+```
+
+To run the MBQC pattern
+
+```julia
+julia> run_mbqc(para)
+1-element Vector{Any}:
+ 0
+```
 
 ## Blind Quantum Computation (BQC)
 
@@ -104,7 +153,14 @@ Remarkably, the UBQC promises composable security that does not rely on traditio
 In BQC, delegating quantum tasks privately highlights the importance of client state preparation, state transfer, accessibility, correctness, and security. To address these critical aspects efficiently, end users are presented with two approaches for emulating BQC algorithms:
 
 - **Implicit network emulation**. In this option, we do not explicitly emulate the quantum state of the client or the quantum network. Instead, the states prepared on the server side already take into account the state transfer. This approach is useful for studying the noise effect on the computation. For an example, see the code below.
-[JON:CODE SNIPPET with implicit client]
+
+```julia
+julia> run_ubqc(para)
+1-element Vector{Any}:
+ 0
+julia> run_ubqc(para) == run_mbqc(para) # should be equivalent.
+true
+```
 
 - **Explicit network emulation**. In this option, the quantum state of the client and the state transfer are explicitly emulated. The quantum network is simulated using remote entanglement operators, which can also be specified by the end user. This is made possible by operators operating between the client and the server in the joint Hilbert space of the client and the server, denoted as $\mathcal H_c \otimes \mathcal H_s$. This approach is useful for studying the effects of noise on the protocol as well as examining security in greater detail. Additionally, users can access the state of each party: the client's state in $\mathcal H_c$ and the server's state in $\mathcal H_s$, enabled by the partial trace operation. For an example, see the code below.
 [JON:CODE SNIPPET with explicit client]
@@ -123,14 +179,74 @@ Our tool provides several verification protocols that are ready for users to use
 - Maybe Fitsimons verification with hidden trap?
 
 
-[JON:Example: Code BQP verification]
+To run the verification on a noisless server
+
+```julia
+julia> vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
+(test_verification = Ok(),
+  test_verification_verb = (failed = 0, passed = 50),
+  computation_verification = Ok(),
+  computation_verification_verb = (failed = 0, passed = 50),
+  mode_outcome = Any[0])
+```
 
 ## Noiseless and noisy simulations
 
-In the study of quantum verification protocols, it is crucial to be able to simulate both state vector and density matrix simulations. State vector simulations require less computational space, e.g., $n$-qubit system has dimension $2^n$, making it easier to check if the protocols are correct. On the other hand, density matrix simulations requires more computational space, e.g., $n$-qubit system has dimension $2^n\times 2^n$, however, they are excellent for understanding how noise impacts the whole protocol, affecting both its certification and security. Such features help researcher to ensuring their protocols are both correct and secure in the presence of noise. Some examples on the state-vector and density matrix simulations are given below.
+In the study of quantum verification protocols, it is crucial to be able to simulate both state vector and density matrix simulations. State vector simulations require less computational space, e.g., $n$-qubit system has dimension $2^n$, making it easier to check if the protocols are correct. On the other hand, density matrix simulations requires more computational space, e.g., $n$-qubit system has dimension $2^n\times 2^n$, however, they are excellent for understanding how noise impacts the whole protocol, affecting both its certification and security. Such features help researcher to ensuring their protocols are both correct and secure in the presence of noise. Some examples on the state-vector and density matrix simulations are given below. 
 
-[JON:Example:CODE SNIPPET]
+### Unknown addition to angle basis
 
+```julia
+    julia> malicious_angles = π/2
+    julia> malicious_vbqc_outcome = run_verification_simulator(
+        MaliciousServer(),Verbose(),para,malicious_angles)
+    (test_verification = Abort(),
+      test_verification_verb = (failed = 26, passed = 24),
+      computation_verification = Abort(),
+      computation_verification_verb = (failed = 25, passed = 25),
+      mode_outcome = Any[1]
+```
+
+### Explicit noise channels
+
+Here are examples of damping, dephasing and depolarising noise.
+```julia
+    # Prob scaling
+    p_scale = 0.05
+
+    # Damping
+    p = [p_scale*rand() for i in vertices(para[:graph])]
+    model = Damping(Quest(),SingleQubit(),p)
+    server = NoisyServer(model)
+    julia> vbqc_outcome = run_verification_simulator(server,Verbose(),para)
+    (test_verification = Ok(),
+        test_verification_verb = (failed = 1, passed = 49),
+        computation_verification = Ok(),
+        computation_verification_verb = (failed = 0, passed = 50),
+        mode_outcome = Any[0])
+
+    # Dephasing
+    p = [p_scale*rand() for i in vertices(para[:graph])]
+    model = Dephasing(Quest(),SingleQubit(),p)
+    server = NoisyServer(model)
+    julia> vbqc_outcome = run_verification_simulator(server,Verbose(),para)
+    (test_verification = Ok(),
+      test_verification_verb = (failed = 4, passed = 46),
+      computation_verification = Ok(),
+      computation_verification_verb = (failed = 0, passed = 50),
+      mode_outcome = Any[0])
+
+    # Depolarising
+    p = [p_scale*rand() for i in vertices(para[:graph])]
+    model = Depolarising(Quest(),SingleQubit(),p)
+    server = NoisyServer(model)
+    julia> vbqc_outcome = run_verification_simulator(server,Verbose(),para)
+    (test_verification = Ok(),
+      test_verification_verb = (failed = 3, passed = 47),
+      computation_verification = Ok(),
+      computation_verification_verb = (failed = 1, passed = 49),
+      mode_outcome = Any[0])
+```
 
 # Future plans
 
