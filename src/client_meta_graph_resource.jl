@@ -16,7 +16,7 @@ generate_random_greedy_color(g, reps)
 ```
 """
 function generate_random_greedy_color(g,reps)
-return Graphs.random_greedy_color(g, reps)
+    return Graphs.random_greedy_color(g, reps)
 end
 
 
@@ -61,6 +61,8 @@ get_random_coloring(c)
 function get_random_coloring(c::Vector{Vector{Int64}})
 return rand(c)
 end
+
+
 
 
 """

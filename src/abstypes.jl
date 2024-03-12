@@ -30,6 +30,14 @@ abstract type AbstractInputs <: AbstractMeasurementBasedQuantumComputation end
 abstract type AbstractOutputs <: AbstractMeasurementBasedQuantumComputation end
 abstract type AbstractInputOutputs <: AbstractMeasurementBasedQuantumComputation end
 abstract type AbstractQuantumAngles <: AbstractMeasurementBasedQuantumComputation end
+
+abstract type AbstractTrapificationStrategy end
+abstract type AbstractComputationRoundUniformColouring <: AbstractComputationColouring end
+abstract type AbstractTestRoundTrapAndDummyColouring <: AbstractTestColouring end
+struct ComputationRoundUniformcolouring <: AbstractComputationRoundUniformColouring end
+struct TestRoundTrapAndDummycolouring <: AbstractTestRoundTrapAndDummyColouring end
+
+
 struct Inputs <: AbstractInputs 
     indices::Union{Int,Tuple{Int},Vector{Int},Missing}
     values::Union{Int,Tuple{Int},Vector{Int},Missing}
@@ -62,9 +70,69 @@ function get_outputs(outputs::AbstractInputOutputs)
     outputs.outputs
 end
 
-struct QuantumGraph <: AbstractQuantumGraph
+abstract type AbstractQuantumColouring end
+abstract type AbstractComputationColouring <: AbstractQuantumColouring end
+abstract type AbstractTestColouring <: AbstractQuantumColouring end
+
+mutable struct ComputationColouring <: AbstractComputationColouring
+    colours::Vector{Int64}
+    function ComputationColouring()
+        new(Int[])
+    end
+    function ComputationColouring(colours::Vector{Int64})
+        new(colours)
+    end
+end
+
+mutable struct TestColouring <: AbstractTestColouring
+    colours::Vector{Vector{Int64}}
+    function TestColouring()
+        new([Int[]])
+    end
+    function TestColouring(colours::Vector{Vector{Int64}})
+        new(colours)
+    end
+end
+
+
+
+mutable struct QuantumColouring <: AbstractQuantumColouring
+    computation_round::AbstractComputationColouring
+    test_round::AbstractTestColouring
+    function QuantumColouring()
+        new(ComputationColouring(), TestColouring())
+    end
+    function QuantumColouring(computation_round::Vector{Int64},test_round::Vector{Vector{Int64}})
+        new(ComputationColouring(computation_round),TestColouring(test_round))
+    end
+
+    function QuantumColouring(computation_round::AbstractComputationColouring,test_round::AbstractTestColouring)
+        new(computation_round,test_round)
+    end
+
+    function QuantumColouring(computation_round::AbstractComputationColouring)
+        new(computation_round,TestColouring())
+    end
+
+    function QuantumColouring(test_round::AbstractTestColouring)
+        new(ComputationColouring(),test_round)
+    end
+end
+
+mutable struct QuantumGraph <: AbstractQuantumGraph
     graph::AbstractGraph
     io::AbstractInputOutputs
+    colouring::AbstractQuantumColouring
+    function QuantumGraph(graph,io)
+        # need compuration colouring 
+        # need test colourings
+
+        new(graph,io,QuantumColouring())
+    end
+
+    function QuantumGraph(graph,io,colouring)
+        new(graph,io,colouring)
+    end
 end
 
 function get_graph(graph::AbstractQuantumGraph)
@@ -88,7 +156,14 @@ end
 mutable struct Flow <: AbstractQuantumFlow
     forward::Function
     backward::Union{Function,Missing}
+    function Flow(forward)
+        new(forward,missing)
+    end
+    function Flow(forward,backward)
+        new(forward,backward)
+    end
 end
+
 
 function get_forward_flow(flow::AbstractQuantumFlow)
     flow.forward
@@ -142,6 +217,15 @@ function set_flow!(mbqc::AbstractMeasurementBasedQuantumComputation,flow::Abstra
     mbqc.flow = flow
 end
 
+function set_backwards_flow!(computation_type::AbstractMeasurementBasedQuantumComputation)
+    graph = get_graph(computation_type) |> get_graph
+    flow = get_flow(computation_type)
+    fflow = get_forward_flow(flow)
+    backward_flow(vertex) = compute_backward_flow(graph,fflow,vertex)
+    set_backward_flow!(flow,backward_flow)
+    set_flow!(computation_type,flow)
+end
+
 function get_graph(mbqc::AbstractMeasurementBasedQuantumComputation)
     mbqc.graph
 end
@@ -175,10 +259,43 @@ function set_computation_rounds!(vbqc::AbstractVerifiedBlindQuantumComputation,c
 end
 
 
+# Colourings
+function get_uniform_colouring(qc::AbstractMeasurementBasedQuantumComputation)
+    graph = get_graph(qc) |> get_graph # gets quantum graph, then get underlying graph
+    computation_colours = Int.(ones(nv(graph)))
+    ComputationColouring(computation_colours)
+end
+
+function get_test_colouring(qc::AbstractMeasurementBasedQuantumComputation)
+    graph = get_graph(qc) |> get_graph # gets quantum graph, then get underlying graph
+    reps = 100
+    test_colours = get_vector_graph_colors(graph;reps=reps)
+    TestColouring(test_colours)
+end
+
+function get_colouring(mbqc::AbstractMeasurementBasedQuantumComputation) 
+    QuantumColouring(get_uniform_colouring(mbqc))
+end
+
+function get_colouring(ubqc::AbstractBlindQuantumComputation)
+    QuantumColouring(get_uniform_colouring(ubqc))
+end
+
+function get_colouring(vbqc::AbstractVerifiedBlindQuantumComputation)
+    computation_colours = get_uniform_colouring(vbqc)
+    test_colours = get_test_colouring(vbqc)
+    QuantumColouring(computation_colours,test_colours)
+end
+
+function set_colouring!(mbqc::AbstractMeasurementBasedQuantumComputation)
+    mbqc.graph.colouring = get_colouring(mbqc)
+end
+
 
 
 
 abstract type AbstractNetworkEmulation <: AbstractQuantumComputation end
+abstract type AbstractNoNetworkEmulation <: AbstractNetworkEmulation end
 abstract type AbstractImplicitNetworkEmulation <:AbstractNetworkEmulation end
 abstract type AbstractExplicitNetworkEmulation <:AbstractNetworkEmulation end
 abstract type AbstractTeleportationModel <:AbstractExplicitNetworkEmulation end
@@ -186,6 +303,7 @@ abstract type AbstractTeleportationModel <:AbstractExplicitNetworkEmulation end
 struct ImplicitNetworkEmulation <: AbstractImplicitNetworkEmulation end
 struct ExplicitNetworkEmulation <: AbstractExplicitNetworkEmulation end
 struct BellPairExplicitNetwork <: AbstractExplicitNetworkEmulation end
+struct NoNetworkEmulation <: AbstractNoNetworkEmulation end
 
 
 abstract type AbstractQuantumState <: AbstractQuantumComputation end
@@ -194,72 +312,163 @@ abstract type AbstractDensityMatrix <: AbstractQuantumState end
 struct StateVector <: AbstractStateVector end
 struct DensityMatrix <: AbstractDensityMatrix end
 
-struct Parameters <: AbstractQuantumComputation
+abstract type AbstractParameterResources <: AbstractQuantumComputation end
+struct ParameterResources <: AbstractParameterResources
     computation_type::AbstractQuantumComputation
     network_type::AbstractNetworkEmulation
     state_type::AbstractQuantumState
-    function Parameters(computation_type,network_type,state_type)
-        if !(network_type isa AbstractImplicitNetworkEmulation) &&
-           !((computation_type isa AbstractBlindQuantumComputation) ||
-            (computation_type isa AbstractVerifiedBlindQuantumComputation))
-            error("The measurement based quantum computing type (current input is $(network_type)) is not usable with an explicit network emulation type. Consider using a subtype of AbstractImplicitNetworkEmulation.")
+
+ 
+
+    function ParameterResources(computation_type,network_type,state_type)
+        # Make sure MBQC is set as NoNetworkEmulation
+        if (computation_type isa MeasurementBasedQuantumComputation) &&
+           !(network_type isa NoNetworkEmulation) 
+            error("The $(typeof(computation_type)) is not defined with $(typeof(network_type)), use  NoNetworkEmulation.")
+        elseif (computation_type isa AbstractBlindQuantumComputation || computation_type isa AbstractVerifiedBlindQuantumComputation) && 
+            !(network_type isa AbstractImplicitNetworkEmulation || network_type isa AbstractExplicitNetworkEmulation) 
+            error("$(typeof(computation_type)) is not defined with $(typeof(network_type)), use a subtype of either AbstractImplicitNetworkEmulation or AbstractExplicitNetworkEmulation.")
+        elseif (computation_type isa AbstractBlindQuantumComputation || computation_type isa AbstractVerifiedBlindQuantumComputation) && 
+            (network_type isa AbstractExplicitNetworkEmulation) && 
+            !(state_type isa DensityMatrix)
+            error("$(typeof(computation_type)) and $(typeof(network_type)) is not defined with $(typeof(state_type)), use DensityMatrix for quantum state instead. ")
+        else
+            nothing
         end
-        graph = get_graph(computation_type) |> get_graph
-        flow = get_flow(computation_type)
-        fflow = get_forward_flow(flow)
-        bflow(vertex) = compute_backward_flow(graph,fflow,vertex)
-        set_backward_flow!(flow,bflow)
-        set_flow!(computation_type,flow)
+        # Compute reverse flow function 
+        set_backwards_flow!(computation_type)
         new(computation_type,network_type,state_type)
     end
+
+        # Allow for MBQC to not input a network type
+    function ParameterResources(computation_type::MeasurementBasedQuantumComputation,state_type::AbstractQuantumState)
+        # Compute reverse flow function 
+        set_backwards_flow!(computation_type)
+        set_colouring!(computation_type)
+        new(computation_type,NoNetworkEmulation(),state_type)
+    end
+
+    function ParameterResources(computation_type::MeasurementBasedQuantumComputation,network_type::AbstractNetworkEmulation,state_type::AbstractQuantumState)
+        # Compute reverse flow function 
+        set_backwards_flow!(computation_type)
+        set_colouring!(computation_type)
+        new(computation_type,network_type,state_type)
+    end
+
+    function ParameterResources(computation_type::Union{AbstractBlindQuantumComputation,AbstractVerifiedBlindQuantumComputation},network_type::AbstractExplicitNetworkEmulation)
+        # Compute reverse flow function 
+        set_backwards_flow!(computation_type)
+        set_colouring!(computation_type)
+        new(computation_type,network_type,DensityMatrix())
+    end
+
+    function ParameterResources(computation_type::Union{AbstractBlindQuantumComputation,AbstractVerifiedBlindQuantumComputation},network_type::AbstractImplicitNetworkEmulation,state_type::AbstractQuantumState)
+        # Compute reverse flow function 
+        set_backwards_flow!(computation_type)
+        set_colouring!(computation_type)
+        new(computation_type,network_type,state_type)
+    end
+
 end
 
-function get_computatuion_type(params::Parameters)
+
+
+
+# mbqc/ubqc/vbqc - graph, flow, io, angles
+
+
+
+
+
+
+
+function get_computatuion_type(params::ParameterResources)
     params.computation_type
 end
 
-function get_network_type(params::Parameters)
+function get_network_type(params::ParameterResources)
     params.network_type
 end
 
-function get_state_type(params::Parameters)
+function get_state_type(params::ParameterResources)
     params.state_type
 end
 
-function run_computation(::MeasurementBasedQuantumComputation,params::Parameters)
+function run_computation(::MeasurementBasedQuantumComputation,params::ParameterResources)
 
 end
 
-function run_computation(::AbstractBlindQuantumComputation,params::Parameters)
+function run_computation(::AbstractBlindQuantumComputation,params::ParameterResources)
 end
 
-function run_computation(::AbstractVerifiedBlindQuantumComputation,params::Parameters)
-end
-
-
-function get_uniform_coloring(qc::AbstractMeasurementBasedQuantumComputation)
-end
-
-function get_coloring(qc::AbstractMeasurementBasedQuantumComputation) end
-function get_coloring(qc::AbstractBlindQuantumComputation) end
-function get_coloring(qc::AbstractVerifiedBlindQuantumComputation) end
-
-function get_coloring(ubqc::AbstractBlindQuantumComputation)
-    graph = get_graph(ubqc)
-    ones(nv(graph))
-end
-
-function get_coloring(vbqc::AbstractVerifiedBlindQuantumComputation)
-    graph = get_graph(vbqc)
-    @warn "Need to add coloring for verified blind quantum computation"
+function run_computation(::AbstractVerifiedBlindQuantumComputation,params::ParameterResources)
 end
 
 
-abstract type AbstractTrapificationStrategy end
-abstract type AbstractComputationRoundUniformColouring <: AbstractTrapificationStrategy end
-abstract type AbstractTestRoundTrapAndDummyColouring <: AbstractTrapificationStrategy end
-struct ComputationRoundUniformColoring <: AbstractComputationRoundUniformCouloring end
-struct TestRoundTrapAndDummyColoring <: AbstractTestRoundTrapAndDummyColouring end
+
+
+graph = Graph(3)
+add_edge!(graph,1,2)
+add_edge!(graph,2,3)
+io = InputOutput(Inputs(1,1),Outputs(2))
+qgraph = QuantumGraph(graph,io)
+function forward_flow(vertex)
+    v_str = string(vertex)
+    forward = Dict(
+        "1" =>2,
+        "2" =>3,
+        "3" =>0)
+    forward[v_str]
+end
+flow = Flow(forward_flow)
+measurement_angles = Angles([π,0,π])
+total_rounds,computation_rounds = 100,50
+mbqc_comp_type = MeasurementBasedQuantumComputation(qgraph,flow,measurement_angles)
+ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
+vbqc_comp_type = LeichtleVerification(total_rounds,computation_rounds,qgraph,flow,measurement_angles)
+implicit_network = ImplicitNetworkEmulation()
+explicit_network = ExplicitNetworkEmulation()
+no_network = NoNetworkEmulation()
+bell_pair_explicit_network = BellPairExplicitNetwork()
+
+
+
+resource = ParameterResources(mbqc_comp_type,no_network,StateVector())
+resource = ParameterResources(mbqc_comp_type,no_network,DensityMatrix())
+resource = ParameterResources(mbqc_comp_type,StateVector())
+resource = ParameterResources(mbqc_comp_type,DensityMatrix())
+resource = ParameterResources(ubqc_comp_type,implicit_network,StateVector())
+resource = ParameterResources(ubqc_comp_type,implicit_network,DensityMatrix())
+resource = ParameterResources(ubqc_comp_type,explicit_network,DensityMatrix())
+resource = ParameterResources(vbqc_comp_type,explicit_network)
+resource = ParameterResources(vbqc_comp_type,bell_pair_explicit_network,DensityMatrix())
+
+
+
+
+
+function MetaGraph(::Client,resource::ParameterResources)
+    g = resource.computation_type.graph.graph
+    return MetaGraphs.MetaGraph(g)
+end
+
+MetaGraph(Client(),resource)
+
+
+
+
+
+
+
+A
+
+
+
+
+
+
+
+
 
 
 function create_ubqc_resource(para)
@@ -286,25 +495,36 @@ end
 
 
 
-network_type = ExplicitNetworkEmulation()
 
-computation_type = mbqc_comp_type
-graph = Graph()
-io = InputOutput(Inputs(1,1),Outputs(2))
-qgraph = QuantumGraph(graph,io)
-flow = Flow(x->x,missing)
-measurement_angles = Angles([π,0,π])
-total_rounds,computation_rounds = 100,50
-mbqc_comp_type = MeasurementBasedQuantumComputation(qgraph,flow,measurement_angles)
-ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
-vbqc_comp_type = LeichtleVerification(total_rounds,computation_rounds,qgraph,flow,measurement_angles)
-implicit_network = ImplicitNetworkEmulation()
-explicit_network = ExplicitNetworkEmulation()
-bell_pair_explicit_network = BellPairExplicitNetwork()
 
-params = Parameters(mbqc_comp_type,ImplicitNetworkEmulation(),StateVector())
-Parameters(ubqc_comp_type,ImplicitNetworkEmulation(),StateVector())
-Parameters(vbqc_comp_type,bell_pair_explicit_network,StateVector())
+
+
+
+function add_flow_vertex!(
+    ::Client,
+    mg,
+    resource::AbstractMeasurementBasedQuantumComputation,
+    flow_type::Union{ForwardFlow,BackwardFlow})
+    flow_sym = convert_flow_type_symbol(Client(),flow_type)
+        
+    verts = get_vertex_iterator(resource)
+    for v in verts
+        fv = get_verified_flow_output(flow_type,resource,v)
+        set_prop!(mg,v,flow_sym,fv)
+    end
+    return mg
+end
+
+
+
+
+function add_flow_vertex!(::Client,mg,resource::AbstractMeasurementBasedQuantumComputation)
+    add_flow_vertex!(Client(),mg,resource,ForwardFlow())
+    add_flow_vertex!(Client(),mg,resource,BackwardFlow())
+end
+
+
+
 
 
 function create_graph_resource(p::NamedTuple)::MBQCResourceState
@@ -316,6 +536,14 @@ function create_graph_resource(p::NamedTuple)::MBQCResourceState
     mbqc_angles = MBQCAngles(p[:secret_angles])
     resource = MBQCResourceState(mbqc_graph,mbqc_flow,mbqc_angles)
     return resource
+end
+
+function convert_to_MBQCResourceState(mbqc::AbstractMeasurementBasedQuantumComputation)
+    graph = get_graph(mbqc)
+    flow = get_flow(mbqc)
+    angles = get_angles(mbqc)
+    MBQCResourceState(graph,flow,angles)
+   mbqc.graph
 end
 
 
