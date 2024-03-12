@@ -18,6 +18,7 @@ RandomMatrices = "2576dda1-a324-5b11-aa66-c48ed7e3c618"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+TeleQuEST = "090ca348-5511-421f-9b0d-60bd3a641c9d"
 
 [compat]
 CairoMakie = "0.11"
