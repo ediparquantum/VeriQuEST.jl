@@ -1,408 +1,23 @@
 
 
-abstract type AbstractMeasurement end
-
-
-
-abstract type Verification end
-abstract type VeriClient <: Verification end
-abstract type VeriServer <: Verification end
-abstract type VeriEntanglement <: Verification end
-
-
-
-
-
 using Pkg
 Pkg.activate(".")
 using Graphs
 using VeriQuEST
+import VeriQuEST: get_input_indices, get_input_values, MetaGraph
 using TeleQuEST
 
-abstract type AbstractQuantumComputation end
-
-abstract type AbstractGateBasedQuantumComputation <: AbstractQuantumComputation end
-
-abstract type AbstractMeasurementBasedQuantumComputation <: AbstractQuantumComputation end
-abstract type AbstractQuantumGraph <: AbstractMeasurementBasedQuantumComputation end
-abstract type AbstractQuantumFlow <: AbstractMeasurementBasedQuantumComputation end
-abstract type AbstractInputs <: AbstractMeasurementBasedQuantumComputation end
-abstract type AbstractOutputs <: AbstractMeasurementBasedQuantumComputation end
-abstract type AbstractInputOutputs <: AbstractMeasurementBasedQuantumComputation end
-abstract type AbstractQuantumAngles <: AbstractMeasurementBasedQuantumComputation end
-
-abstract type AbstractTrapificationStrategy end
-abstract type AbstractComputationRoundUniformColouring <: AbstractComputationColouring end
-abstract type AbstractTestRoundTrapAndDummyColouring <: AbstractTestColouring end
-struct ComputationRoundUniformcolouring <: AbstractComputationRoundUniformColouring end
-struct TestRoundTrapAndDummycolouring <: AbstractTestRoundTrapAndDummyColouring end
-
-
-struct Inputs <: AbstractInputs 
-    indices::Union{Int,Tuple{Int},Vector{Int},Missing}
-    values::Union{Int,Tuple{Int},Vector{Int},Missing}
-end
-struct Outputs <: AbstractOutputs 
-    indices::Union{Int,Tuple{Int},Vector{Int}}
-end
-struct InputOutput <: AbstractInputOutputs
-    inputs::AbstractInputs
-    outputs::AbstractOutputs
-end
-
-function get_indices(inputs::AbstractInputs)
-    inputs.indices
-end
-
-function get_values(inputs::AbstractInputs)
-    inputs.values
-end
-
-function get_indices(outputs::AbstractOutputs)
-    outputs.indices
-end
-
-function get_inputs(inputs::AbstractInputOutputs)
-    inputs.inputs
-end
-
-function get_outputs(outputs::AbstractInputOutputs)
-    outputs.outputs
-end
-
-abstract type AbstractQuantumColouring end
-abstract type AbstractComputationColouring <: AbstractQuantumColouring end
-abstract type AbstractTestColouring <: AbstractQuantumColouring end
-
-mutable struct ComputationColouring <: AbstractComputationColouring
-    colours::Vector{Int64}
-    function ComputationColouring()
-        new(Int[])
-    end
-    function ComputationColouring(colours::Vector{Int64})
-        new(colours)
-    end
-end
-
-mutable struct TestColouring <: AbstractTestColouring
-    colours::Vector{Vector{Int64}}
-    function TestColouring()
-        new([Int[]])
-    end
-    function TestColouring(colours::Vector{Vector{Int64}})
-        new(colours)
-    end
-end
-
-
-
-mutable struct QuantumColouring <: AbstractQuantumColouring
-    computation_round::AbstractComputationColouring
-    test_round::AbstractTestColouring
-    function QuantumColouring()
-        new(ComputationColouring(), TestColouring())
-    end
-    function QuantumColouring(computation_round::Vector{Int64},test_round::Vector{Vector{Int64}})
-        new(ComputationColouring(computation_round),TestColouring(test_round))
-    end
-
-    function QuantumColouring(computation_round::AbstractComputationColouring,test_round::AbstractTestColouring)
-        new(computation_round,test_round)
-    end
-
-    function QuantumColouring(computation_round::AbstractComputationColouring)
-        new(computation_round,TestColouring())
-    end
-
-    function QuantumColouring(test_round::AbstractTestColouring)
-        new(ComputationColouring(),test_round)
-    end
-end
-
-mutable struct QuantumGraph <: AbstractQuantumGraph
-    graph::AbstractGraph
-    io::AbstractInputOutputs
-    colouring::AbstractQuantumColouring
-    function QuantumGraph(graph,io)
-        # need compuration colouring 
-        # need test colourings
-
-        new(graph,io,QuantumColouring())
-    end
-
-    function QuantumGraph(graph,io,colouring)
-        new(graph,io,colouring)
-    end
-end
-
-function get_graph(graph::AbstractQuantumGraph)
-    graph.graph
-end
-
-function get_io(graph::AbstractQuantumGraph)
-    graph.io
-end
-
-struct Angles <: AbstractQuantumAngles
-    angles::Union{Float64,Vector{Float64}}
-end
-
-function get_angles(angles::AbstractQuantumAngles)
-    angles.angles
-end
-
-
-
-mutable struct Flow <: AbstractQuantumFlow
-    forward::Function
-    backward::Union{Function,Missing}
-    function Flow(forward)
-        new(forward,missing)
-    end
-    function Flow(forward,backward)
-        new(forward,backward)
-    end
-end
-
-
-function get_forward_flow(flow::AbstractQuantumFlow)
-    flow.forward
-end
-
-function get_backward_flow(flow::AbstractQuantumFlow)
-    flow.backward
-end
-
-function set_forward_flow!(flow::AbstractQuantumFlow,forward::Function)
-    flow.forward = forward
-end
-
-function set_backward_flow!(flow::AbstractQuantumFlow,backward::Function)
-    flow.backward = backward
-end
-
-mutable struct MeasurementBasedQuantumComputation <: AbstractMeasurementBasedQuantumComputation 
-    graph::AbstractQuantumGraph
-    flow::AbstractQuantumFlow
-    measurement_angles::AbstractQuantumAngles
-end
-
-abstract type AbstractBlindQuantumComputation <: AbstractMeasurementBasedQuantumComputation end
-mutable struct BlindQuantumComputation <: AbstractBlindQuantumComputation 
-    graph::AbstractQuantumGraph
-    flow::AbstractQuantumFlow
-    measurement_angles::AbstractQuantumAngles
-end
-
-
-
-abstract type AbstractVerifiedBlindQuantumComputation <: AbstractMeasurementBasedQuantumComputation end
-abstract type AbstractRepeatedGraphVerification <: AbstractVerifiedBlindQuantumComputation end
-abstract type AbstractExpandedGraphVerification <: AbstractVerifiedBlindQuantumComputation end
-mutable struct LeichtleVerification <: AbstractRepeatedGraphVerification 
-    total_rounds::Int
-    computation_rounds::Int
-    graph::AbstractQuantumGraph
-    flow::AbstractQuantumFlow
-    measurement_angles::AbstractQuantumAngles
-end
-
-
-
-function get_flow(mbqc::AbstractMeasurementBasedQuantumComputation)
-    mbqc.flow
-end
-
-function set_flow!(mbqc::AbstractMeasurementBasedQuantumComputation,flow::AbstractQuantumFlow)
-    mbqc.flow = flow
-end
-
-function set_backwards_flow!(computation_type::AbstractMeasurementBasedQuantumComputation)
-    graph = get_graph(computation_type) |> get_graph
-    flow = get_flow(computation_type)
-    fflow = get_forward_flow(flow)
-    backward_flow(vertex) = compute_backward_flow(graph,fflow,vertex)
-    set_backward_flow!(flow,backward_flow)
-    set_flow!(computation_type,flow)
-end
-
-function get_graph(mbqc::AbstractMeasurementBasedQuantumComputation)
-    mbqc.graph
-end
-
-function set_graph!(mbqc::AbstractMeasurementBasedQuantumComputation,graph::AbstractQuantumGraph)
-    mbqc.graph = graph
-end
-
-function get_angles(mbqc::AbstractMeasurementBasedQuantumComputation)
-    mbqc.measurement_angles
-end
-
-function set_angles!(mbqc::AbstractMeasurementBasedQuantumComputation,angles::AbstractQuantumAngles)
-    mbqc.measurement_angles = angles
-end
-
-function get_total_rounds(vbqc::AbstractVerifiedBlindQuantumComputation)
-    vbqc.total_rounds
-end
-
-function set_total_rounds!(vbqc::AbstractVerifiedBlindQuantumComputation,total_rounds::Int)
-    vbqc.total_rounds = total_rounds
-end
-
-function get_computation_rounds(vbqc::AbstractVerifiedBlindQuantumComputation)
-    vbqc.computation_rounds
-end
-
-function set_computation_rounds!(vbqc::AbstractVerifiedBlindQuantumComputation,computation_rounds::Int)
-    vbqc.computation_rounds = computation_rounds
-end
-
-
-# Colourings
-function get_uniform_colouring(qc::AbstractMeasurementBasedQuantumComputation)
-    graph = get_graph(qc) |> get_graph # gets quantum graph, then get underlying graph
-    computation_colours = Int.(ones(nv(graph)))
-    ComputationColouring(computation_colours)
-end
-
-function get_test_colouring(qc::AbstractMeasurementBasedQuantumComputation)
-    graph = get_graph(qc) |> get_graph # gets quantum graph, then get underlying graph
-    reps = 100
-    test_colours = get_vector_graph_colors(graph;reps=reps)
-    TestColouring(test_colours)
-end
-
-function get_colouring(mbqc::AbstractMeasurementBasedQuantumComputation) 
-    QuantumColouring(get_uniform_colouring(mbqc))
-end
-
-function get_colouring(ubqc::AbstractBlindQuantumComputation)
-    QuantumColouring(get_uniform_colouring(ubqc))
-end
-
-function get_colouring(vbqc::AbstractVerifiedBlindQuantumComputation)
-    computation_colours = get_uniform_colouring(vbqc)
-    test_colours = get_test_colouring(vbqc)
-    QuantumColouring(computation_colours,test_colours)
-end
-
-function set_colouring!(mbqc::AbstractMeasurementBasedQuantumComputation)
-    mbqc.graph.colouring = get_colouring(mbqc)
-end
-
-
-
-
-abstract type AbstractNetworkEmulation <: AbstractQuantumComputation end
-abstract type AbstractNoNetworkEmulation <: AbstractNetworkEmulation end
-abstract type AbstractImplicitNetworkEmulation <:AbstractNetworkEmulation end
-abstract type AbstractExplicitNetworkEmulation <:AbstractNetworkEmulation end
-abstract type AbstractTeleportationModel <:AbstractExplicitNetworkEmulation end
-
-struct ImplicitNetworkEmulation <: AbstractImplicitNetworkEmulation end
-struct ExplicitNetworkEmulation <: AbstractExplicitNetworkEmulation end
-struct BellPairExplicitNetwork <: AbstractExplicitNetworkEmulation end
-struct NoNetworkEmulation <: AbstractNoNetworkEmulation end
-
-
-abstract type AbstractQuantumState <: AbstractQuantumComputation end
-abstract type AbstractStateVector <: AbstractQuantumState end
-abstract type AbstractDensityMatrix <: AbstractQuantumState end
-struct StateVector <: AbstractStateVector end
-struct DensityMatrix <: AbstractDensityMatrix end
-
-abstract type AbstractParameterResources <: AbstractQuantumComputation end
-struct ParameterResources <: AbstractParameterResources
-    computation_type::AbstractQuantumComputation
-    network_type::AbstractNetworkEmulation
-    state_type::AbstractQuantumState
-
- 
-
-    function ParameterResources(computation_type,network_type,state_type)
-        # Make sure MBQC is set as NoNetworkEmulation
-        if (computation_type isa MeasurementBasedQuantumComputation) &&
-           !(network_type isa NoNetworkEmulation) 
-            error("The $(typeof(computation_type)) is not defined with $(typeof(network_type)), use  NoNetworkEmulation.")
-        elseif (computation_type isa AbstractBlindQuantumComputation || computation_type isa AbstractVerifiedBlindQuantumComputation) && 
-            !(network_type isa AbstractImplicitNetworkEmulation || network_type isa AbstractExplicitNetworkEmulation) 
-            error("$(typeof(computation_type)) is not defined with $(typeof(network_type)), use a subtype of either AbstractImplicitNetworkEmulation or AbstractExplicitNetworkEmulation.")
-        elseif (computation_type isa AbstractBlindQuantumComputation || computation_type isa AbstractVerifiedBlindQuantumComputation) && 
-            (network_type isa AbstractExplicitNetworkEmulation) && 
-            !(state_type isa DensityMatrix)
-            error("$(typeof(computation_type)) and $(typeof(network_type)) is not defined with $(typeof(state_type)), use DensityMatrix for quantum state instead. ")
-        else
-            nothing
-        end
-        # Compute reverse flow function 
-        set_backwards_flow!(computation_type)
-        new(computation_type,network_type,state_type)
-    end
-
-        # Allow for MBQC to not input a network type
-    function ParameterResources(computation_type::MeasurementBasedQuantumComputation,state_type::AbstractQuantumState)
-        # Compute reverse flow function 
-        set_backwards_flow!(computation_type)
-        set_colouring!(computation_type)
-        new(computation_type,NoNetworkEmulation(),state_type)
-    end
-
-    function ParameterResources(computation_type::MeasurementBasedQuantumComputation,network_type::AbstractNetworkEmulation,state_type::AbstractQuantumState)
-        # Compute reverse flow function 
-        set_backwards_flow!(computation_type)
-        set_colouring!(computation_type)
-        new(computation_type,network_type,state_type)
-    end
-
-    function ParameterResources(computation_type::Union{AbstractBlindQuantumComputation,AbstractVerifiedBlindQuantumComputation},network_type::AbstractExplicitNetworkEmulation)
-        # Compute reverse flow function 
-        set_backwards_flow!(computation_type)
-        set_colouring!(computation_type)
-        new(computation_type,network_type,DensityMatrix())
-    end
-
-    function ParameterResources(computation_type::Union{AbstractBlindQuantumComputation,AbstractVerifiedBlindQuantumComputation},network_type::AbstractImplicitNetworkEmulation,state_type::AbstractQuantumState)
-        # Compute reverse flow function 
-        set_backwards_flow!(computation_type)
-        set_colouring!(computation_type)
-        new(computation_type,network_type,state_type)
-    end
-
-end
-
-
-
-
-# mbqc/ubqc/vbqc - graph, flow, io, angles
-
-
-
-
-
-
-
-function get_computatuion_type(params::ParameterResources)
-    params.computation_type
-end
-
-function get_network_type(params::ParameterResources)
-    params.network_type
-end
-
-function get_state_type(params::ParameterResources)
-    params.state_type
-end
-
-function run_computation(::MeasurementBasedQuantumComputation,params::ParameterResources)
-
-end
-
-function run_computation(::AbstractBlindQuantumComputation,params::ParameterResources)
-end
-
-function run_computation(::AbstractVerifiedBlindQuantumComputation,params::ParameterResources)
-end
+include("../src/abstract_types.jl")
+include("../src/no_fields_structs.jl")
+include("../src/input_output_mbqc.jl")
+include("../src/colourings.jl")
+include("../src/graphs.jl")
+include("../src/angles.jl")
+include("../src/flow.jl")
+include("../src/computation_types.jl")
+include("../src/trapification_strategies.jl")
+include("../src/abstract_parameter_resources.jl")
+include("../src/generate_property_graph.jl")
 
 
 
@@ -410,7 +25,7 @@ end
 graph = Graph(3)
 add_edge!(graph,1,2)
 add_edge!(graph,2,3)
-io = InputOutput(Inputs(1,1),Outputs(2))
+io = InputOutput(Inputs(),Outputs(3))
 qgraph = QuantumGraph(graph,io)
 function forward_flow(vertex)
     v_str = string(vertex)
@@ -423,6 +38,10 @@ end
 flow = Flow(forward_flow)
 measurement_angles = Angles([π,0,π])
 total_rounds,computation_rounds = 100,50
+
+
+
+
 mbqc_comp_type = MeasurementBasedQuantumComputation(qgraph,flow,measurement_angles)
 ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
 vbqc_comp_type = LeichtleVerification(total_rounds,computation_rounds,qgraph,flow,measurement_angles)
@@ -434,25 +53,58 @@ bell_pair_explicit_network = BellPairExplicitNetwork()
 
 
 resource = ParameterResources(mbqc_comp_type,no_network,StateVector())
+mg = generate_property_graph!(Client(),ComputationRound(),resource) 
 resource = ParameterResources(mbqc_comp_type,no_network,DensityMatrix())
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
 resource = ParameterResources(mbqc_comp_type,StateVector())
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
 resource = ParameterResources(mbqc_comp_type,DensityMatrix())
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
 resource = ParameterResources(ubqc_comp_type,implicit_network,StateVector())
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
 resource = ParameterResources(ubqc_comp_type,implicit_network,DensityMatrix())
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
 resource = ParameterResources(ubqc_comp_type,explicit_network,DensityMatrix())
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
 resource = ParameterResources(vbqc_comp_type,explicit_network)
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
+mg = generate_property_graph!(Client(),TestRound(),resource)
 resource = ParameterResources(vbqc_comp_type,bell_pair_explicit_network,DensityMatrix())
+mg = generate_property_graph!(Client(),ComputationRound(),resource)
+mg = generate_property_graph!(Client(),TestRound(),resource)
 
 
 
 
 
-function MetaGraph(::Client,resource::ParameterResources)
-    g = resource.computation_type.graph.graph
-    return MetaGraphs.MetaGraph(g)
+
+
+
+mg = generate_property_graph!(Client(),round_type,resource)
+
+props(mg,1)
+props(mg,2)
+props(mg)
+
+
+function generate_property_graph!(
+    ::Client,
+    round_type,
+    resource::AbstractParameterResources)
+    #mg = MetaGraph(Client(),resource)
+    #add_round_type!(Client(),mg,round_type)
+    #add_output_qubits!(Client(),mg,resource)
+    #set_vertex_type!(Client(),resource,mg) # Set qubit type according to a random coloring
+    #set_io_qubits_type!(Client(),resource,mg) # Set if qubit is input or not
+    #init_qubit_meta_graph!(Client(),resource,mg) # Provide intial value for qubits
+    #add_flow_vertex!(Client(),mg,resource)
+    #add_correction_vertices!(Client(),mg,resource)
+    init_measurement_outcomes!(Client(),mg,resource)
+    initialise_quantum_state_meta_graph!(Client(),state_type,mg)
+    
+    return mg
 end
 
-MetaGraph(Client(),resource)
 
 
 
@@ -460,7 +112,16 @@ MetaGraph(Client(),resource)
 
 
 
-A
+function run_mbqc(para)
+    resource = create_ubqc_resource(para)
+    client_meta_graph = generate_property_graph!(
+        Client(),MBQC(),resource,para[:state_type])
+    quantum_state = get_prop(client_meta_graph,:quantum_state)
+    num_qubits = quantum_state.numQubitsRepresented
+    run_computation(client_meta_graph,num_qubits,quantum_state)
+    get_output(Client(),MBQC(),client_meta_graph)
+end
+
 
 
 
@@ -500,51 +161,6 @@ end
 
 
 
-function add_flow_vertex!(
-    ::Client,
-    mg,
-    resource::AbstractMeasurementBasedQuantumComputation,
-    flow_type::Union{ForwardFlow,BackwardFlow})
-    flow_sym = convert_flow_type_symbol(Client(),flow_type)
-        
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        fv = get_verified_flow_output(flow_type,resource,v)
-        set_prop!(mg,v,flow_sym,fv)
-    end
-    return mg
-end
-
-
-
-
-function add_flow_vertex!(::Client,mg,resource::AbstractMeasurementBasedQuantumComputation)
-    add_flow_vertex!(Client(),mg,resource,ForwardFlow())
-    add_flow_vertex!(Client(),mg,resource,BackwardFlow())
-end
-
-
-
-
-
-function create_graph_resource(p::NamedTuple)::MBQCResourceState
-    input = MBQCInput(p[:input_indices],p[:input_values]) 
-    output = MBQCOutput(p[:output_indices])
-    colors = MBQCColouringSet(p[:computation_colours],p[:test_colours])
-    mbqc_graph = MBQCGraph(p[:graph],colors,input,output)
-    mbqc_flow = MBQCFlow(p[:forward_flow],p[:backward_flow])
-    mbqc_angles = MBQCAngles(p[:secret_angles])
-    resource = MBQCResourceState(mbqc_graph,mbqc_flow,mbqc_angles)
-    return resource
-end
-
-function convert_to_MBQCResourceState(mbqc::AbstractMeasurementBasedQuantumComputation)
-    graph = get_graph(mbqc)
-    flow = get_flow(mbqc)
-    angles = get_angles(mbqc)
-    MBQCResourceState(graph,flow,angles)
-   mbqc.graph
-end
 
 
 
@@ -552,15 +168,6 @@ end
 
 
 
-
-function convert_param_to_resource(p::AbstractQuantumComputation)
-
-end
-
-
-
-function compute(params::AbstractQuantumComputation) end
-function compute(params::)
 
 
 
@@ -627,602 +234,8 @@ end
 
 
 
-"""
-    MetaGraph(::Client, resource::MBQCResourceState)
 
-This function creates a MetaGraph from a given MBQCResourceState. It extracts the graph from the resource state and wraps it in a MetaGraph.
 
-# Arguments
-- `client::Client`: The client object.
-- `resource::MBQCResourceState`: The MBQC resource state containing the graph.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-MetaGraph(client, resource)
-````
-"""
-function MetaGraph(::Client,resource::MBQCResourceState)
-    g = resource.graph.graph
-    return MetaGraphs.MetaGraph(g)
-end
-
-
-"""
-    set_vertex_type!(::Union{MBQC,ComputationRound}, resource, mg)
-
-This function sets the vertex type property in a MetaGraph based on the color pattern of the computation round in the resource graph. 
-It assigns the `ComputationQubit` type to the vertices according to the color pattern.
-
-# Arguments
-- `mbqc::Union{MBQC,ComputationRound}`: The MBQC or ComputationRound object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the vertex type property will be added.
-
-# Examples
-```julia
-mbqc = MBQC()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_vertex_type!(mbqc, resource, mg)
-```
-"""
-function set_vertex_type!(::Union{MBQC,ComputationRound},resource,mg)
-    color_pattern = Int.(resource.graph.colouring.computation_round)
-    qubit_types = [ComputationQubit()]
-    vertex_qubit_types_list = [qubit_types[i] for i in color_pattern]
-    [set_prop!(mg,i,:vertex_type,vertex_qubit_types_list[i]) for i in vertices(mg)]
-    return mg
-end
-
-
-"""
-    set_vertex_type!(::TestRound, resource, mg)
-
-This function sets the vertex type property in a MetaGraph based on a random color pattern from the test round in the resource graph. 
-It assigns the `DummyQubit` and `TrapQubit` types to the vertices according to the color pattern.
-
-# Arguments
-- `test_round::TestRound`: The TestRound object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the vertex type property will be added.
-
-# Examples
-```julia
-test_round = TestRound()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_vertex_type!(test_round, resource, mg)
-```
-"""
-function set_vertex_type!(::TestRound,resource,mg)
-    g_diff_cols = resource.graph.colouring.test_round
-    color_pattern = get_random_coloring(g_diff_cols)
-    # Colouring separates each color into a vector of 1s 
-    # 2s, the 2s are the traps.
-    qubit_types = [DummyQubit(),TrapQubit()] 
-    vertex_qubit_types_list = [qubit_types[i] for i in color_pattern]
-    [set_prop!(mg,i,:vertex_type,vertex_qubit_types_list[i]) for i in vertices(mg)]
-    return mg
-end
-
-
-"""
-    set_vertex_type!(::Client, resource, mg)
-
-This function sets the vertex type property in a MetaGraph based on the round type property of the MetaGraph. 
-It must be implemented after the round type is implemented.
-
-# Arguments
-- `client::Client`: The Client object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the vertex type property will be added.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_prop!(mg, :round_type, ComputationRound())
-set_vertex_type!(client, resource, mg)
-```
-"""
-function set_vertex_type!(::Client,resource,mg)
-    round_type = get_prop(mg,:round_type)
-    set_vertex_type!(round_type,resource,mg)
-    return mg
-end
-
-
-"""
-    set_io_qubits_type!(::MBQC, resource, mg)
-
-This function sets the input/output qubits type property in a MetaGraph for MBQC with no blind. 
-It assigns the `InputQubits` type to the vertices that are in the input indices and `NoInputQubits` to the rest.
-
-# Arguments
-- `client::MBQC`: The MBQC client object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the vertex io type property will be added.
-
-# Examples
-```julia
-client = MBQC()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_io_qubits_type!(client, resource, mg)
-```
-"""
-function set_io_qubits_type!(::MBQC,resource,mg)
-    idx_vec = get_input_indices(resource)
-    val_vec = get_input_values(resource)
-    for v in get_vertex_iterator(resource)
-        in_bool = v ∈ idx_vec
-        in_bool ? set_props!(mg,v,Dict(:vertex_io_type => InputQubits(),:classic_input => val_vec[v])) : 
-            set_prop!(mg,v,:vertex_io_type,NoInputQubits())
-    end
-end
-
-
-"""
-    set_io_qubits_type!(::ComputationRound, resource, mg)
-
-In Computation round, there are sometimes input values for qubits. When this happens, this function will allocate space for them in the property graph. 
-It assigns the `InputQubits` type to the vertices that are in the input indices and `NoInputQubits` to the rest.
-
-# Arguments
-- `round::ComputationRound`: The ComputationRound object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the vertex io type property will be added.
-
-# Examples
-```julia
-round = ComputationRound()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_io_qubits_type!(round, resource, mg)
-```
-"""
-function set_io_qubits_type!(::ComputationRound,resource,mg)
-    idx_vec = get_input_indices(resource)
-    val_vec = get_input_values(resource)
-    for v in get_vertex_iterator(resource)
-        in_bool = v ∈ idx_vec
-        in_bool ? set_props!(mg,v,Dict(:vertex_io_type => InputQubits(),:classic_input => val_vec[v])) : 
-            set_prop!(mg,v,:vertex_io_type,NoInputQubits())
-    end
-end
-
-
-"""
-    set_io_qubits_type!(::TestRound, resource, mg)
-
-In Test rounds there is no classical input, but this holder function allows for unilateral call, regardless of round. 
-It assigns the `NoInputQubits` type to all the vertices.
-
-# Arguments
-- `round::TestRound`: The TestRound object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the vertex io type property will be added.
-
-# Examples
-```julia
-round = TestRound()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_io_qubits_type!(round, resource, mg)
-```
-"""
-function set_io_qubits_type!(::TestRound,resource,mg)
-    for v in get_vertex_iterator(resource)
-        set_prop!(mg,v,:vertex_io_type,NoInputQubits())
-    end
-end
-
-
-"""
-    set_io_qubits_type!(::Client, resource, mg)
-
-This function sets the input/output qubits type property in a MetaGraph based on the round type property of the MetaGraph. 
-
-# Arguments
-- `client::Client`: The Client object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the vertex io type property will be added.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_prop!(mg, :round_type, ComputationRound())
-set_io_qubits_type!(client, resource, mg)
-```
-"""
-function set_io_qubits_type!(::Client,resource,mg)
-    round_type = get_prop(mg,:round_type)
-    set_io_qubits_type!(round_type,resource,mg)
-end
-
-
-"""
-    init_qubit_meta_graph!(::Client, mbqc::MBQC, resource::MBQCResourceState, mg)
-
-This function initializes the qubit meta graph for a client in the MBQC model. 
-It sets the secret angle and initial qubit properties for each vertex in the meta graph.
-
-# Arguments
-- `client::Client`: The Client object.
-- `mbqc::MBQC`: The MBQC object.
-- `resource::MBQCResourceState`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the properties will be added.
-
-# Examples
-```julia
-client = Client()
-mbqc = MBQC()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-init_qubit_meta_graph!(client, mbqc, resource, mg)
-```
-"""
-function init_qubit_meta_graph!(::Client,::MBQC,resource::MBQCResourceState,mg)
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        ϕ = get_angle(resource,SecretAngles(),v) 
-        set_prop!(mg,v,:secret_angle,ϕ)
-        set_prop!(mg,v,:init_qubit,ϕ)
-    end
-    return mg
-end
-
-
-
-
-
-"""
-    init_qubit(::TrapQubit)::Float64
-
-This function is used to initialize the qubit in the meta graph. 
-The state is not given, but the angle for the plus phase state for a trap qubit is returned.
-
-# Arguments
-- `trap::TrapQubit`: The TrapQubit object.
-
-# Returns
-- A Float64 representing the angle for the plus phase state for a trap qubit.
-
-# Examples
-```julia
-trap = TrapQubit()
-angle = init_qubit(trap)
-```
-"""
-function init_qubit(::TrapQubit)::Float64
-    draw_θᵥ()
-end
-
-
-"""
-    init_qubit(::DummyQubit)::Int64
-
-This function is used to initialize the qubit in the meta graph. 
-The state is not given, but the bit for the initial state of the dummy qubit is returned.
-
-# Arguments
-- `dummy::DummyQubit`: The DummyQubit object.
-
-# Returns
-- An Int64 representing the bit for the initial state of the dummy qubit.
-
-# Examples
-```julia
-dummy = DummyQubit()
-bit = init_qubit(dummy)
-````
-"""
-function init_qubit(::DummyQubit)::Int64
-    draw_dᵥ()
-end
-
-
-"""
-    init_qubit_meta_graph!(::Client, ::ComputationRound, resource::MBQCResourceState, mg)
-
-This function initializes the qubit meta graph for a client in the MBQC model during a computation round. 
-It sets the secret angle and initial qubit properties for each vertex in the meta graph.
-
-# Arguments
-- `::Client`: The Client object.
-- `::ComputationRound`: The ComputationRound object.
-- `resource::MBQCResourceState`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the properties will be added.
-
-# Examples
-```julia
-client = Client()
-round = ComputationRound()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-init_qubit_meta_graph!(client, round, resource, mg)
-```
-"""
-function init_qubit_meta_graph!(::Client,::ComputationRound,resource::MBQCResourceState,mg)
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        θ = draw_θᵥ()
-        ϕ = get_angle(resource,SecretAngles(),v) 
-        set_prop!(mg,v,:secret_angle,ϕ)
-        set_prop!(mg,v,:init_qubit,θ)
-    end
-    return mg
-end
-
-
-"""
-    init_qubit_meta_graph!(::Client, ::TestRound, resource::MBQCResourceState, mg)
-
-This function initializes the qubit meta graph for a client in the MBQC model during a test round. 
-It sets the initial qubit property for each vertex in the meta graph based on the vertex type.
-
-# Arguments
-- `::Client`: The Client object.
-- `::TestRound`: The TestRound object.
-- `resource::MBQCResourceState`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the properties will be added.
-
-# Examples
-```julia
-client = Client()
-round = TestRound()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-init_qubit_meta_graph!(client, round, resource, mg)
-```
-"""
-function init_qubit_meta_graph!(::Client,::TestRound,resource::MBQCResourceState,mg)
-    verts = get_vertex_iterator(resource)    
-    for v in verts
-        qubit_type = get_prop(mg,v,:vertex_type) 
-        init_qubit_value = init_qubit(qubit_type)
-        set_prop!(mg,v,:init_qubit,init_qubit_value)
-    end
-    return mg
-end
-
-
-"""
-    init_qubit_meta_graph!(::Client, resource, mg)
-
-This function initializes the qubit meta graph for a client in the MBQC model. 
-It retrieves the round type from the meta graph and then calls the appropriate 
-`init_qubit_meta_graph!` function based on the round type.
-
-# Arguments
-- `::Client`: The Client object.
-- `resource`: The resource containing the graph and its coloring.
-- `mg`: The MetaGraph to which the properties will be added.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-set_prop!(mg, :round_type, ComputationRound())
-init_qubit_meta_graph!(client, resource, mg)
-```
-"""
-function init_qubit_meta_graph!(::Client,resource,mg)
-    round_type = get_prop(mg,:round_type)
-    init_qubit_meta_graph!(Client(),round_type,resource,mg)
-end
-
-
-"""
-    convert_flow_type_symbol(::Client, flow_type::Union{ForwardFlow,BackwardFlow})
-
-This function converts a flow type (either ForwardFlow or BackwardFlow) into a symbol. 
-The conversion process involves converting the flow type to a string, removing parentheses, 
-adding an underscore before "Flow", converting to lowercase, and finally converting to a symbol.
-
-# Arguments
-- `::Client`: The Client object.
-- `flow_type::Union{ForwardFlow,BackwardFlow}`: The flow type to be converted.
-
-# Returns
-- A Symbol representing the flow type.
-
-# Examples
-```julia
-client = Client()
-flow_type = ForwardFlow()
-flow_sym = convert_flow_type_symbol(client, flow_type)
-```
-"""
-function convert_flow_type_symbol(::Client,flow_type::Union{ForwardFlow,BackwardFlow})
-    flow_sym = @chain flow_type begin
-        string(_)
-        replace(_,"()"=>"")
-        replace(_,"Flow"=>"_Flow")
-        lowercase(_)
-        Symbol(_)    
-    end
-    return flow_sym
-end
-
-
-"""
-    compute_backward_flow(graph, forward_flow, vertex)
-
-This function computes the backward flow of a given vertex in a graph. 
-It first finds the neighbors of the vertex and checks if the vertex is in the forward flow of any of its neighbors. 
-If it is not, the function returns 0. 
-If it is, the function finds the index of the vertex in the forward flow of its neighbors. 
-If the vertex is not in the flow of the neighbors, an error is thrown. 
-If there is more than one past vertex found, an error is thrown. 
-Otherwise, the function returns the first past vertex.
-
-# Arguments
-- `graph`: The graph.
-- `forward_flow`: The forward flow function.
-- `vertex`: The vertex for which to compute the backward flow.
-
-# Returns
-- The first past vertex if it exists, 0 otherwise.
-
-# Examples
-```julia
-graph = Graph(5)
-forward_flow = (n -> n + 1)
-vertex = 3
-backward_flow_vertex = compute_backward_flow(graph, forward_flow, vertex)
-```
-"""
-function compute_backward_flow(graph,forward_flow,vertex)
-    neighs = neighbors(graph,vertex)
-    fflow_neighs = [forward_flow(n) for n in neighs]
-    !any(vertex .∈ fflow_neighs) && return 0 
-    index_neigh = findall(x->x==vertex,fflow_neighs)
-    length(index_neigh) == 0 && error("The inputted vertex is not in the flow of the neighbours.")
-    previous_vertex = neighs[index_neigh]
-    length(previous_vertex) > 1 && error("There is more than one past vertex found")
-    previous_vertex[1]
-end
-
-
-"""
-    add_flow_vertex!(::Client, mg, resource::MBQCResourceState, flow_type::Union{ForwardFlow,BackwardFlow})
-
-This function adds a flow vertex to the meta graph for a client in the MBQC model. 
-It first converts the flow type to a symbol, then iterates over each vertex in the resource. 
-For each vertex, it gets the verified flow output and sets this as a property in the meta graph.
-
-# Arguments
-- `::Client`: The Client object.
-- `mg`: The MetaGraph to which the properties will be added.
-- `resource::MBQCResourceState`: The resource containing the graph and its coloring.
-- `flow_type::Union{ForwardFlow,BackwardFlow}`: The flow type to be added.
-
-# Returns
-- The updated MetaGraph.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-flow_type = ForwardFlow()
-add_flow_vertex!(client, mg, resource, flow_type)
-```
-"""
-function add_flow_vertex!(
-    ::Client,
-    mg,
-    resource::MBQCResourceState,
-    flow_type::Union{ForwardFlow,BackwardFlow})
-    flow_sym = convert_flow_type_symbol(Client(),flow_type)
-        
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        fv = get_verified_flow_output(flow_type,resource,v)
-        set_prop!(mg,v,flow_sym,fv)
-    end
-    return mg
-end
-
-
-
-"""
-    add_flow_vertex!(::Client, mg, resource::MBQCResourceState)
-
-This function adds both forward and backward flow vertices to the meta graph for a client in the MBQC model. 
-It calls the `add_flow_vertex!` function twice, once with `ForwardFlow` and once with `BackwardFlow`.
-
-# Arguments
-- `::Client`: The Client object.
-- `mg`: The MetaGraph to which the properties will be added.
-- `resource::MBQCResourceState`: The resource containing the graph and its coloring.
-
-# Returns
-- The updated MetaGraph.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-add_flow_vertex!(client, mg, resource)
-```
-"""
-function add_flow_vertex!(::Client,mg,resource::MBQCResourceState)
-    add_flow_vertex!(Client(),mg,resource,ForwardFlow())
-    add_flow_vertex!(Client(),mg,resource,BackwardFlow())
-end
-
-
-"""
-    add_correction_vertices!(::Client, mg, resource::MBQCResourceState)
-
-This function adds correction vertices to the meta graph for a client in the MBQC model. 
-It iterates over each vertex in the resource, gets the correction vertices for each, 
-and sets these as properties in the meta graph.
-
-# Arguments
-- `::Client`: The Client object.
-- `mg`: The MetaGraph to which the properties will be added.
-- `resource::MBQCResourceState`: The resource containing the graph and its coloring.
-
-# Returns
-- The updated MetaGraph.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-add_correction_vertices!(client, mg, resource)
-```
-"""
-function add_correction_vertices!(::Client,mg,resource::MBQCResourceState)
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        cor = get_correction_vertices(resource,v)
-        set_props!(mg,v,Dict(:X_correction => cor[:X],:Z_correction => cor[:Z]))
-    end
-    return mg
-end
-
-
-"""
-    init_measurement_outcomes!(::Client, mg, resource::MBQCResourceState)
-
-This function initializes the measurement outcomes in the meta graph for a client in the MBQC model. 
-It iterates over each vertex in the resource and sets the `:outcome` property of each vertex in the meta graph to `Int64`.
-
-# Arguments
-- `::Client`: The Client object.
-- `mg`: The MetaGraph to which the properties will be added.
-- `resource::MBQCResourceState`: The resource containing the graph and its coloring.
-
-# Returns
-- The updated MetaGraph.
-
-# Examples
-```julia
-client = Client()
-resource = MBQCResourceState(graph)
-mg = MetaGraphs.MetaGraph(resource.graph.graph)
-init_measurement_outcomes!(client, mg, resource)
-```
-"""
-function init_measurement_outcomes!(::Client,mg,resource::MBQCResourceState)
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        set_prop!(mg,v,:outcome,Int64)
-    end
-    return mg
-end
 
 
 """
@@ -1365,33 +378,6 @@ function entangle_graph!(::Client,mg)
     end
 end
 
-
-"""
-    add_round_type!(::Client, mg, round_type)
-
-This function adds a round type to the meta graph for a client in the MBQC model. 
-It sets the `:round_type` property of the meta graph to the specified round type.
-
-# Arguments
-- `::Client`: The Client object.
-- `mg`: The MetaGraph to which the property will be added.
-- `round_type`: The round type to be added to the meta graph.
-
-# Returns
-- The updated MetaGraph.
-
-# Examples
-```julia
-client = Client()
-mg = MetaGraphs.MetaGraph(graph)
-round_type = "round1"
-add_round_type!(client, mg, round_type)
-```
-"""
-function add_round_type!(::Client,mg,round_type)
-    set_prop!(mg,:round_type,round_type) # Set round to graph
-    mg
-end
 
 
 """
