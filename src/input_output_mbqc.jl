@@ -10,7 +10,6 @@
 
 
 
-
 struct Inputs <: AbstractInputs 
     indices::Union{Int,Tuple{Int},Vector{Int},Missing}
     values::Union{Int,Tuple{Int},Vector{Int},Missing}

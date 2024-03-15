@@ -20,7 +20,7 @@ abstract type AbstractQuantumState <: AbstractQuantumComputation end
 abstract type AbstractQuantumColouring <: AbstractQuantumComputation end
 abstract type AbstractParameterResources <: AbstractQuantumComputation end
 abstract type AbstractNetworkEmulation <: AbstractQuantumComputation end
-
+abstract type AbstractQubitType <: AbstractQuantumComputation end
 
 
 
@@ -57,8 +57,7 @@ abstract type AbstractExpandedGraphVerification <: AbstractVerifiedBlindQuantumC
 abstract type AbstractNoNetworkEmulation <: AbstractNetworkEmulation end
 abstract type AbstractImplicitNetworkEmulation <:AbstractNetworkEmulation end
 abstract type AbstractExplicitNetworkEmulation <:AbstractNetworkEmulation end
-abstract type AbstractTeleportationModel <:AbstractExplicitNetworkEmulation end
-
+abstract type AbstractBellPairExplicitNetwork <:AbstractExplicitNetworkEmulation end
 
 
 

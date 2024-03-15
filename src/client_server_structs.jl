@@ -125,7 +125,6 @@ computation_qubit = ComputationQubit()
 struct ComputationQubit end
 
 
-
 """
     TrapQubit
 
@@ -137,7 +136,6 @@ trap_qubit = TrapQubit()
 ```
 """
 struct TrapQubit end
-
 
 
 """

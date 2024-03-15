@@ -12,7 +12,8 @@ struct ComputationRoundUniformcolouring <: AbstractComputationRoundUniformColour
 struct TestRoundTrapAndDummycolouring <: AbstractTestRoundTrapAndDummyColouring end
 
 
-struct ImplicitNetworkEmulation <: AbstractImplicitNetworkEmulation end
-struct ExplicitNetworkEmulation <: AbstractExplicitNetworkEmulation end
-struct BellPairExplicitNetwork <: AbstractExplicitNetworkEmulation end
-struct NoNetworkEmulation <: AbstractNoNetworkEmulation end
+
+struct TrapQubit <: AbstractQubitType end
+struct DummyQubit <: AbstractQubitType end
+struct ComputationQubit <: AbstractQubitType end
+

@@ -111,6 +111,8 @@ function initialise_qubit(::Union{ComputationQubit,TrapQubit},::Union{InputQubit
 end
 
 
+
+
 """
     initialise_qubit(mbqc::MBQC, qubit::Union{ComputationQubit,TrapQubit}, input::Union{InputQubits,InputQubits,NoInputQubits}, quantum_state, qubit_index)
 
@@ -137,3 +139,4 @@ initialise_qubit(mbqc, qubit, input, quantum_state, qubit_index)
 function initialise_qubit(::MBQC,::Union{ComputationQubit,TrapQubit},::Union{InputQubits,InputQubits,NoInputQubits},quantum_state,qubit_index)
     init_plus_phase_state!(NoPhase(),quantum_state,qubit_index)
 end
+

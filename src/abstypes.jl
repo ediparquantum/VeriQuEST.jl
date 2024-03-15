@@ -18,6 +18,13 @@ include("../src/computation_types.jl")
 include("../src/trapification_strategies.jl")
 include("../src/abstract_parameter_resources.jl")
 include("../src/generate_property_graph.jl")
+include("../src/network_emulation.jl")
+
+
+
+
+create_quantum_state(::StateVector,quantum_env,num_qubits) = createQureg(num_qubits, quantum_env)
+create_quantum_state(::DensityMatrix,quantum_env,num_qubits) = createDensityQureg(num_qubits, quantum_env)
 
 
 
@@ -39,14 +46,10 @@ flow = Flow(forward_flow)
 measurement_angles = Angles([π,0,π])
 total_rounds,computation_rounds = 100,50
 
-
-
-
 mbqc_comp_type = MeasurementBasedQuantumComputation(qgraph,flow,measurement_angles)
 ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
 vbqc_comp_type = LeichtleVerification(total_rounds,computation_rounds,qgraph,flow,measurement_angles)
 implicit_network = ImplicitNetworkEmulation()
-explicit_network = ExplicitNetworkEmulation()
 no_network = NoNetworkEmulation()
 bell_pair_explicit_network = BellPairExplicitNetwork()
 
@@ -54,24 +57,35 @@ bell_pair_explicit_network = BellPairExplicitNetwork()
 
 resource = ParameterResources(mbqc_comp_type,no_network,StateVector())
 mg = generate_property_graph!(Client(),ComputationRound(),resource) 
+initialise_state!(mg)
 resource = ParameterResources(mbqc_comp_type,no_network,DensityMatrix())
 mg = generate_property_graph!(Client(),ComputationRound(),resource)
+initialise_state!(mg)
 resource = ParameterResources(mbqc_comp_type,StateVector())
 mg = generate_property_graph!(Client(),ComputationRound(),resource)
+initialise_state!(mg)
 resource = ParameterResources(mbqc_comp_type,DensityMatrix())
 mg = generate_property_graph!(Client(),ComputationRound(),resource)
+initialise_state!(mg)
 resource = ParameterResources(ubqc_comp_type,implicit_network,StateVector())
 mg = generate_property_graph!(Client(),ComputationRound(),resource)
+initialise_state!(mg)
 resource = ParameterResources(ubqc_comp_type,implicit_network,DensityMatrix())
 mg = generate_property_graph!(Client(),ComputationRound(),resource)
-resource = ParameterResources(ubqc_comp_type,explicit_network,DensityMatrix())
-mg = generate_property_graph!(Client(),ComputationRound(),resource)
-resource = ParameterResources(vbqc_comp_type,explicit_network)
-mg = generate_property_graph!(Client(),ComputationRound(),resource)
-mg = generate_property_graph!(Client(),TestRound(),resource)
+initialise_state!(mg)
 resource = ParameterResources(vbqc_comp_type,bell_pair_explicit_network,DensityMatrix())
 mg = generate_property_graph!(Client(),ComputationRound(),resource)
+initialise_state!(mg)
+resource = ParameterResources(vbqc_comp_type,bell_pair_explicit_network,DensityMatrix())
 mg = generate_property_graph!(Client(),TestRound(),resource)
+initialise_state!(mg)
+
+
+
+
+
+
+    
 
 
 
@@ -80,78 +94,43 @@ mg = generate_property_graph!(Client(),TestRound(),resource)
 
 
 
-mg = generate_property_graph!(Client(),round_type,resource)
-
-props(mg,1)
-props(mg,2)
-props(mg)
-
-
-function generate_property_graph!(
-    ::Client,
-    round_type,
+function run_verification(::Client,::Server,
     resource::AbstractParameterResources)
-    #mg = MetaGraph(Client(),resource)
-    #add_round_type!(Client(),mg,round_type)
-    #add_output_qubits!(Client(),mg,resource)
-    #set_vertex_type!(Client(),resource,mg) # Set qubit type according to a random coloring
-    #set_io_qubits_type!(Client(),resource,mg) # Set if qubit is input or not
-    #init_qubit_meta_graph!(Client(),resource,mg) # Provide intial value for qubits
-    #add_flow_vertex!(Client(),mg,resource)
-    #add_correction_vertices!(Client(),mg,resource)
-    init_measurement_outcomes!(Client(),mg,resource)
-    initialise_quantum_state_meta_graph!(Client(),state_type,mg)
+
+    round_types = draw_random_rounds(resource)
     
-    return mg
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        mg = generate_property_graph!(Client(),round_type,resource)
+        
+        # Run quantum
+        run_quantum_computation(Client(),Server(),mg)
+
+        function run_quantum_computation(client::AbstractClient,server::AbstractServer,mg::MetaGraphs.MetaGraph{Int64, Float64})
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(Client(),client_meta_graph)
+        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+        
+        # Create server resources
+        server_resource = create_resource(Server(),client_graph,client_qureg)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        mg
+        end
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
 end
-
-
-
-
-
-
-
-
-function run_mbqc(para)
-    resource = create_ubqc_resource(para)
-    client_meta_graph = generate_property_graph!(
-        Client(),MBQC(),resource,para[:state_type])
-    quantum_state = get_prop(client_meta_graph,:quantum_state)
-    num_qubits = quantum_state.numQubitsRepresented
-    run_computation(client_meta_graph,num_qubits,quantum_state)
-    get_output(Client(),MBQC(),client_meta_graph)
-end
-
-
-
-
-
-
-
-
-
-
-
-function create_ubqc_resource(para)
-    
-    test_colours = []#get_vector_graph_colors(para[:graph];reps=reps)
-    computation_colours = ones(nv(para[:graph]))
-    backward_flow(vertex) = compute_backward_flow(para[:graph],para[:forward_flow],vertex)
-
-    p = (
-        input_indices =  para[:input][:indices],
-        input_values = para[:input][:values],
-        output_indices =para[:output],
-        graph=para[:graph],
-        computation_colours=computation_colours,
-        test_colours=test_colours,
-        secret_angles=para[:secret_angles],
-        forward_flow = para[:forward_flow],
-        backward_flow=backward_flow)
-     
-    create_graph_resource(p)
-end
-
 
 
 
@@ -209,7 +188,8 @@ function run_verification_simulator(::TrustworthyServer,::Terse,para)
         
     client_resource = create_graph_resource(p)
 
-    round_types = draw_random_rounds(para[:total_rounds],para[:computation_rounds])
+    round_types = draw_random_rounds(resource)
+
 
     rounds_as_graphs = run_verification( # Could have run_verification as a function and abstract the inputs
         Client(),Server(),
@@ -327,26 +307,6 @@ function initialise_quantum_state_meta_graph!(
 
     return mg
 end
-
-#=
-function initialise_quantum_state_meta_graph!(
-    ::Client,
-    state_type::StateVector,
-    mg)
-    num_qubits = nv(mg)
-    quantum_env = create_quantum_env(Client())
-    quantum_state = create_quantum_state(Client(),state_type,quantum_env,num_qubits)
-    for v in vertices(mg)
-        v_type = get_prop(mg,v,:vertex_type)
-        v_io_type = get_prop(mg,v,:vertex_io_type)
-        qubit_input_value = get_prop(mg,v,:init_qubit)
-        initialise_qubit(v_type,v_io_type,quantum_state,v,qubit_input_value)
-    end
-    set_prop!(mg,:quantum_state,quantum_state) # Set state to graph
-
-    return mg
-end
-=#
 
 
 """

@@ -14,9 +14,14 @@ function MetaGraph(::Client,resource::AbstractParameterResources)
     return MetaGraphs.MetaGraph(g)
 end
 
-function add_round_type!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},round_type)
-    set_prop!(mg,:round_type,round_type) # Set round to graph
-    mg
+function add_computation_type_to_graph!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
+    computation_type = typeof(get_computation_type(resource))
+    set_prop!(mg,:computation_type,computation_type)
+end
+
+function add_network_type_to_graph!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
+    network_type = typeof(get_network_type(resource))
+    set_prop!(mg,:network_type,network_type)
 end
 
 function add_state_type!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
@@ -24,6 +29,13 @@ function add_state_type!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resou
     set_prop!(mg,:state_type,state_type)
     return mg
 end
+
+function add_round_type!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},round_type)
+    set_prop!(mg,:round_type,round_type) # Set round to graph
+    mg
+end
+
+
 
 
 
@@ -129,6 +141,15 @@ function init_qubit_meta_graph!(::ComputationRound,::AbstractVerifiedBlindQuantu
     init_qubit_meta_graph!(ComputationRound(),BlindQuantumComputationFlag(),mg,resource) 
 end
 
+
+function init_qubit(::TrapQubit)::Float64
+    draw_θᵥ()
+end
+
+function init_qubit(::DummyQubit)::Int64
+    draw_dᵥ()
+end
+
 function init_qubit_meta_graph!(::TestRound,::AbstractVerifiedBlindQuantumComputation,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources) 
     verts = get_vertex_iterator(resource)    
     for v in verts
@@ -190,11 +211,16 @@ function init_measurement_outcomes!(::Client,mg::MetaGraphs.MetaGraph{Int64, Flo
 end
 
 
+
+
+
 function generate_property_graph!(
     ::Client,
     round_type,
     resource::AbstractParameterResources)
     mg = MetaGraph(Client(),resource)
+    add_computation_type_to_graph!(Client(),mg,resource)
+    add_network_type_to_graph!(Client(),mg,resource)
     add_state_type!(Client(),mg,resource)
     add_round_type!(Client(),mg,round_type)
     add_output_qubits!(Client(),mg,resource)
@@ -206,4 +232,47 @@ function generate_property_graph!(
     init_measurement_outcomes!(Client(),mg,resource)
     return mg
 end
- round_type = ComputationRound()
+
+
+
+
+
+
+function create_quantum_state(mg::MetaGraphs.MetaGraph{Int64, Float64})
+    state_type = get_prop(mg,:state_type)
+    network_type = get_prop(mg,:network_type)
+    num_vertices = nv(mg)
+    num_qubits = get_num_qubits(num_vertices,network_type())
+    quantum_env = createQuESTEnv()
+   create_quantum_state(state_type,quantum_env,num_qubits)
+end
+
+
+get_network_type(mg::MetaGraphs.MetaGraph{Int64, Float64}) = get_prop(mg,:network_type)
+
+
+
+
+
+function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64})
+    qureg = create_quantum_state(mg)
+    network_type = get_network_type(mg)
+
+    if network_type == NoNetworkEmulation
+        network_resource = network_type(qureg)
+    elseif network_type == ImplicitNetworkEmulation
+        qubit_types = [get_prop(mg,i,:vertex_type) for i in vertices(mg)]
+        basis_init_angles = [Float64(get_prop(mg,i,:init_qubit)) for i in vertices(mg)]
+        network_resource = network_type(qureg,qubit_types,basis_init_angles)
+    elseif network_type == BellPairExplicitNetwork
+        qubit_types = [get_prop(mg,i,:vertex_type) for i in vertices(mg)]
+        client_indices = [1] # Hardcoded for now
+        basis_init_angles = [Float64(get_prop(mg,i,:init_qubit)) for i in vertices(mg)]
+        network_resource = network_type(qureg,qubit_types,client_indices,basis_init_angles)
+    else 
+        @error "Network type not defined"
+    end
+    teleport!(network_resource)
+
+end
+

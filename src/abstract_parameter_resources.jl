@@ -66,6 +66,17 @@ struct ParameterResources <: AbstractParameterResources
 end
 
 
+function draw_random_rounds(resource::AbstractParameterResources)
+    computation_type = get_computation_type(resource)
+    if typeof(computation_type)  <: AbstractVerifiedBlindQuantumComputation 
+        return draw_random_rounds(computation_type)
+    else
+        error("This function is only defined for AbstractVerifiedBlindQuantumComputation")
+    end
+end
+
+
+
 
 function get_computation_type(resource::AbstractParameterResources)
     resource.computation_type
