@@ -10,495 +10,209 @@
 
 
 
-"""
-    NoiseModels
+get_channel(noise::AbstractNoiseChannel) = noise.channel
 
-An abstract type representing different noise models. Specific noise models should subtype this.
-
-
-"""
-abstract type NoiseModels end
-
-"""
-    NoiseParameters
-
-An abstract type representing the parameters for noise.
-"""
-abstract type NoiseParameters <: NoiseModels end
-
-"""
-    NoNoiseParameters
-
-An abstract type representing the parameters for no noise.
-"""
-struct NoNoiseParameters <: NoiseParameters end
-
-"""
-    mutable struct NoiseModel <: NoiseModels
-
-A mutable struct representing a noise model.
-
-# Fields
-- `model`: The noise model.
-- `params`: The parameters of the noise model.
-
-"""
-mutable struct NoiseModel <: NoiseModels 
-    model
-    params::NoiseParameters
+function get_type(noise::AbstractNoiseChannel)
+    channel = get_channel(noise)
+    get_type(channel)
 end
 
-"""
-    mutable struct NoiseModelParams <: NoiseParameters
-
-Noise model parameters for representing noise in a system.
-
-# Fields
-- `prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}}`: The probability of noise occurring.
-
-"""
-mutable struct NoiseModelParams <: NoiseParameters
-    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}}
+function get_params(noise::AbstractNoiseChannel)
+    channel = get_channel(noise)
+    get_params(channel)
 end
 
 
-
-"""
-    mutable struct QubitNoiseParameters <: NoiseParameters
-
-Qubit noise parameters for a quantum system.
-
-# Fields
-- `ρ::Union{DensityMatrix,Qureg}`: The density matrix or quantum register representing the state of the qubits.
-- `q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}`: The indices of the qubits affected by the noise.
-
-"""
-mutable struct QubitNoiseParameters <: NoiseParameters
-    ρ::Union{DensityMatrix,Qureg}
-    q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
+get_type(noise::AbstractNoiseModels) = noise.type
+get_params(noise::Union{AbstractNoiseModels}) = noise.param
+function get_params(noise::Vector{AbstractNoiseModels})
+    noise
 end
+get_params(noise::NoiseModelParams) = noise.param
 
-"""
-    mutable struct DensityMatrixMixtureParameters <: NoiseParameters
 
-The `DensityMatrixMixtureParameters` struct represents the parameters for a density matrix mixture noise model.
-It is a mutable struct that holds two density matrices, ρ₁ and ρ₂.
 
-# Fields
-- `ρ₁::Union{DensityMatrix,Qureg}`: The first density matrix.
-- `ρ₂::Union{DensityMatrix,Qureg}`: The second density matrix.
-
-"""
-mutable struct DensityMatrixMixtureParameters <: NoiseParameters
-    ρ₁::Union{DensityMatrix,Qureg}
-    ρ₂::Union{DensityMatrix,Qureg}
-end
-
-"""
-    struct KrausMapNoiseParameters <: NoiseParameters
-
-The `KrausMapNoiseParameters` struct represents the noise parameters for a Kraus map noise model.
-
-Fields:
-- `trace`: Union{TracePreserving,NotTracePreserving} - Specifies whether the noise is trace preserving or not.
-- `ρ`: Union{DensityMatrix,Qureg} - The density matrix or quantum register representing the initial state.
-- `q`: Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32} - The indices of the qubits affected by the noise.
-- `mat`: Matrix{ComplexF64} - The matrix representation of the Kraus operators.
-- `num_ops`: Union{Int32,Int64} - The number of Kraus operators.
-- `num_qubits`: Union{Nothing,Int64} - The number of qubits in the system.
-
-"""
-mutable struct KrausMapNoiseParameters <: NoiseParameters
-    trace::Union{TracePreserving,NotTracePreserving}
-    ρ::Union{DensityMatrix,Qureg}
-    q::Union{Nothing,Vector{Int64},Int64,Vector{Int32},Int32}
-    mat::Matrix{ComplexF64}
-    num_ops::Union{Int32,Int64}
-    num_qubits::Union{Nothing,Int64}
-end
-
-"""
-    struct NoNoise <: NoiseModels
-
-A struct representing a noise model with no noise.
-
-# Fields
-- `backend`: The backend used for the noise model.
-
-"""
-struct NoNoise <: NoiseModels 
-    backend
-end
-
-"""
-    struct Kraus <: NoiseModels
-
-A struct representing a noise model using Kraus operators.
-
-# Fields
-- `backend`: The backend used for the noise model.
-- `type`: The type of noise model, which can be `SingleQubit`, `TwoQubits`, or `MultipleQubits`.
-
-"""
-struct Kraus <: NoiseModels 
-    backend
-    type::Union{SingleQubit,TwoQubits,MultipleQubits}
-end
-
-"""
-    mutable struct Damping <: NoiseModels
-
-A struct representing a damping noise model for a single qubit.
-
-# Fields
-- `backend`: The backend used for simulation.
-- `type`: The type of noise model (SingleQubit).
-- `prob`: The probability of damping, can be a single value or a vector.
-
-"""
-mutable struct Damping <: NoiseModels 
-    backend
-    type::SingleQubit
-    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}} 
-end
-
-"""
-    mutable struct MixtureDensityMatrices <: NoiseModels
-
-A mutable struct representing a mixture of density matrices noise model.
-
-# Fields
-- `backend`: The backend used for the noise model.
-- `type`: The type of density matrices.
-- `prob`: The probability distribution of the mixture.
-
-"""
-mutable struct MixtureDensityMatrices <: NoiseModels 
-    backend
-    type::DensityMatrices
-    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}} 
+function add_bit_flip!(::SingleQubit,ρ,q,p)
+    p > 1.0 && throw_error(ProbabilityExceedsOneError())
+    mixBitFlip(ρ,q,p)
 end
 
 
-"""
-    struct Dephasing <: NoiseModels
-
-Dephasing noise model that represents noise caused by dephasing errors.
-
-# Fields
-- `backend`: The backend used for simulation.
-- `type`: The type of qubits affected by the noise. Can be `SingleQubit` or `TwoQubits`.
-- `prob`: The probability of dephasing error. Can be a single value or a vector of probabilities.
-
-"""
-mutable struct Dephasing <: NoiseModels
-    backend
-    type::Union{SingleQubit,TwoQubits} 
-    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}}
+function add_damping!(::SingleQubit,ρ,q,p)
+    p > 1.0 && throw_error(ProbabilityExceedsOneError())
+    mixDamping(ρ,q,p)
 end
 
+function add_dephasing!(::SingleQubit,ρ,q,p)
+    p > 1/2 && throw_error(ProbabilityExceedsOneHalfError())
+    mixDephasing(ρ,q,p)
+end 
 
-"""
-    mutable struct Depolarising <: NoiseModels
+function add_dephasing!(::TwoQubits,ρ,q,p)
+    q₁,q₂ = q
+    p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
+    mixTwoQubitDephasing(ρ,q₁,q₂,p)
+end 
 
-A struct representing a depolarizing noise model.
+function add_depolarising!(::SingleQubit,ρ,q,p)
+    p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
+    mixDepolarising(ρ,q,p)
+end 
 
-# Fields
-- `backend`: The backend used for the noise model.
-- `type`: The type of qubits affected by the noise model.
-- `prob`: The probability of depolarization, can be a single value or a vector.
 
-"""
-mutable struct Depolarising <: NoiseModels 
-    backend
-    type::Union{SingleQubit,TwoQubits} 
-    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64}} 
+function add_depolarising!(::TwoQubits,ρ,q,p)
+    q₁,q₂ = q
+    p > 15/16 && throw_error(ProbabilityExceedsFifteenSixteensError())
+    mixTwoQubitDepolarising(ρ,q₁,q₂,p)
+end 
+
+
+function add_pauli_noise!(::SingleQubit,ρ,q,p)
+    mixPauli(ρ,q,p)
+end
+ 
+
+function apply_kraus_map!(::SingleQubit,::TracePreserving,ρ,q,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunctionWarning())
+    num_ops > 4 && throw_error(ExceededNumKrausOperatorsError())
+    mixKrausMap(ρ,q,complex_mat,num_ops)
 end
 
-
-"""
-    mutable struct Pauli <: NoiseModels
-
-The `Pauli` struct represents a noise model for a single qubit. It contains the following fields:
-
-- `backend`: The backend used for simulation.
-- `type`: The type of noise model (SingleQubit).
-- `prob`: The probability of each Pauli error. It can be a single value, a vector of values, or a matrix of values.
-
-"""
-mutable struct Pauli <: NoiseModels 
-    backend
-    type::SingleQubit
-    prob::Union{Float64,Float64,Vector{Float64},Vector{Float64},Vector{Vector{Float64}},Vector{Vector{Float64}}}
+function apply_kraus_map!(::TwoQubits,::TracePreserving,ρ,q,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunctionWarning())
+    q₁,q₂ = q
+    num_ops > 16 && throw_error(ExceededNumKrausOperatorsError())
+    mixTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
 end
 
-
-"""
-    mutable struct NoisyServer
-
-A struct representing a noisy server.
-
-# Fields
-- `noise_model`: The noise model used by the server. It can be either a single `NoiseModels` object or a vector of `NoiseModels` objects.
-
-"""
-mutable struct NoisyServer 
-    noise_model::Union{Vector{NoiseModels},NoiseModels}
+function apply_kraus_map!(::MultipleQubits,::TracePreserving,ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunctionWarning())
+    num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperatorsError())
+    leas_sig_qubit = q₁
+    mixMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
 end
 
 
 
-"""
-    get_noise_model(::Damping)
+function apply_kraus_map!(::SingleQubit,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunctionWarning())
+    num_ops > 4 && throw_error(ExceededNumKrausOperatorsError())
+    mixNonTPKrausMap(ρ,q,complex_mat,num_ops)
+end
 
-Get the noise model for a given damping type.
 
-# Arguments
-- `::Damping`: The damping type.
+function apply_kraus_map!(::TwoQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunctionWarning())
+    q₁,q₂ = q
+    num_ops > 16 && throw_error(ExceededNumKrausOperatorsError())
+    mixNonTPTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
+end
 
-# Returns
-- `add_damping!`: The noise model function.
 
-"""
+function apply_kraus_map!(::MultipleQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+    throw_warning(UntestedKrausFunctionWarning())
+    leas_sig_qubit,num_qubits = q
+    num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperatorsError())
+    leas_sig_qubit = q₁
+    mixNonTPMultiQubitKrausMap(ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+end
+
+
+function mix_two_density_matrices!(::DensityMatrices,ρ₁,ρ₂,p)
+    p > 1.0 && throw_error(ProbabilityExceedsOneError())
+    p < 0.0 && throw_error(ProbabilityLessThanZeroError())
+    ρ₁.numQubitsRepresented == ρ₂.numQubitsRepresented && 
+        throw_error(DimensionMismatchDensityMatricesError())
+    mixDensityMatrix(ρ₁,p,ρ₂)
+end 
+
+
 function get_noise_model(::Damping)
     add_damping!
 end
 
-
-"""
-    get_noise_model(::Dephasing)
-
-Get the noise model for dephasing errors.
-
-# Arguments
-- `::Dephasing`: A dephasing error model.
-
-# Returns
-- `add_dephasing!`: A function that adds dephasing errors to a quantum circuit.
-"""
 function get_noise_model(::Dephasing)
     add_dephasing!
 end
 
 
-"""
-    get_noise_model(::Depolarising)
-
-Get the noise model for the Depolarising channel.
-
-# Arguments
-- `::Depolarising`: The Depolarising channel.
-
-# Returns
-- `add_depolarising!`: The function to add depolarising noise to a quantum circuit.
-"""
 function get_noise_model(::Depolarising)
     add_depolarising!
 end
 
 
-"""
-    get_noise_model(p::Pauli)
-
-Get the noise model for a given Pauli operator.
-
-# Arguments
-- `p::Pauli`: The Pauli operator.
-
-# Returns
-- `add_pauli_noise!`: The function to add Pauli noise to a quantum circuit.
-"""
 function get_noise_model(::Pauli)
     add_pauli_noise!
 end
 
-"""
-    get_noise_model(::Kraus)
-
-Get the noise model for a given Kraus operator.
-
-# Arguments
-- `::Kraus`: The Kraus operator.
-
-# Returns
-- The noise model.
-
-"""
 function get_noise_model(::Kraus)
     apply_kraus_map!
 end
 
-"""
-    get_noise_model(::MixtureDensityMatrices)
-
-Get the noise model for a mixture of density matrices.
-
-# Arguments
-- `::MixtureDensityMatrices`: The mixture of density matrices.
-
-# Returns
-- The noise model.
-
-"""
 function get_noise_model(::MixtureDensityMatrices)
     mix_two_density_matrices!
 end
 
-"""
-    get_noise_param(::Kraus)
-
-Get the noise parameters for a given Kraus operator.
-
-# Arguments
-- `::Kraus`: The Kraus operator.
-
-# Returns
-- `KrausMapNoiseParameters`: The noise parameters for the Kraus operator.
-"""
 function get_noise_param(::Kraus)
     KrausMapNoiseParameters
 end
 
-"""
-    get_noise_param(::MixtureDensityMatrices)
-
-Get the noise parameter for a `MixtureDensityMatrices` object.
-
-# Arguments
-- `::MixtureDensityMatrices`: The input `MixtureDensityMatrices` object.
-
-# Returns
-- `MixtureDensityMatrices`: The noise parameter.
-
-"""
 function get_noise_param(::MixtureDensityMatrices)
     MixtureDensityMatrices
 end
 
-"""
-    get_noise_param(noise_type)
-
-Get the noise parameters for the specified noise type.
-
-# Arguments
-- `noise_type`: The type of noise (Damping, Dephasing, Depolarising, Pauli).
-
-# Returns
-- `QubitNoiseParameters`: The noise parameters for the specified noise type.
-"""
 function get_noise_param(::Union{Damping,Dephasing,Depolarising,Pauli})
     QubitNoiseParameters
 end
 
 
-"""
-    get_noise_model_params(model::Union{Damping,Dephasing,Depolarising,Pauli}, server_qureg::Union{DensityMatrix,Qureg})
-
-Get the noise model parameters for a given noise model and server quantum register.
-
-# Arguments
-- `model::Union{Damping,Dephasing,Depolarising,Pauli}`: The noise model to retrieve parameters for.
-- `server_qureg::Union{DensityMatrix,Qureg}`: The server quantum register.
-
-# Returns
-- The noise parameters for the given noise model and server quantum register.
-```
-"""
 function get_noise_model_params(
     model::Union{Damping,Dephasing,Depolarising,Pauli},
-    server_qureg::Union{DensityMatrix,Qureg})
+    qureg::Qureg)
     qubit_type = model.type
     !(qubit_type isa SingleQubit) && 
     throw_error(OnlySingleQubitNoiseInUseError())
     noise_param = get_noise_param(model)
-    qubit = 0 # get replaced with each qubit in circuit
-    noise_param(server_qureg,qubit)
+    qubit = 0 # gets replaced with each qubit in circuit
+    noise_param(qureg,qubit)
 end
 
 
-
-"""
-    add_noise!(::NoNoise, params::NoNoiseParameters)
-
-Add noise to the given parameters.
-
-# Arguments
-- `::NoNoise`: A type representing no noise.
-- `params::NoNoiseParameters`: The parameters to add noise to.
-
-# Returns
-- `params.ρ`: The noise parameter.
-
-"""
 function add_noise!(::NoNoise, params::NoNoiseParameters)
     params.ρ
 end
 
 
 
-"""
-    add_noise!(model::Union{Damping,Dephasing,Depolarising,Pauli}, params::QubitNoiseParameters)
-
-Add noise to a quantum model based on the given noise parameters.
-
-# Arguments
-- `model::Union{Damping,Dephasing,Depolarising,Pauli}`: The quantum model to add noise to.
-- `params::QubitNoiseParameters`: The noise parameters specifying the type and strength of the noise.
-"""
 function add_noise!(
     model::Union{Damping,Dephasing,Depolarising,Pauli},
     params::QubitNoiseParameters)
     noise_function = get_noise_model(model)
-    backend = model.backend
     qubit_type = model.type
-    prob = model.prob
+    prob = model.param
     ρ = params.ρ
     q = params.q
-    noise_function(backend,qubit_type,ρ,q,prob)
+    noise_function(qubit_type,ρ,q,prob)
 end
 
 
 
-
-"""
-    add_noise!(model::MixtureDensityMatrices, params::DensityMatrixMixtureParameters)
-
-Add noise to the given `model` using the specified `params`.
-
-# Arguments
-- `model::MixtureDensityMatrices`: The mixture density matrices model.
-- `params::DensityMatrixMixtureParameters`: The parameters for the density matrix mixture.
-"""
 function add_noise!(
     model::MixtureDensityMatrices,
     params::DensityMatrixMixtureParameters)
     noise_function = get_noise_model(model)
-    backend = model.backend
     qubit_type = model.type
     ρ₁ = params.ρ₁
     ρ₂ = params.ρ₂
-    p = model.prob
-    noise_function(backend,qubit_type,ρ₁,ρ₂,p)
+    p = model_param
+    noise_function(qubit_type,ρ₁,ρ₂,p)
 end
 
 
-
-"""
-    add_noise!(model::Kraus, params::KrausMapNoiseParameters)
-
-Add noise to a quantum model using a specified noise function.
-
-# Arguments
-- `model::Kraus`: The quantum model to which noise will be added.
-- `params::KrausMapNoiseParameters`: The parameters specifying the noise model.
-
-```
-"""
 function add_noise!(
     model::Kraus,
     params::KrausMapNoiseParameters)
     noise_function = get_noise_model(model)
-    backend = model.backend
     qubit_type = model.type
     trace_type = params.trace
     ρ = params.ρ
@@ -507,11 +221,56 @@ function add_noise!(
     num_ops = params.num_ops
     num_qubits = params.num_qubits
     q̂ = (q,num_qubits)
-    noise_function(backend,qubit_type,trace_type,ρ,q̂,mat,num_ops)
+    noise_function(qubit_type,trace_type,ρ,q̂,mat,num_ops)
 end
 
 
+function add_noise!(
+    channel::NoisyChannel,
+    qureg::Qureg)
+    channel_copy = channel
+    models = get_channel(channel_copy)
+    if models isa Vector 
+        for m in eachindex(models)
+            model = models[m]
+            params = get_noise_model_params(model,qureg)
+            qubit_range = Base.OneTo(params.ρ.numQubitsRepresented)
+            if length(model.param) == 1
+                for q in qubit_range
+                    params.q = q
+                    add_noise!(model,params)
+                end
+            elseif length(model.param) > 1
+                probs = model.param
+                for q in qubit_range
+                    model.param = probs[q]
+                    params.q = q
+                    add_noise!(model,params)
+                end
+            end
+        end
+    elseif !(models isa Vector)
+        params = get_noise_model_params(models,qureg)
+        qubit_range = Base.OneTo(params.ρ.numQubitsRepresented)
+        if length(models.param) == 1
+            for q in qubit_range
+                params.q = q
+                add_noise!(models,params)
+            end
+        elseif length(models.param) > 1
+            probs = model.param
+            for q in qubit_range
+                models.param = probs[q]
+                params.q = q
+                add_noise!(models,params)
+            end
+        
+        end
+    end
+end
 
 
-
-
+function add_noise!(channel::NoisyChannel,is::AbstractInitialisedServer)
+    qureg = get_quantum_backend(is)
+    add_noise!(channel,qureg)
+end

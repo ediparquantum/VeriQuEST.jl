@@ -9,11 +9,11 @@
 
 
 
-
 abstract type AbstractQuantumComputation end
+abstract type AbstractMessages end
 
-
-
+abstract type AbstractClient <: AbstractQuantumComputation end
+abstract type AbstractServer <: AbstractQuantumComputation end
 abstract type AbstractGateBasedQuantumComputation <: AbstractQuantumComputation end
 abstract type AbstractMeasurementBasedQuantumComputation <: AbstractQuantumComputation end
 abstract type AbstractQuantumState <: AbstractQuantumComputation end
@@ -21,8 +21,10 @@ abstract type AbstractQuantumColouring <: AbstractQuantumComputation end
 abstract type AbstractParameterResources <: AbstractQuantumComputation end
 abstract type AbstractNetworkEmulation <: AbstractQuantumComputation end
 abstract type AbstractQubitType <: AbstractQuantumComputation end
-
-
+abstract type AbstractRound <: AbstractQuantumComputation end
+abstract type AbstractErrors <: AbstractMessages end
+abstract type AbstractWarnings <: AbstractMessages end
+abstract type AbstractComment <: AbstractMessages end
 
 abstract type AbstractBlindQuantumComputation <: AbstractMeasurementBasedQuantumComputation end
 abstract type AbstractVerifiedBlindQuantumComputation <: AbstractMeasurementBasedQuantumComputation end
@@ -58,6 +60,20 @@ abstract type AbstractNoNetworkEmulation <: AbstractNetworkEmulation end
 abstract type AbstractImplicitNetworkEmulation <:AbstractNetworkEmulation end
 abstract type AbstractExplicitNetworkEmulation <:AbstractNetworkEmulation end
 abstract type AbstractBellPairExplicitNetwork <:AbstractExplicitNetworkEmulation end
+abstract type AbstractInitialisedServer <: AbstractNetworkEmulation end
+
+
+abstract type AbstractQuantumNoise <: AbstractQuantumComputation end
+abstract type AbstractNoiseChannel <: AbstractQuantumNoise end
+abstract type AbstractNoiseModels <: AbstractNoiseChannel end
+abstract type AbstractSpecificNoiseModel <: AbstractNoiseModels end
+abstract type AbstractNoiseParameters <: AbstractNoiseModels end
+
+
+
+abstract type AbstractVerificationResults <: AbstractVerifiedBlindQuantumComputation end
+abstract type AbstractTestRoundTrapResults <: AbstractVerificationResults end
+
 
 
 

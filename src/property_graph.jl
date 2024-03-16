@@ -15,12 +15,14 @@ function MetaGraph(::Client,resource::AbstractParameterResources)
 end
 
 function add_computation_type_to_graph!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
-    computation_type = typeof(get_computation_type(resource))
+    #computation_type = typeof(get_computation_type(resource))
+    computation_type = get_computation_type(resource)
     set_prop!(mg,:computation_type,computation_type)
 end
 
 function add_network_type_to_graph!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
-    network_type = typeof(get_network_type(resource))
+    #network_type = typeof(get_network_type(resource))
+    network_type = get_network_type(resource)
     set_prop!(mg,:network_type,network_type)
 end
 
@@ -234,7 +236,7 @@ function generate_property_graph!(
 end
 
 
-
+produce_initialised_graph(::Client,mg) = Graph(mg)
 
 
 
@@ -242,7 +244,7 @@ function create_quantum_state(mg::MetaGraphs.MetaGraph{Int64, Float64})
     state_type = get_prop(mg,:state_type)
     network_type = get_prop(mg,:network_type)
     num_vertices = nv(mg)
-    num_qubits = get_num_qubits(num_vertices,network_type())
+    num_qubits = get_num_qubits(num_vertices,network_type)
     quantum_env = createQuESTEnv()
    create_quantum_state(state_type,quantum_env,num_qubits)
 end
@@ -251,28 +253,60 @@ end
 get_network_type(mg::MetaGraphs.MetaGraph{Int64, Float64}) = get_prop(mg,:network_type)
 
 
+function store_measurement_outcome!(
+    ::Client,
+    mg::MetaGraphs.MetaGraph{Int64, Float64},
+    qubit::Union{Int64,Int32,Int},
+    outcome::Union{Int64,Int32,Int})
+    set_prop!(client_meta_graph,qubit,:outcome, outcome)
+end
+
+
+
+
+function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64},network_type::AbstractNoNetworkEmulation)
+    qureg = create_quantum_state(mg)
+    set_quantum_backend!(network_type,qureg)
+    teleport!(network_type)
+end
+
+function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64},network_type::AbstractImplicitNetworkEmulation)
+    qureg = create_quantum_state(mg)
+    qubit_types = [get_prop(mg,i,:vertex_type) for i in vertices(mg)]
+    basis_init_angles = [Float64(get_prop(mg,i,:init_qubit)) for i in vertices(mg)]
+    set_quantum_backend!(network_type,qureg)
+    set_qubit_types!(network_type,qubit_types)
+    set_basis_init_angles!(network_type,basis_init_angles)
+    teleport!(network_type)
+end
+
+function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64},network_type::AbstractBellPairExplicitNetwork)
+    qureg = create_quantum_state(mg)
+    qubit_types = [get_prop(mg,i,:vertex_type) for i in vertices(mg)]
+    client_indices = [1] # Hardcoded for now
+    basis_init_angles = [Float64(get_prop(mg,i,:init_qubit)) for i in vertices(mg)]
+    set_quantum_backend!(network_type,qureg)
+    set_client_indices!(network_type,client_indices)
+    set_qubit_types!(network_type,qubit_types)
+    set_basis_init_angles!(network_type,basis_init_angles)
+    set_server_indices!(network_type)
+    set_bell_pairs!(network_type)
+    teleport!(network_type)
+end
 
 
 
 function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64})
-    qureg = create_quantum_state(mg)
     network_type = get_network_type(mg)
-
-    if network_type == NoNetworkEmulation
-        network_resource = network_type(qureg)
-    elseif network_type == ImplicitNetworkEmulation
-        qubit_types = [get_prop(mg,i,:vertex_type) for i in vertices(mg)]
-        basis_init_angles = [Float64(get_prop(mg,i,:init_qubit)) for i in vertices(mg)]
-        network_resource = network_type(qureg,qubit_types,basis_init_angles)
-    elseif network_type == BellPairExplicitNetwork
-        qubit_types = [get_prop(mg,i,:vertex_type) for i in vertices(mg)]
-        client_indices = [1] # Hardcoded for now
-        basis_init_angles = [Float64(get_prop(mg,i,:init_qubit)) for i in vertices(mg)]
-        network_resource = network_type(qureg,qubit_types,client_indices,basis_init_angles)
-    else 
-        @error "Network type not defined"
-    end
-    teleport!(network_resource)
-
+    initialise_state!(mg,network_type)
 end
 
+function initialise_add_noise_entangle!(mg::MetaGraphs.MetaGraph{Int64, Float64},channel::NoisyChannel)
+    init_quantum_state = initialise_state!(mg)
+    update_init_angles!(mg,init_quantum_state)
+    add_noise!(channel,init_quantum_state)
+    entangle_graph!(mg,init_quantum_state)
+    set_prop!(mg,:quantum_state_properties,init_quantum_state)
+    set_prop!(mg,:noisy_channel,channel)
+    mg  
+end

@@ -63,7 +63,7 @@
         bpen.basis_init_angles
     end
 
-    function set_basis_init_angles!(bpen::T,init_angles::Vector{Union{Int,Int64,Float64}})
+    function set_basis_init_angles!(bpen::T,init_angles::Union{Vector{Float64},Vector{Union{Int,Int64,Float64}}})
         bpen.basis_init_angles = init_angles
     end
 
@@ -98,7 +98,12 @@
         num_vertices + 1
     end
 
+    function set_qubit_types!(bpen::T,qubit_types::Union{Vector{AbstractQubitType},Missing,Vector{Missing}, Vector{ComputationQubit}})
+        bpen.qubit_types = qubit_types
+    end
+
 // # end
+
 
 ##################################################################
 # Type associated function: BellPair
@@ -181,7 +186,7 @@
         end
 
         function ImplicitNetworkEmulation(qureg,qubit_types,client_indices,server_indices,basis_init_angles)
-            new(qureg,qubit_type,client_indices,server_indices,basis_init_angles)
+            new(qureg,qubit_types,client_indices,server_indices,basis_init_angles)
         end
 
         function ImplicitNetworkEmulation(qureg,qubit_types,basis_init_angles)
@@ -301,13 +306,38 @@
         end
     end
 
+    function compute_server_indices(bpen::BellPairExplicitNetwork)
+        total_qubit_range = bpen |> 
+        get_num_qubits |>
+        Base.OneTo
+        client_idx = get_client_indices(bpen)
+        setdiff(total_qubit_range,client_idx)
+    end
+
+    function set_server_indices!(bpen::BellPairExplicitNetwork)
+        server_indices = compute_server_indices(bpen)
+        set_server_indices!(bpen,server_indices)
+    end
+    
+   
 
     function get_bell_pairs(bpen::BellPairExplicitNetwork)
         bpen.bell_pairs
     end
 
     function set_bell_pairs!(bpen::BellPairExplicitNetwork,bp::Vector{BellPair})
-        bpen.bell_pair = bp
+        bpen.bell_pairs = bp
+    end
+
+    function compute_bell_pairs(bpen::BellPairExplicitNetwork)
+        server_indices = get_server_indices(bpen)
+        client_idx = get_client_indices(bpen)[1]
+        [BellPair(client_idx,s) for s in server_indices]
+    end
+
+    function set_bell_pairs!(bpen::BellPairExplicitNetwork)
+        bell_pairs = compute_bell_pairs(bpen)
+        set_bell_pairs!(bpen,bell_pairs)
     end
 
 
@@ -495,9 +525,9 @@
 # Type associated function: InitialisedServer
 ##################################################################
 // # functions
-    mutable struct InitialisedServer <: AbstractNetworkEmulation
+    struct InitialisedServer <: AbstractInitialisedServer
         qureg::Union{Qureg,Missing}
-        server_indices::Union{Int,Int64,Vector{Union{Int,Int64}},Missing,Vector{Missing}}
+        server_indices::Union{Int,Int64,Vector{Union{Int,Int64}},Missing,Vector{Missing},Vector{Int32}}
         qubit_types::Union{Vector{AbstractQubitType},Missing,Vector{Missing},Vector{ComputationQubit}}
         adapted_prep_angles::Union{Vector{Float64},Missing}
         function InitialisedServer()
@@ -513,7 +543,25 @@
 
     end
 
+    function get_quantum_backend(is::InitialisedServer)
+        is.qureg
+    end
 
+    function set_quantum_backend!(is::InitialisedServer,qureg::Qureg)
+        is.qureg = qureg
+    end
+
+    function get_qubit_range(is::InitialisedServer)
+        is.server_indices
+    end
+
+    function get_qubit_types(is::InitialisedServer)
+        is.qubit_types
+    end
+
+    function get_adapted_prep_angles(is::InitialisedServer)
+        is.adapted_prep_angles
+    end
 
 // # end
 
@@ -603,8 +651,6 @@
 
 
     function entangle_tranfer_get_prep_state!(qureg::Qureg,bell_pair::BellPair,::DummyQubit,initialisation::Union{Float64,Int})
-        client_index = get_client_idx(bell_pair)
-        server_index = get_server_idx(bell_pair)
         max_damping!(qureg,bell_pair)
         initialisation == 0 ? nothing : pauliX(qureg,bell_pair)
         controlledNot(qureg,bell_pair)
@@ -700,8 +746,6 @@
 
 
     function entangle_tranfer_get_prep_state!(qureg::Qureg,bell_pair::BellPair,::DummyQubit,initialisation::Union{Float64,Int})
-        client_index = get_client_idx(bell_pair)
-        server_index = get_server_idx(bell_pair)
         max_damping!(qureg,bell_pair)
         initialisation == 0 ? nothing : pauliX(qureg,bell_pair)
         controlledNot(qureg,bell_pair)
@@ -719,20 +763,28 @@
     function teleport!(ne::AbstractNoNetworkEmulation) 
         qureg = get_quantum_backend(ne)
         num_qubits = get_num_qubits(ne)
+        qubit_indices = get_qubit_range_one_to_n(ne)
+        qubit_types = [ComputationQubit() for i in qubit_indices]
+        adapted_prep_angles = [0.0 for i in qubit_indices]
         [QuEST.hadamard(qureg,i) for i in Base.OneTo(num_qubits)]
+        InitialisedServer(qureg,collect(qubit_indices),qubit_types,adapted_prep_angles)
     end
 
-
+    
     function teleport!(ne::AbstractImplicitNetworkEmulation) 
         qureg = get_quantum_backend(ne)
         num_qubits = get_num_qubits(ne)
         initialisations = get_basis_init_angles(ne)
         qubit_types = get_qubit_types(ne)
+        
         server_indices = get_server_indices(ne)
+        @assert all([server_indices[i] == i for i in Base.OneTo(num_qubits)]) "Qubit range must be 1..Num qubits."
+        adapted_prep_angles = [0.0 for i in server_indices]
         for qubit_index in server_indices
             init_state!(qureg,qubit_types[qubit_index],qubit_index,initialisations[qubit_index]) 
         end
         
+        InitialisedServer(qureg,collect(server_indices),qubit_types,adapted_prep_angles)
     end
 
     function teleport!(ne::AbstractBellPairExplicitNetwork) 
@@ -742,7 +794,7 @@
         initialisations = get_basis_init_angles(ne)
         new_basis_angles = entangle_tranfer_get_prep_state!.(Ref(qureg),bell_pairs,qubit_types,initialisations)
         server_indices = get_server_indices(ne)
-        InitialisedServer(qureg,server_indices,qubit_types,new_basis_angles)
+        InitialisedServer(qureg,collect(server_indices),qubit_types,new_basis_angles)
     end
 
 

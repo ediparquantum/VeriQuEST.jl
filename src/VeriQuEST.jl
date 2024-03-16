@@ -31,7 +31,7 @@ export
     MeasurementOutcome,
     AdjacencyList,
     Server,
-    NoisyServer,
+    NoisyChannel,
     DummyQubit,
     ComputationQubit,
     TrapQubit,
@@ -40,12 +40,6 @@ export
     MBQC,
     InputQubits,
     NoInputQubits,
-    ClusterState,
-    MBQCInput ,
-    MBQCOutput ,
-    MBQCColouringSet,
-    MBQCGraph,
-    MBQCFlow ,
     ForwardFlow,
     BackwardFlow,
     MBQCAngles ,
@@ -56,10 +50,10 @@ export
     Terse,
     Verbose,
     TrustworthyServer,
-    NoisyServer,
+    NoisyChannel,
     DummyQubitZeroOneInitialisationError,
     QubitFloatPhaseInitialisationError,
-    FunctionNotMeantToBeUsed,
+    FunctionNotMeantToBeUsedWarning,
     Quest,
     SingleQubit,
     TwoQubits,
@@ -72,12 +66,12 @@ export
     ProbabilityExceedsThreeQuartersError,
     ProbabilityExceedsFifteenSixteensError,
     ProbabilityLessThanZeroError,
-    ProbabilityExceedsNoErrorExceeded,
-    DimensionMismatchDensityMatrices,
-    ExceededNumKrausOperators,
-    UntestedKrausFunction,
+    ProbabilityExceedsNoErrorExceededError,
+    DimensionMismatchDensityMatricesError,
+    ExceededNumKrausOperatorsError,
+    UntestedKrausFunctionWarning,
     NoiseModel,
-    NoiseModels,
+    AbstractNoiseModels,
     NoiseParameters,
     NoNoiseParameters,
     QubitNoiseParameters,
@@ -107,8 +101,6 @@ export
     assert_flow,
     create_graph_resource,
     create_plus_phase_density_mat,
-    c_shift_index,
-    c_iterator,
     convert_flow_type_symbol,
     compute_angle_δᵥ,
     compute_backward_flow,
@@ -166,8 +158,6 @@ export
     init_qubit_meta_graph!,
     init_measurement_outcomes!,
     initialise_quantum_state_meta_graph!,
-    init_plus_phase_state!,
-    initialise_qubit,
     is_round_OK,
     initialise_blank_quantum_state!,
     MetaGraph,
@@ -201,12 +191,9 @@ export
     include("client_server_structs.jl")
     include("QuEST_decoherence_functions.jl")
     include("noisy_functions.jl")
-    include("c_utility_functions.jl")
     include("quantum_general_functions.jl")
     include("client_struct_utility_functions.jl")
-    include("client_functions.jl")
     include("client_random_draw_functions_angle_bits.jl")
-    include("client_initialise_qubit_state.jl")
     include("client_meta_graph_resource.jl")
     include("client_update_angle.jl")
     include("server_functions.jl")

@@ -58,28 +58,6 @@ function test_struct_creation()
     
 end
 
-function test_c_shift()
-    num_tests = 1_000
-    for i in Base.OneTo(num_tests)
-        julia_index = rand(1:1<<10)
-        c_index = c_shift_index(julia_index)
-        @test c_index == julia_index-1
-    end
-end
-
-function test_c_iterator()
-    num_tests = 1_000
-    for i in Base.OneTo(num_tests)
-        N = rand(1:1<<10)
-        iterator = c_iterator(N)
-        max_iter = collect(iterator) |> maximum
-        min_iter = collect(iterator) |> minimum
-        @test min_iter == 0
-        @test max_iter == c_shift_index(N)
-        @test iterator isa Base.Iterators.TakeWhile{Base.Iterators.Count{Int64, Int64}, Base.Fix2{typeof(<), Int64}}
-    end
-end
-
 
 
 

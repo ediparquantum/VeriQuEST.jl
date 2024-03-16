@@ -7,7 +7,13 @@
 #           : 
 ##################################################################
 
-
+"""
+# Definition of Flow
+- `forward_flow`, `f`: Oᶜ → Iᶜ is a mapping `v ↦ f(v)` with an inverse `f⁻¹(v) ↦ v`, with partial order "≤". The partial order is said to map the present to the future or the present to the past.
+- (a) `v ∼ f(v)`, where "∼" defines the neighbourhood `N(f(v))` and `v` has set membership.
+- (b) `v ≤ f(v)`
+- (c) `w ∼ f(v)`, then ∀ `v`, `v ≤ w`
+"""
 
 mutable struct Flow <: AbstractQuantumFlow
     forward::Function
@@ -18,6 +24,30 @@ mutable struct Flow <: AbstractQuantumFlow
     function Flow(forward,backward)
         new(forward,backward)
     end
+end
+
+
+function convert_flow_type_symbol(::Client,flow_type::Union{ForwardFlow,BackwardFlow})
+    flow_sym = @chain flow_type begin
+        string(_)
+        replace(_,"()"=>"")
+        replace(_,"Flow"=>"_Flow")
+        lowercase(_)
+        Symbol(_)    
+    end
+    return flow_sym
+end
+
+
+function compute_backward_flow(graph,forward_flow,vertex)
+    neighs = neighbors(graph,vertex)
+    fflow_neighs = [forward_flow(n) for n in neighs]
+    !any(vertex .∈ fflow_neighs) && return 0 
+    index_neigh = findall(x->x==vertex,fflow_neighs)
+    length(index_neigh) == 0 && error("The inputted vertex is not in the flow of the neighbours.")
+    previous_vertex = neighs[index_neigh]
+    length(previous_vertex) > 1 && error("There is more than one past vertex found")
+    previous_vertex[1]
 end
 
 
@@ -92,39 +122,6 @@ end
 function get_verified_flow(T,resource::AbstractParameterResources)
     f(vertex) = get_verified_flow_output(T,resource,vertex)
     return f
-end
-
-
-function add_flow_vertex!(
-    ::Client,
-    mg::MetaGraphs.MetaGraph{Int64, Float64},
-    resource::AbstractParameterResources,
-    flow_type::Union{ForwardFlow,BackwardFlow})
-
-    flow_sym = convert_flow_type_symbol(Client(),flow_type)
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        fv = get_verified_flow_output(flow_type,resource,v)
-        set_prop!(mg,v,flow_sym,fv)
-    end
-    return mg
-end
-
-
-function add_flow_vertex!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
-    add_flow_vertex!(Client(),mg,resource,ForwardFlow())
-    add_flow_vertex!(Client(),mg,resource,BackwardFlow())
-end
-
-
-
-function add_correction_vertices!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
-    verts = get_vertex_iterator(resource)
-    for v in verts
-        cor = get_correction_vertices(resource,v)
-        set_props!(mg,v,Dict(:X_correction => cor[:X],:Z_correction => cor[:Z]))
-    end
-    return mg
 end
 
 
