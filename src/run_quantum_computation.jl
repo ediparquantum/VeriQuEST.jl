@@ -74,3 +74,26 @@ function reset_quantum_state!(mg::MetaGraphs.MetaGraph{Int64, Float64})
     qureg = get_quantum_backend(initialised_server)
     initZeroState(qureg)
 end
+
+
+function compute!(
+    ct::AbstractMeasurementBasedQuantumComputation,
+    nt::AbstractNetworkEmulation,
+    st::AbstractQuantumState,
+    ch::AbstractNoiseChannel,
+    rt::AbstractRound)
+    resource = ParameterResources(ct,nt,st)
+    mg = generate_property_graph!(Client(),rt,resource)
+    initialise_add_noise_entangle!(mg,ch)
+    run_computation!(mg,ch)
+    reset_quantum_state!(mg)
+    set_prop!(mg,:noise,ch)
+    qsp = get_prop(mg,:quantum_state_properties) 
+    set_prop!(mg,
+        :quantum_state_properties,
+        InitialisedServer(missing,qsp.server_indices,qsp.qubit_types,qsp.adapted_prep_angles))
+    ntype = get_prop(mg,:network_type)
+    ntype.qureg = missing
+    set_prop!(mg,:network_type,ntype)
+    mg
+end

@@ -201,9 +201,24 @@ function add_noise!(::Client,
     q::Union{Int,Int32,Int64},
     θ::Float64)
     models = get_channel(channel)
-    model = filter(x->(x isa PostAngleUpdate),models) # until new model for uncorrelated angle noise is present
-    model |> isempty && return θ  # if model not present return previous angle
-    model = model[1]
+    if models isa Vector 
+        if any(x -> x isa PostAngleUpdate,models)
+            filtered_models = filter(x->(x isa PostAngleUpdate),models) 
+            filtered_models |> isempty && return θ  
+            model = filtered_models[1]
+        else
+            return θ
+        end
+    elseif !(models isa Vector) 
+        if !(models isa PostAngleUpdate)
+            return θ
+        else
+            !(models isa PostAngleUpdate) && error("Model: PostAngleUpdate not present it is: $(models)")
+            model = models
+        end
+    else
+        error("Noise model is meant to be PostAngleUpdate but is: $(models).")
+    end
     noise_function = get_noise_model(model)
     qubit_type = model.type
     !(qubit_type isa SingleQubit) && 
@@ -219,9 +234,24 @@ function add_noise!(::Client,
     q::Union{Int,Int32,Int64},
     measurement_outcome::Union{Int,Int32,Int64})
     models = get_channel(channel)
-    model = filter(x->(x isa AddBitFlip),models) # until new model for uncorrelated angle noise is present
-    model |> isempty && return measurement_outcome # if model not present return previous angle
-    model = model[1]
+    if models isa Vector 
+        if any(x -> x isa AddBitFlip,models)
+            filtered_models = filter(x->(x isa AddBitFlip),models) 
+            filtered_models |> isempty && return measurement_outcome
+            model = filtered_models[1]
+        else
+            return measurement_outcome
+        end
+    elseif !(models isa Vector) 
+        if !(models isa AddBitFlip)
+            return measurement_outcome
+        else
+            !(models isa AddBitFlip) && error("Model: AddBitFlip not present it is: $(models)")
+            model = models
+        end
+    else
+        error("Noise model is meant to be AddBitFlip but is: $(models).")
+    end
     noise_function = get_noise_model(model)
     qubit_type = model.type
     !(qubit_type isa SingleQubit) && 
@@ -230,6 +260,8 @@ function add_noise!(::Client,
     p̂ = p isa Vector ?  p[q] : p
     noise_function(qubit_type,q,p̂,measurement_outcome)
 end
+
+
 
 function add_noise!(::NoNoise, params::NoNoiseParameters)
     params.ρ

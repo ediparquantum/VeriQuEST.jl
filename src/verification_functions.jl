@@ -23,38 +23,6 @@ end
 
 
 
-function run_verification(::Client,::Server,
-    round_types,client_resource,state_type)
-
-    round_graphs = []
-    for round_type in round_types
-        
-        # Generate client meta graph
-        client_meta_graph = generate_property_graph!(
-            Client(),
-            round_type,
-            client_resource,
-            state_type)
-        
-
-        # Extract graph and qureg from client
-        client_graph = produce_initialised_graph(Client(),client_meta_graph)
-        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
-        
-        # Create server resources
-        server_resource = create_resource(Server(),client_graph,client_qureg)
-        server_quantum_state = server_resource["quantum_state"]
-        num_qubits_from_server = server_quantum_state.numQubitsRepresented
-        run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
-       
-        initialise_blank_quantum_state!(server_quantum_state)
-
-        push!(round_graphs,client_meta_graph)
-    end
-
-    round_graphs
-end
-
 
 
 function get_output(::Client,::Union{MBQC,ComputationRound},mg)
@@ -66,6 +34,7 @@ function get_output(::Client,::Union{MBQC,ComputationRound},mg)
     end
     outcome
 end
+
 
 
 function verify_round(::Client,::TestRound,mg)
@@ -178,6 +147,213 @@ end
 
 
 
+function run_verification(::Client,::Server,
+    round_types,client_resource,state_type)
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        client_meta_graph = generate_property_graph!(
+            Client(),
+            round_type,
+            client_resource,
+            state_type)
+        
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(Client(),client_meta_graph)
+        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+        
+        # Create server resources
+        server_resource = create_resource(Server(),client_graph,client_qureg)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
+end
+
+function run_verification(client::Client,server::NoisyChannel,
+    round_types,client_resource,state_type)
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        client_meta_graph = generate_property_graph!(
+            client,
+            round_type,
+            client_resource,
+            state_type)
+        
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(client,client_meta_graph)
+        client_qureg = produce_initialised_qureg(client,client_meta_graph)
+        
+      
+        # Create server resources
+        server_resource = create_resource(server,client_graph,client_qureg)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        
+        run_computation(client,server,client_meta_graph,num_qubits_from_server,server_quantum_state)
+    #run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
+end
+
+
+function run_verification(::Client,::MaliciousServer,
+    round_types,client_resource,state_type,malicious_angles)
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        client_meta_graph = generate_property_graph!(
+            Client(),
+            round_type,
+            client_resource,
+            state_type)
+        
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(Client(),client_meta_graph)
+        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+        
+        # Create server resources
+        server_resource = create_resource(MaliciousServer(),client_graph,client_qureg,malicious_angles)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        run_computation(Client(),MaliciousServer(),server_resource,client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
+end
+
+function run_verification(client::Client,server::NoisyChannel,
+    round_types,client_resource,state_type)
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        client_meta_graph = generate_property_graph!(
+            client,
+            round_type,
+            client_resource,
+            state_type)
+        
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(client,client_meta_graph)
+        client_qureg = produce_initialised_qureg(client,client_meta_graph)
+        
+      
+        # Create server resources
+        server_resource = create_resource(server,client_graph,client_qureg)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        
+        run_computation(client,server,client_meta_graph,num_qubits_from_server,server_quantum_state)
+    #run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
+end
+
+function run_verification(client::Client,server::NoisyChannel,
+    round_types,client_resource,state_type)
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        client_meta_graph = generate_property_graph!(
+            client,
+            round_type,
+            client_resource,
+            state_type)
+        
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(client,client_meta_graph)
+        client_qureg = produce_initialised_qureg(client,client_meta_graph)
+        
+      
+        # Create server resources
+        server_resource = create_resource(server,client_graph,client_qureg)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        
+        run_computation(client,server,client_meta_graph,num_qubits_from_server,server_quantum_state)
+    #run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
+end
+
+function run_verification(::Client,::Server,
+    resource::AbstractParameterResources)
+
+    round_types = draw_random_rounds(resource)
+    
+
+    round_graphs = []
+    for round_type in round_types
+        
+        # Generate client meta graph
+        mg = generate_property_graph!(Client(),round_type,resource)
+        
+        # Run quantum
+        run_quantum_computation(Client(),Server(),mg)
+
+        function run_quantum_computation(client::AbstractClient,server::AbstractServer,mg::MetaGraphs.MetaGraph{Int64, Float64})
+
+        # Extract graph and qureg from client
+        client_graph = produce_initialised_graph(Client(),client_meta_graph)
+        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
+        
+        # Create server resources
+        server_resource = create_resource(Server(),client_graph,client_qureg)
+        server_quantum_state = server_resource["quantum_state"]
+        num_qubits_from_server = server_quantum_state.numQubitsRepresented
+        run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
+       
+        initialise_blank_quantum_state!(server_quantum_state)
+
+        mg
+        end
+
+        push!(round_graphs,client_meta_graph)
+    end
+
+    round_graphs
+end
 
 
 function run_verification_simulator(::TrustworthyServer,::Terse,para)
@@ -278,41 +454,6 @@ function run_verification_simulator(::TrustworthyServer,::Verbose,para)
 end
 
 
-function run_verification(client::Client,server::NoisyChannel,
-    round_types,client_resource,state_type)
-
-    round_graphs = []
-    for round_type in round_types
-        
-        # Generate client meta graph
-        client_meta_graph = generate_property_graph!(
-            client,
-            round_type,
-            client_resource,
-            state_type)
-        
-
-        # Extract graph and qureg from client
-        client_graph = produce_initialised_graph(client,client_meta_graph)
-        client_qureg = produce_initialised_qureg(client,client_meta_graph)
-        
-      
-        # Create server resources
-        server_resource = create_resource(server,client_graph,client_qureg)
-        server_quantum_state = server_resource["quantum_state"]
-        num_qubits_from_server = server_quantum_state.numQubitsRepresented
-        
-        run_computation(client,server,client_meta_graph,num_qubits_from_server,server_quantum_state)
-    #run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
-       
-        initialise_blank_quantum_state!(server_quantum_state)
-
-        push!(round_graphs,client_meta_graph)
-    end
-
-    round_graphs
-end
-
 function run_verification_simulator(server::NoisyChannel,::Terse,para)
     # Define colouring
     reps = 100
@@ -400,41 +541,6 @@ function run_verification_simulator(server::NoisyChannel,::Verbose,para)
         computation_verification_verb = computation_verification_verb,
         mode_outcome = mode_outcome)
 end
-
-
-
-function run_verification(::Client,::MaliciousServer,
-    round_types,client_resource,state_type,malicious_angles)
-
-    round_graphs = []
-    for round_type in round_types
-        
-        # Generate client meta graph
-        client_meta_graph = generate_property_graph!(
-            Client(),
-            round_type,
-            client_resource,
-            state_type)
-        
-
-        # Extract graph and qureg from client
-        client_graph = produce_initialised_graph(Client(),client_meta_graph)
-        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
-        
-        # Create server resources
-        server_resource = create_resource(MaliciousServer(),client_graph,client_qureg,malicious_angles)
-        server_quantum_state = server_resource["quantum_state"]
-        num_qubits_from_server = server_quantum_state.numQubitsRepresented
-        run_computation(Client(),MaliciousServer(),server_resource,client_meta_graph,num_qubits_from_server,server_quantum_state)
-       
-        initialise_blank_quantum_state!(server_quantum_state)
-
-        push!(round_graphs,client_meta_graph)
-    end
-
-    round_graphs
-end
-
 
 function run_verification_simulator(::MaliciousServer,::Terse,para,malicious_angles)
     # Define colouring
@@ -530,126 +636,6 @@ end
 
 
 
-
-
-
-function run_verification(client::Client,server::NoisyChannel,
-    round_types,client_resource,state_type)
-
-    round_graphs = []
-    for round_type in round_types
-        
-        # Generate client meta graph
-        client_meta_graph = generate_property_graph!(
-            client,
-            round_type,
-            client_resource,
-            state_type)
-        
-
-        # Extract graph and qureg from client
-        client_graph = produce_initialised_graph(client,client_meta_graph)
-        client_qureg = produce_initialised_qureg(client,client_meta_graph)
-        
-      
-        # Create server resources
-        server_resource = create_resource(server,client_graph,client_qureg)
-        server_quantum_state = server_resource["quantum_state"]
-        num_qubits_from_server = server_quantum_state.numQubitsRepresented
-        
-        run_computation(client,server,client_meta_graph,num_qubits_from_server,server_quantum_state)
-    #run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
-       
-        initialise_blank_quantum_state!(server_quantum_state)
-
-        push!(round_graphs,client_meta_graph)
-    end
-
-    round_graphs
-end
-
-
-
-
-function run_verification(client::Client,server::NoisyChannel,
-    round_types,client_resource,state_type)
-
-    round_graphs = []
-    for round_type in round_types
-        
-        # Generate client meta graph
-        client_meta_graph = generate_property_graph!(
-            client,
-            round_type,
-            client_resource,
-            state_type)
-        
-
-        # Extract graph and qureg from client
-        client_graph = produce_initialised_graph(client,client_meta_graph)
-        client_qureg = produce_initialised_qureg(client,client_meta_graph)
-        
-      
-        # Create server resources
-        server_resource = create_resource(server,client_graph,client_qureg)
-        server_quantum_state = server_resource["quantum_state"]
-        num_qubits_from_server = server_quantum_state.numQubitsRepresented
-        
-        run_computation(client,server,client_meta_graph,num_qubits_from_server,server_quantum_state)
-    #run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
-       
-        initialise_blank_quantum_state!(server_quantum_state)
-
-        push!(round_graphs,client_meta_graph)
-    end
-
-    round_graphs
-end
-
-
-
-
-
-
-
-
-function run_verification(::Client,::Server,
-    resource::AbstractParameterResources)
-
-    round_types = draw_random_rounds(resource)
-    
-
-    round_graphs = []
-    for round_type in round_types
-        
-        # Generate client meta graph
-        mg = generate_property_graph!(Client(),round_type,resource)
-        
-        # Run quantum
-        run_quantum_computation(Client(),Server(),mg)
-
-        function run_quantum_computation(client::AbstractClient,server::AbstractServer,mg::MetaGraphs.MetaGraph{Int64, Float64})
-
-        # Extract graph and qureg from client
-        client_graph = produce_initialised_graph(Client(),client_meta_graph)
-        client_qureg = produce_initialised_qureg(Client(),client_meta_graph)
-        
-        # Create server resources
-        server_resource = create_resource(Server(),client_graph,client_qureg)
-        server_quantum_state = server_resource["quantum_state"]
-        num_qubits_from_server = server_quantum_state.numQubitsRepresented
-        run_computation(Client(),Server(),client_meta_graph,num_qubits_from_server,server_quantum_state)
-       
-        initialise_blank_quantum_state!(server_quantum_state)
-
-        mg
-        end
-
-        push!(round_graphs,client_meta_graph)
-    end
-
-    round_graphs
-end
 
 
 
