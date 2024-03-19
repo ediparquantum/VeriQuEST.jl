@@ -134,6 +134,10 @@ struct Kraus <: AbstractSpecificNoiseModel
     param::Union{Missing,Any}
 end
 
+mutable struct AddBitFlip <: AbstractSpecificNoiseModel 
+    type::SingleQubit
+    param::Union{Float64,Float64,Vector{Float64},Vector{Float64}} 
+end
 
 mutable struct Damping <: AbstractSpecificNoiseModel 
     type::SingleQubit
@@ -164,6 +168,11 @@ end
 mutable struct Pauli <: AbstractSpecificNoiseModel 
     type::SingleQubit
     param::Union{Float64,Float64,Vector{Float64},Vector{Float64},Vector{Vector{Float64}},Vector{Vector{Float64}}}
+end
+
+mutable struct PostAngleUpdate <: AbstractSpecificNoiseModel 
+    type::SingleQubit
+    param::Union{Float64, Vector{Float64}}
 end
 
 

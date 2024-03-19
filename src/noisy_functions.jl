@@ -32,60 +32,68 @@ get_params(noise::NoiseModelParams) = noise.param
 
 
 
-function add_bit_flip!(::SingleQubit,ρ,q,p)
+function add_bit_flip!(::SingleQubit,q::Union{Int,Int32,Int64},p::Float64,m::Union{Int,Int32,Int64})
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
-    mixBitFlip(ρ,q,p)
+    p < rand() ? m : 1-m
 end
 
 
-function add_damping!(::SingleQubit,ρ,q,p)
+function add_damping!(::SingleQubit,ρ::Qureg,q,p)
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
     mixDamping(ρ,q,p)
 end
 
-function add_dephasing!(::SingleQubit,ρ,q,p)
+function add_dephasing!(::SingleQubit,ρ::Qureg,q,p)
     p > 1/2 && throw_error(ProbabilityExceedsOneHalfError())
     mixDephasing(ρ,q,p)
 end 
 
-function add_dephasing!(::TwoQubits,ρ,q,p)
+function add_dephasing!(::TwoQubits,ρ::Qureg,q,p)
     q₁,q₂ = q
     p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
     mixTwoQubitDephasing(ρ,q₁,q₂,p)
 end 
 
-function add_depolarising!(::SingleQubit,ρ,q,p)
+function add_depolarising!(::SingleQubit,ρ::Qureg,q,p)
     p > 3/4 && throw_error(ProbabilityExceedsThreeQuartersError())
     mixDepolarising(ρ,q,p)
 end 
 
 
-function add_depolarising!(::TwoQubits,ρ,q,p)
+function add_depolarising!(::TwoQubits,ρ::Qureg,q,p)
     q₁,q₂ = q
     p > 15/16 && throw_error(ProbabilityExceedsFifteenSixteensError())
     mixTwoQubitDepolarising(ρ,q₁,q₂,p)
 end 
 
 
-function add_pauli_noise!(::SingleQubit,ρ,q,p)
+function add_pauli_noise!(::SingleQubit,ρ::Qureg,q,p)
     mixPauli(ρ,q,p)
 end
+
+function add_post_angle_update_noise!(::SingleQubit,q,p)
+    sum(p)
+end
+
+
+
+
  
 
-function apply_kraus_map!(::SingleQubit,::TracePreserving,ρ,q,complex_mat,num_ops)
+function apply_kraus_map!(::SingleQubit,::TracePreserving,ρ::Qureg,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunctionWarning())
     num_ops > 4 && throw_error(ExceededNumKrausOperatorsError())
     mixKrausMap(ρ,q,complex_mat,num_ops)
 end
 
-function apply_kraus_map!(::TwoQubits,::TracePreserving,ρ,q,complex_mat,num_ops)
+function apply_kraus_map!(::TwoQubits,::TracePreserving,ρ::Qureg,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunctionWarning())
     q₁,q₂ = q
     num_ops > 16 && throw_error(ExceededNumKrausOperatorsError())
     mixTwoQubitKrausMap(ρ,q,complex_mat,num_ops)
 end
 
-function apply_kraus_map!(::MultipleQubits,::TracePreserving,ρ,leas_sig_qubit,num_qubits,complex_mat,num_ops)
+function apply_kraus_map!(::MultipleQubits,::TracePreserving,ρ::Qureg,leas_sig_qubit,num_qubits,complex_mat,num_ops)
     throw_warning(UntestedKrausFunctionWarning())
     num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperatorsError())
     leas_sig_qubit = q₁
@@ -94,14 +102,14 @@ end
 
 
 
-function apply_kraus_map!(::SingleQubit,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+function apply_kraus_map!(::SingleQubit,::NotTracePreserving,ρ::Qureg,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunctionWarning())
     num_ops > 4 && throw_error(ExceededNumKrausOperatorsError())
     mixNonTPKrausMap(ρ,q,complex_mat,num_ops)
 end
 
 
-function apply_kraus_map!(::TwoQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+function apply_kraus_map!(::TwoQubits,::NotTracePreserving,ρ::Qureg,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunctionWarning())
     q₁,q₂ = q
     num_ops > 16 && throw_error(ExceededNumKrausOperatorsError())
@@ -109,7 +117,7 @@ function apply_kraus_map!(::TwoQubits,::NotTracePreserving,ρ,q,complex_mat,num_
 end
 
 
-function apply_kraus_map!(::MultipleQubits,::NotTracePreserving,ρ,q,complex_mat,num_ops)
+function apply_kraus_map!(::MultipleQubits,::NotTracePreserving,ρ::Qureg,q,complex_mat,num_ops)
     throw_warning(UntestedKrausFunctionWarning())
     leas_sig_qubit,num_qubits = q
     num_ops > (2*num_qubits)^2 && throw_error(ExceededNumKrausOperatorsError())
@@ -118,13 +126,22 @@ function apply_kraus_map!(::MultipleQubits,::NotTracePreserving,ρ,q,complex_mat
 end
 
 
-function mix_two_density_matrices!(::DensityMatrices,ρ₁,ρ₂,p)
+function mix_two_density_matrices!(::DensityMatrices,ρ₁::Qureg,ρ₂::Qureg,p)
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
     p < 0.0 && throw_error(ProbabilityLessThanZeroError())
     ρ₁.numQubitsRepresented == ρ₂.numQubitsRepresented && 
         throw_error(DimensionMismatchDensityMatricesError())
     mixDensityMatrix(ρ₁,p,ρ₂)
 end 
+
+function get_noise_model(::PostAngleUpdate)
+    add_post_angle_update_noise!
+end
+
+function get_noise_model(::AddBitFlip)
+    add_bit_flip!
+end
+
 
 
 function get_noise_model(::Damping)
@@ -167,7 +184,7 @@ end
 
 
 function get_noise_model_params(
-    model::Union{Damping,Dephasing,Depolarising,Pauli},
+    model::AbstractQuantumNoise,
     qureg::Qureg)
     qubit_type = model.type
     !(qubit_type isa SingleQubit) && 
@@ -178,9 +195,48 @@ function get_noise_model_params(
 end
 
 
+function add_noise!(::Client,
+    client_meta_graph::MetaGraphs.MetaGraph{Int64, Float64},
+    channel::NoisyChannel,
+    q::Union{Int,Int32,Int64},
+    θ::Float64)
+    models = get_channel(channel)
+    model = filter(x->(x isa PostAngleUpdate),models) # until new model for uncorrelated angle noise is present
+    model |> isempty && return θ  # if model not present return previous angle
+    model = model[1]
+    noise_function = get_noise_model(model)
+    qubit_type = model.type
+    !(qubit_type isa SingleQubit) && 
+    throw_error(OnlySingleQubitNoiseInUseError())
+    ϕ = model.param
+    ϕ̂ = ϕ isa Vector ?  ϕ[q] : ϕ
+    noise_function(qubit_type,q,[θ,ϕ̂])
+end
+
+function add_noise!(::Client,
+    client_meta_graph::MetaGraphs.MetaGraph{Int64, Float64},
+    channel::NoisyChannel,
+    q::Union{Int,Int32,Int64},
+    measurement_outcome::Union{Int,Int32,Int64})
+    models = get_channel(channel)
+    model = filter(x->(x isa AddBitFlip),models) # until new model for uncorrelated angle noise is present
+    model |> isempty && return measurement_outcome # if model not present return previous angle
+    model = model[1]
+    noise_function = get_noise_model(model)
+    qubit_type = model.type
+    !(qubit_type isa SingleQubit) && 
+    throw_error(OnlySingleQubitNoiseInUseError())
+    p = model.param
+    p̂ = p isa Vector ?  p[q] : p
+    noise_function(qubit_type,q,p̂,measurement_outcome)
+end
+
 function add_noise!(::NoNoise, params::NoNoiseParameters)
     params.ρ
 end
+
+
+
 
 
 
@@ -230,6 +286,8 @@ function add_noise!(
     qureg::Qureg)
     channel_copy = channel
     models = get_channel(channel_copy)
+    models = models isa Vector ? models : [models]
+    models = filter(x->!(x isa PostAngleUpdate || x isa AddBitFlip || x isa NoNoise),models)
     if models isa Vector 
         for m in eachindex(models)
             model = models[m]
@@ -272,5 +330,6 @@ end
 
 function add_noise!(channel::NoisyChannel,is::AbstractInitialisedServer)
     qureg = get_quantum_backend(is)
+
     add_noise!(channel,qureg)
 end

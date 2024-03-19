@@ -138,7 +138,7 @@ function update_ϕ!(::ComputationQubit,qT::Union{NoInputQubits,InputQubits},meta
         sz = z==0 ? 0 : get_prop(meta_graph,z,:outcome)
         push!(Sz,sz)
     end
-    ϕ̃ = compute_angle_δᵥ((),qT,ϕᵥ,Sx,Sz) 
+    ϕ̃ = compute_angle_δᵥ(qT,ϕᵥ,Sx,Sz) 
     set_prop!(meta_graph,vertex,:updated_ϕ, ϕ̃)
 end
 
@@ -157,11 +157,7 @@ function get_updated_ϕ!(::Client,mg,qubit)
 end
 
 
-function get_updated_ϕ!(::MaliciousServer,server_resource,qubit,ϕ::Float64)
-    angles = server_resource["angles"]
-    θ = length(angles) > 1 ? angles[qubit] : angles[1]
-    θ + ϕ
-end
+
 
 
 

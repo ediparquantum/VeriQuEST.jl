@@ -258,7 +258,7 @@ function store_measurement_outcome!(
     mg::MetaGraphs.MetaGraph{Int64, Float64},
     qubit::Union{Int64,Int32,Int},
     outcome::Union{Int64,Int32,Int})
-    set_prop!(client_meta_graph,qubit,:outcome, outcome)
+    set_prop!(mg,qubit,:outcome, outcome)
 end
 
 
@@ -303,10 +303,25 @@ end
 
 function initialise_add_noise_entangle!(mg::MetaGraphs.MetaGraph{Int64, Float64},channel::NoisyChannel)
     init_quantum_state = initialise_state!(mg)
-    update_init_angles!(mg,init_quantum_state)
-    add_noise!(channel,init_quantum_state)
+    update_init_angles!(mg,init_quantum_state) # Update angles from state init
+    add_noise!(channel,init_quantum_state) 
     entangle_graph!(mg,init_quantum_state)
     set_prop!(mg,:quantum_state_properties,init_quantum_state)
     set_prop!(mg,:noisy_channel,channel)
     mg  
+end
+
+
+
+function adjust_vertex(::BellPairExplicitNetwork,vertex::Union{Int,Int32,Int64})
+    vertex - 1
+end
+
+function adjust_vertex(::Union{NoNetworkEmulation,ImplicitNetworkEmulation},vertex::Union{Int,Int32,Int64})
+    vertex
+end
+
+function adjust_vertex(mg::MetaGraphs.MetaGraph{Int64, Float64},vertex::Union{Int,Int32,Int64})
+    network_type = get_network_type(mg)
+    adjust_vertex(network_type,vertex)
 end
