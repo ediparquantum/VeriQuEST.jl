@@ -6,9 +6,9 @@ using Graphs
 using MetaGraphs
 using QuEST
 using Chain
-#using VeriQuEST
-#import VeriQuEST: get_input_indices, get_input_values, MetaGraph
-#using TeleQuEST
+using Random
+using StatsBase
+
 
 include("../src/abstract_types.jl")
 include("../src/structs.jl")
@@ -29,24 +29,24 @@ include("../src/entangle.jl")
 include("../src/noisy_functions.jl")
 include("../src/measurements.jl")
 include("../src/run_quantum_computation.jl")
+include("../src/verification.jl")
 
 
 
-graph = Graph(3)
+graph = Graph(2)
 add_edge!(graph,1,2)
-add_edge!(graph,2,3)
-io = InputOutput(Inputs(),Outputs(3))
+
+io = InputOutput(Inputs(),Outputs(2))
 qgraph = QuantumGraph(graph,io)
 function forward_flow(vertex)
     v_str = string(vertex)
     forward = Dict(
         "1" =>2,
-        "2" =>3,
-        "3" =>0)
+        "2" =>0)
     forward[v_str]
 end
 flow = Flow(forward_flow)
-measurement_angles = Angles([π*1.0,0.0,π*1.0])
+measurement_angles = Angles([π/2,π/2])
 total_rounds,computation_rounds = 100,50
 
 # Dnesity matrix noise
@@ -97,4 +97,43 @@ mbqc_dm_nn_sv_mg = compute!(mbqc_comp_type,no_network,sv,channel_angle_bit,cr)
 ubqc_dm_im_sv_mg = compute!(ubqc_comp_type,implicit_network,sv,channel_angle_bit,cr)
 
 
+outs = Int64[]
 # Now look at verification
+for i in 1:10
+    compute!(mbqc_comp_type,no_network,dm,channel_no_noise,cr) |>
+    x -> get_prop(x,2,:outcome) |>
+    x -> push!(outs,x)
+end 
+
+outs
+
+
+
+ct = vbqc_comp_type
+nt = bell_pair_explicit_network
+st = DensityMatrix()
+ch = channel_no_noise
+
+rt = ComputationRound()
+resource = ParameterResources(ct,nt,st)
+mg = generate_property_graph!(Client(),rt,resource)
+resource.computation_type.graph
+props(mg)
+
+
+
+
+
+
+compute!(mbqc_comp_type,no_network,dm,channel,cr) |> computation_results |> get_outcomes
+compute!(ubqc_comp_type,implicit_network,dm,channel,cr) |> computation_results |> get_outcomes
+
+
+
+vr = run_verification_simulator(vbqc_comp_type,bell_pair_explicit_network,DensityMatrix(),channel)
+
+get_tests(vr) 
+get_computations(vr)
+get_tests_verbose(vr)
+get_computations_verbose(vr) 
+get_computations_mode(vr) 

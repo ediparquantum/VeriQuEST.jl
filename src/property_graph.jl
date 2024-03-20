@@ -115,26 +115,35 @@ function set_io_qubits_type!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},r
 end
 
 
+function init_qubit(::TrapQubit)::Float64
+    draw_θᵥ()
+end
+
+function init_qubit(::DummyQubit)::Int64
+    draw_dᵥ()
+end
 
 
 
 function init_qubit_meta_graph!(::ComputationRound,::MeasurementBasedQuantumComputation,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources) 
     verts = get_vertex_iterator(resource)
     for v in verts
+        set_prop!(mg,v,:init_qubit,0.0)
         ϕ = get_angle(resource,v) 
         set_prop!(mg,v,:secret_angle,ϕ)
-        set_prop!(mg,v,:init_qubit,ϕ)
+        
     end
     return mg
 end
+
 
 function init_qubit_meta_graph!(::ComputationRound,::AbstractBlindQuantumComputation,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources) 
     verts = get_vertex_iterator(resource)
     for v in verts
         θ = draw_θᵥ()
+        set_prop!(mg,v,:init_qubit,θ)
         ϕ = get_angle(resource,v) 
         set_prop!(mg,v,:secret_angle,ϕ)
-        set_prop!(mg,v,:init_qubit,θ)
     end
     return mg
 end
@@ -144,13 +153,6 @@ function init_qubit_meta_graph!(::ComputationRound,::AbstractVerifiedBlindQuantu
 end
 
 
-function init_qubit(::TrapQubit)::Float64
-    draw_θᵥ()
-end
-
-function init_qubit(::DummyQubit)::Int64
-    draw_dᵥ()
-end
 
 function init_qubit_meta_graph!(::TestRound,::AbstractVerifiedBlindQuantumComputation,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources) 
     verts = get_vertex_iterator(resource)    

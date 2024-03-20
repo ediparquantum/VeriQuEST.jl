@@ -35,3 +35,7 @@ end
 function get_io(graph::AbstractQuantumGraph)
     graph.io
 end
+
+function get_colouring(graph::AbstractQuantumGraph)
+    graph.colouring
+end

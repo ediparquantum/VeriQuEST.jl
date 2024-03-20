@@ -69,7 +69,6 @@ end
 
 
 
-
 function get_flow(mbqc::AbstractMeasurementBasedQuantumComputation)
     mbqc.flow
 end
@@ -122,4 +121,47 @@ end
 
 function get_colouring(mbqc::AbstractMeasurementBasedQuantumComputation)
     get_graph(mbqc).colouring
+end
+
+
+struct MBQCResults <:AbstractMeasurementBasedQuantumComputation
+    outcomes::Vector{Int}
+end
+
+
+struct UBQCResults <:AbstractBlindQuantumComputation
+    outcomes::Vector{Int}
+end
+
+function get_outcomes(mbqc::MBQCResults)
+    mbqc.outcomes
+end
+
+function get_outcomes(ubqc::UBQCResults)
+    ubqc.outcomes
+end
+
+function get_output(mg)
+    output_inds = get_prop(mg,:output_inds)
+    outcome = []
+    for v in output_inds
+            classic_outcome = get_prop(mg,v,:outcome)
+            push!(outcome,classic_outcome)
+    end
+    outcome
+end
+
+function get_outcome(::AbstractMeasurementBasedQuantumComputation,mg)
+    outcome = get_output(mg)
+    MBQCResults(outcome)
+end
+
+function get_outcome(::AbstractBlindQuantumComputation,mg)
+    outcome = get_output(mg)
+    UBQCResults(outcome)
+end
+
+function computation_results(mg)
+    ct = get_prop(mg,:computation_type)
+    get_outcome(ct,mg)
 end

@@ -96,5 +96,15 @@ function get_random_coloring(c::Vector{Vector{Int64}})
 end
 
 
+function get_chromatic_number(
+    ct::AbstractVerifiedBlindQuantumComputation)
+    ct |>
+    get_graph |> 
+    get_colouring |>
+    x -> get_colouring(TestColouring(),x) |>
+    x -> get_colouring(x) |>
+    length
+end
+
 
 
