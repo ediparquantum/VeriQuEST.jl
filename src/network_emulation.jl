@@ -760,6 +760,7 @@
 # Teleportation function: teleport!
 ##################################################################
 // # functions
+    # For MBQC only - no initial angles, only plus state
     function teleport!(ne::AbstractNoNetworkEmulation) 
         qureg = get_quantum_backend(ne)
         num_qubits = get_num_qubits(ne)

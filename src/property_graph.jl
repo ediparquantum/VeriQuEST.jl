@@ -63,6 +63,15 @@ end
 
 
 
+function set_vertex_type!(::MBQCRound,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
+    color_pattern = get_colouring(resource,ComputationColouring())
+    qubit_types = [ComputationQubit()]
+    vertex_qubit_types_list = [qubit_types[i] for i in color_pattern]
+    [set_prop!(mg,i,:vertex_type,vertex_qubit_types_list[i]) for i in vertices(mg)]
+    return mg
+end
+
+
 function set_vertex_type!(::Client,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
     round_type = get_prop(mg,:round_type)
     set_vertex_type!(round_type,mg,resource)
@@ -100,7 +109,7 @@ function set_io_qubits_type!(mg::MetaGraphs.MetaGraph{Int64, Float64},resource::
     end
 end
 
-function set_io_qubits_type!(::ComputationRound,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
+function set_io_qubits_type!(::Union{MBQCRound,ComputationRound},mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
     set_io_qubits_type!(mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources)
 end
 
@@ -125,7 +134,7 @@ end
 
 
 
-function init_qubit_meta_graph!(::ComputationRound,::MeasurementBasedQuantumComputation,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources) 
+function init_qubit_meta_graph!(::MBQCRound,::MeasurementBasedQuantumComputation,mg::MetaGraphs.MetaGraph{Int64, Float64},resource::AbstractParameterResources) 
     verts = get_vertex_iterator(resource)
     for v in verts
         set_prop!(mg,v,:init_qubit,0.0)

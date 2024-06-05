@@ -37,6 +37,7 @@ export
     TrapQubit,
     ComputationRound,
     TestRound,
+    MBQCRound,
     MBQC,
     InputQubits,
     NoInputQubits,

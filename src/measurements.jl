@@ -21,7 +21,7 @@ end
 
 
 # MBQC
-function update_measurement(::Client,::ComputationRound,::AbstractNoNetworkEmulation,mg::MetaGraphs.MetaGraph{Int64, Float64},q::Union{Int,Int32,Int64},outcome::Union{Int,Int32,Int64})
+function update_measurement(::Client,::MBQCRound,::AbstractNoNetworkEmulation,mg::MetaGraphs.MetaGraph{Int64, Float64},q::Union{Int,Int32,Int64},outcome::Union{Int,Int32,Int64})
     outcome
 end
 

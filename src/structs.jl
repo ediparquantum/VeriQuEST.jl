@@ -32,6 +32,7 @@ struct BackwardFlow <: AbstractQuantumFlow end
 
 struct ComputationRound <: AbstractRound end
 struct TestRound <: AbstractRound end
+struct MBQCRound <: AbstractRound end
 
 
 struct Angles <: AbstractQuantumAngles

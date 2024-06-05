@@ -97,3 +97,25 @@ function compute!(
     set_prop!(mg,:network_type,ntype)
     mg
 end
+
+
+
+
+function compute!(resource::MeasurementBasedQuantumComputation,st::AbstractQuantumState)
+    compute!(
+        resource,
+        NoNetworkEmulation(),
+        st,
+        NoisyChannel(NoNoise(NoQubits())),
+        MBQCRound())
+end
+
+
+function compute!(resource::MeasurementBasedQuantumComputation,st::AbstractQuantumState,ch::AbstractNoiseChannel)
+    compute!(
+        resource,
+        NoNetworkEmulation(),
+        st,
+        ch,
+        MBQCRound())
+end

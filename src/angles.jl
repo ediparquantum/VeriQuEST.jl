@@ -77,8 +77,6 @@ function update_ϕ!(::TestRound,::DummyQubit,::NoInputQubits,meta_graph,vertex)
 end
 
 
-
-
 function update_ϕ!(::TestRound,::TrapQubit,::NoInputQubits,meta_graph,vertex)
     θᵥ = get_prop(meta_graph,vertex,:init_qubit)
     rᵥ = draw_rᵥ()
@@ -143,6 +141,20 @@ function update_ϕ!(::ComputationQubit,qT::Union{NoInputQubits,InputQubits},meta
 end
 
 
+function update_ϕ!(::MBQCRound,::ComputationQubit,::NoInputQubits,meta_graph,vertex)
+    ϕ = get_prop(meta_graph,vertex,:secret_angle)
+    X = get_prop(meta_graph,vertex,:X_correction)
+    Z = get_prop(meta_graph,vertex,:Z_correction)
+    Sx = X==0 ? 0 : get_prop(meta_graph,X,:outcome)
+    Sz = []
+    for z in Z
+        sz = z==0 ? 0 : get_prop(meta_graph,z,:outcome)
+        push!(Sz,sz)
+    end
+    ϕ̃ =  compute_angle_δᵥ(NoInputQubits(),ϕ,Sx,Sz)
+    set_prop!(meta_graph,vertex,:updated_ϕ, ϕ̃)
+end
+
 
 function get_updated_ϕ!(RountType,QubitType,QubitIOType,client_meta_graph,qubit)
     update_ϕ!(RountType,QubitType,QubitIOType,client_meta_graph,qubit)
@@ -155,7 +167,6 @@ function get_updated_ϕ!(::Client,mg,qubit)
     v_io_type = get_prop(mg,qubit,:vertex_io_type)
     get_updated_ϕ!(round_type,v_type,v_io_type,mg,qubit)
 end
-
 
 
 

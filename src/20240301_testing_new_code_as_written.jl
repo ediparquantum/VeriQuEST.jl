@@ -10,6 +10,8 @@ using Random
 using StatsBase
 
 
+
+
 include("../src/abstract_types.jl")
 include("../src/structs.jl")
 include("../src/draw_random_numbers.jl")
@@ -46,7 +48,7 @@ function forward_flow(vertex)
     forward[v_str]
 end
 flow = Flow(forward_flow)
-measurement_angles = Angles([π/2,π/2])
+measurement_angles = Angles([0.0,0.0])
 total_rounds,computation_rounds = 100,50
 
 # Dnesity matrix noise
