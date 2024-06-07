@@ -397,7 +397,13 @@
     end
     
     function get_state_prep_angle(ne::BellPairExplicitNetwork,outcome::Union{Int32,Int64})
-        get_init_angle(ne) + π*outcome*1.0 + π*1.0
+      
+        # get_init_angle(ne) + π*outcome*1.0 + π*1.0
+        if outcome == 1
+            get_init_angle(ne)
+        else
+            -get_init_angle(ne)
+        end
     end
     
     
@@ -430,8 +436,8 @@
     
     function controlledNot(bpen::BellPairExplicitNetwork)
         qureg = get_quantum_backend(bpen)
-        client_idx = get_client_idx(bpen)
-        server_idx = get_server_idx(bpen)
+        client_idx = get_client_idx(bpen) # Control
+        server_idx = get_server_idx(bpen) # Target
         QuEST.controlledNot(qureg,client_idx,server_idx)  
     end
     
@@ -567,7 +573,7 @@
 
 
 ##################################################################
-# Type associated function: Qureg
+# Quest functions
 ##################################################################
 // # functions
     function max_damping!(qureg::Qureg,qubit_idx::Union{Int,Int64})
@@ -587,6 +593,7 @@
 
 
     function init_state!(qureg::Qureg,qubit_type::ComputationQubit,qubit_index::Union{Int,Int32,Int64},initialisation::Float64) 
+        @info "Using init_state! on index: $(qubit_index) and angle $(initialisation)"
         QuEST.hadamard(qureg,qubit_index)
         QuEST.rotateZ(qureg,qubit_index,initialisation)
     end
@@ -633,12 +640,19 @@
     end
 
     function get_state_prep_angle(outcome::Union{Int32,Int64},initialisation::Float64)
-        initialisation + π*outcome*1.0 + π*1.0
+        @info ("outcome: $(outcome), angle: $(initialisation)") 
+        #initialisation + π* outcome*1.0 + π*1.0
+        if outcome == 1
+            initialisation
+        else
+            -initialisation
+        end
     end
 
 
 
     function entangle_tranfer_get_prep_state!(qureg::Qureg,bell_pair::BellPair,::Union{ComputationQubit,TrapQubit},initialisation::Float64)
+        
         max_damping!(qureg,bell_pair)
         pauliX(qureg,bell_pair)
         hadamard(qureg,bell_pair)
@@ -661,100 +675,6 @@
 
 // # end
 
-##################################################################
-# Type associated function: Qureg
-##################################################################
-// # functions
-    function max_damping!(qureg::Qureg,qubit_idx::Union{Int,Int64})
-        QuEST.mixDamping(qureg,qubit_idx,1.0)
-    end
-
-    function max_damping!(qureg::Qureg,bell_pair::BellPair)
-        client_idx = get_client_idx(bell_pair)
-        server_idx = get_server_idx(bell_pair)
-        QuEST.mixDamping(qureg,client_idx,1.0)
-        QuEST.mixDamping(qureg,server_idx,1.0)
-    end
-
-    function get_num_qubits(qureg::Qureg)
-        QuEST.getNumQubits(qureg)
-    end
-
-
-    function init_state!(qureg::Qureg,qubit_type::ComputationQubit,qubit_index::Union{Int,Int32,Int64},initialisation::Float64) 
-        QuEST.hadamard(qureg,qubit_index)
-        QuEST.rotateZ(qureg,qubit_index,initialisation)
-    end
-
-
-    function init_state!(qureg::Qureg,qubit_type::TrapQubit,qubit_index::Union{Int,Int32,Int64},initialisation::Float64)
-        QuEST.hadamard(qureg,qubit_index)
-        QuEST.rotateZ(qureg,qubit_index,initialisation)
-    end
-
-    function init_state!(qureg::Qureg,qubit_type::DummyQubit,qubit_index::Union{Int,Int32,Int64},initialisation::Union{Float64,Int}) 
-        Int(initialisation) == 0 ? qureg : QuEST.pauliX(qureg,qubit_index)
-    end
-
-
- 
-
-    function pauliX(qureg::Qureg,bell_pair::BellPair)
-        client_idx = get_client_idx(bell_pair)
-        server_idx = get_server_idx(bell_pair)
-        QuEST.pauliX(qureg,client_idx)
-        QuEST.pauliX(qureg,server_idx)
-    end
-
-    function rotateZ(qureg::Qureg,bell_pair::BellPair,initialisation::Float64)
-        client_idx = get_client_idx(bell_pair)
-        QuEST.rotateZ(qureg,client_idx,-initialisation)  
-    end
-
-    function hadamard(qureg::Qureg,bell_pair::BellPair)
-        client_idx = get_client_idx(bell_pair)
-        QuEST.hadamard(qureg,client_idx)
-    end
-
-    function controlledNot(qureg::Qureg,bell_pair::BellPair)
-        client_idx = get_client_idx(bell_pair)
-        server_idx = get_server_idx(bell_pair)
-        QuEST.controlledNot(qureg,client_idx,server_idx)  
-    end
-
-    function measure(qureg::Qureg,bell_pair::BellPair)
-        client_idx = get_client_idx(bell_pair)
-        QuEST.measure(qureg,client_idx)
-    end
-
-    function get_state_prep_angle(outcome::Union{Int32,Int64},initialisation::Float64)
-        initialisation + π*outcome*1.0 + π*1.0
-    end
-
-
-
-    function entangle_tranfer_get_prep_state!(qureg::Qureg,bell_pair::BellPair,::Union{ComputationQubit,TrapQubit},initialisation::Float64)
-        max_damping!(qureg,bell_pair)
-        pauliX(qureg,bell_pair)
-        hadamard(qureg,bell_pair)
-        controlledNot(qureg,bell_pair)
-        rotateZ(qureg,bell_pair,-initialisation)
-        hadamard(qureg,bell_pair)
-        outcome = measure(qureg,bell_pair)
-        get_state_prep_angle(outcome,initialisation)
-    end  
-
-
-    function entangle_tranfer_get_prep_state!(qureg::Qureg,bell_pair::BellPair,::DummyQubit,initialisation::Union{Float64,Int})
-        max_damping!(qureg,bell_pair)
-        initialisation == 0 ? nothing : pauliX(qureg,bell_pair)
-        controlledNot(qureg,bell_pair)
-        outcome = measure(qureg,bell_pair)
-        get_state_prep_angle(outcome,initialisation)    
-    end  
-
-
-// # end
 
 ##################################################################
 # Teleportation function: teleport!
@@ -802,6 +722,34 @@
 
 //  # end
 
+
+
+
+
+// # Updated initialised angles
+    function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer,network_type::AbstractNoNetworkEmulation) 
+        mg
+    end
+    function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer,network_type::AbstractImplicitNetworkEmulation) 
+        mg
+    end
+    function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer,network_type::AbstractBellPairExplicitNetwork) 
+        # Tests if qubit is a dummy qubit - if it is - insert current init_qubt
+        # if it is not, inserts adapted_prep_angles
+        qubit_types = get_qubit_types(is)
+        angles = get_adapted_prep_angles(is)
+        @info angles
+        updated_angles = [
+            qubit_types[x] != DummyQubit() ? angles[x] : get_prop(mg,x,:init_qubit) 
+                    for x in eachindex(qubit_types)]
+        [set_prop!(mg,i,:init_qubit,updated_angles[i]) for i in eachindex(updated_angles)]
+    end
+
+    function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer)
+        network_type = get_network_type(mg)
+        update_init_angles!(mg,is,network_type)
+    end
+// # end
 
 
 

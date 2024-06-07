@@ -1,9 +1,9 @@
 ##################################################################
-# Filename  : example_mbqc.jl
+# Filename  : example_ubqc.jl
 # Author    : Jonathan Miller
-# Date      : 2024-06-05
+# Date      : 2024-06-07
 # Aim       : aim_script
-#           : Provide simple example of MBQC
+#           : Provide simple example of UBQC
 #           : To show functionality as it is used in VeriQuEST
 #           : Simple path graph with π/2 for each angle
 #           : Last qubit should be 0. 
@@ -61,28 +61,34 @@ measurement_angles = Angles([π/2,π/2])
 
 
 # Initial setups
-mbqc_comp_type = MeasurementBasedQuantumComputation(qgraph,flow,measurement_angles)
-no_network = NoNetworkEmulation()
+ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
 dm = DensityMatrix()
-sv = StateVector()
 ch = NoisyChannel(NoNoise(NoQubits()))
-cr = MBQCRound()
+cr = ComputationRound()
 
 
 
-outcomes_dm = []
-outcomes_sv = []
+# Implicit network
+implicit_network = ImplicitNetworkEmulation()
+outcomes_imp_net = []
 for i in Base.OneTo(1000)
-
-    mg_dm = compute!(mbqc_comp_type,no_network,dm,ch,cr)
-    mg_sv = compute!(mbqc_comp_type,no_network,sv,ch,cr)
-    push!(outcomes_dm,get_prop(mg_dm,2,:outcome))
-    push!(outcomes_sv,get_prop(mg_sv,2,:outcome))
+    mg_imp = compute!(ubqc_comp_type,implicit_network,dm,ch,cr)
+    push!(outcomes_imp_net,get_prop(mg_imp,2,:outcome))
 end
 
-@assert all([i == 0 for i in outcomes_dm])
-@assert all([i == 0 for i in outcomes_sv])
+@assert all([i == 0 for i in outcomes_imp_net])
 
 
 
+# Bell pair network
+bell_pair_explicit_network = BellPairExplicitNetwork()
+compute!(ubqc_comp_type,bell_pair_explicit_network,dm,ch,cr)
+outcomes_bel_net = []
+for i in Base.OneTo(10)
+    mg_bp = compute!(ubqc_comp_type,bell_pair_explicit_network,dm,ch,cr)
+    push!(outcomes_bel_net,get_prop(mg_bp,2,:outcome))
+end
+outcomes_bel_net
+
+@assert all([i == 0 for i in outcomes_bel_net])
 

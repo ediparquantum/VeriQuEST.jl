@@ -172,25 +172,4 @@ end
 
 
 
-function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer,network_type::AbstractNoNetworkEmulation) 
-    mg
-end
-function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer,network_type::AbstractImplicitNetworkEmulation) 
-    mg
-end
-function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer,network_type::AbstractBellPairExplicitNetwork) 
-    qubit_types = get_qubit_types(is)
-    angles = get_adapted_prep_angles(is)
-    updated_angles = [
-        qubit_types[x] != DummyQubit() ? angles[x] : get_prop(mg,x,:init_qubit) 
-                for x in eachindex(qubit_types)]
-    [set_prop!(mg,i,:init_qubit,updated_angles[i]) for i in eachindex(updated_angles)]
-end
-
-function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer)
-    network_type = get_network_type(mg)
-    update_init_angles!(mg,is,network_type)
-end
-
-
 

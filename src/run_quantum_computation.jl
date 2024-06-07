@@ -86,7 +86,9 @@ function compute!(
     mg = generate_property_graph!(Client(),rt,resource)
     initialise_add_noise_entangle!(mg,ch)
     run_computation!(mg,ch)
+    @info "Ran computation"
     reset_quantum_state!(mg)
+    @info "Reset quantum state"
     set_prop!(mg,:noise,ch)
     qsp = get_prop(mg,:quantum_state_properties) 
     set_prop!(mg,
