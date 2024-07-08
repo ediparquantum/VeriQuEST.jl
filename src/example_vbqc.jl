@@ -1,14 +1,13 @@
 ##################################################################
-# Filename  : example_ubqc.jl
-# Author    : Jonathan Miller
-# Date      : 2024-06-07
+# Filename  : example_vbqc.jl
+# Author    : Jonathan Miler
+# Date      : 2024-07-08
 # Aim       : aim_script
-#           : Provide simple example of UBQC
-#           : To show functionality as it is used in VeriQuEST
-#           : Simple path graph with π/2 for each angle
-#           : Last qubit should be 0. 
-#           : Tested on state vector and density matrix
+#           : Run a simple example of VBQC on
+#           : both the implicit and explicit network
 ##################################################################
+
+# NEEDS WORK TO SHOW!!!!!
 
 
 using Pkg
@@ -58,6 +57,7 @@ function forward_flow(vertex)
 end
 flow = Flow(forward_flow)
 measurement_angles = Angles([π/2,π/2])
+
 
 
 # Initial setups

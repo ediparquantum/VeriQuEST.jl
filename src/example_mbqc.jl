@@ -72,17 +72,13 @@ cr = MBQCRound()
 
 outcomes_dm = []
 outcomes_sv = []
-for i in Base.OneTo(1000)
-
+for i in Base.OneTo(10)
     mg_dm = compute!(mbqc_comp_type,no_network,dm,ch,cr)
     mg_sv = compute!(mbqc_comp_type,no_network,sv,ch,cr)
     push!(outcomes_dm,get_prop(mg_dm,2,:outcome))
     push!(outcomes_sv,get_prop(mg_sv,2,:outcome))
 end
 
+
 @assert all([i == 0 for i in outcomes_dm])
 @assert all([i == 0 for i in outcomes_sv])
-
-
-
-

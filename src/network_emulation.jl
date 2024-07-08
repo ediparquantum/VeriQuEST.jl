@@ -78,7 +78,6 @@
     function get_server_indices(bpen::T)
         server_indices = bpen.server_indices
         if server_indices isa Missing
-            @info "Server indices are missing. Please check server indices, supplies range of qubits."
             return get_qubit_range_one_to_n(bpen)
         else
             return server_indices
@@ -342,15 +341,14 @@
 
 
     function get_client_idx(bpen::BellPairExplicitNetwork)
-        bpen |>
-         get_bell_pairs |>
-        get_client_idx
+        ci = bpen.client_indices
+        @assert length(ci) == 1 "Only one qubit is used for BellPairExplicitNetwork"
+        ci
     end
 
     function get_server_idx(bpen::BellPairExplicitNetwork)
-        bpen |>
-         get_bell_pairs |>
-        get_server_idx
+       si = bpen.server_indices
+       @assert !isempty(si) "Server indices can not be empty"
     end
 
     function get_qubit_types(bpen::BellPairExplicitNetwork)
@@ -397,13 +395,7 @@
     end
     
     function get_state_prep_angle(ne::BellPairExplicitNetwork,outcome::Union{Int32,Int64})
-      
-        # get_init_angle(ne) + π*outcome*1.0 + π*1.0
-        if outcome == 1
-            get_init_angle(ne)
-        else
-            -get_init_angle(ne)
-        end
+        get_init_angle(ne) + outcome*π + π |> x -> mod2pi(x) - 2*π
     end
     
     
@@ -573,7 +565,7 @@
 
 
 ##################################################################
-# Quest functions
+# Quest functions require to pass the bell pair
 ##################################################################
 // # functions
     function max_damping!(qureg::Qureg,qubit_idx::Union{Int,Int64})
@@ -593,7 +585,6 @@
 
 
     function init_state!(qureg::Qureg,qubit_type::ComputationQubit,qubit_index::Union{Int,Int32,Int64},initialisation::Float64) 
-        @info "Using init_state! on index: $(qubit_index) and angle $(initialisation)"
         QuEST.hadamard(qureg,qubit_index)
         QuEST.rotateZ(qureg,qubit_index,initialisation)
     end
@@ -620,7 +611,7 @@
 
     function rotateZ(qureg::Qureg,bell_pair::BellPair,initialisation::Float64)
         client_idx = get_client_idx(bell_pair)
-        QuEST.rotateZ(qureg,client_idx,-initialisation)  
+        QuEST.rotateZ(qureg,client_idx,initialisation)  
     end
 
     function hadamard(qureg::Qureg,bell_pair::BellPair)
@@ -640,19 +631,12 @@
     end
 
     function get_state_prep_angle(outcome::Union{Int32,Int64},initialisation::Float64)
-        @info ("outcome: $(outcome), angle: $(initialisation)") 
-        #initialisation + π* outcome*1.0 + π*1.0
-        if outcome == 1
-            initialisation
-        else
-            -initialisation
-        end
+        initialisation + outcome*π + π |> x -> mod2pi(x) - 2*π
     end
 
 
 
     function entangle_tranfer_get_prep_state!(qureg::Qureg,bell_pair::BellPair,::Union{ComputationQubit,TrapQubit},initialisation::Float64)
-        
         max_damping!(qureg,bell_pair)
         pauliX(qureg,bell_pair)
         hadamard(qureg,bell_pair)
@@ -738,11 +722,11 @@
         # if it is not, inserts adapted_prep_angles
         qubit_types = get_qubit_types(is)
         angles = get_adapted_prep_angles(is)
-        @info angles
         updated_angles = [
             qubit_types[x] != DummyQubit() ? angles[x] : get_prop(mg,x,:init_qubit) 
                     for x in eachindex(qubit_types)]
         [set_prop!(mg,i,:init_qubit,updated_angles[i]) for i in eachindex(updated_angles)]
+        mg
     end
 
     function update_init_angles!(mg::MetaGraphs.MetaGraph{Int64, Float64},is::AbstractInitialisedServer)

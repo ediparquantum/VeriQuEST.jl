@@ -292,14 +292,10 @@ function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64},network_type
 end
 
 function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64},network_type::AbstractBellPairExplicitNetwork)
-    @info "Create quantum state"
     qureg = create_quantum_state(mg)
     qubit_types = [get_prop(mg,i,:vertex_type) for i in vertices(mg)]
-    @info "Got qubit types: $(qubit_types)"
     client_indices = [1] # Hardcoded for now
-    @info "Client index: $(client_indices)"
     basis_init_angles = [Float64(get_prop(mg,i,:init_qubit)) for i in vertices(mg)]
-    @info "Client angles: $(basis_init_angles)"
     set_quantum_backend!(network_type,qureg)
     set_client_indices!(network_type,client_indices)
     set_qubit_types!(network_type,qubit_types)
@@ -307,7 +303,6 @@ function initialise_state!(mg::MetaGraphs.MetaGraph{Int64, Float64},network_type
     set_server_indices!(network_type)
     set_bell_pairs!(network_type)
     teleport!(network_type)
-    @info "Teleported"
 end
 
 
