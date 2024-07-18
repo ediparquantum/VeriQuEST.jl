@@ -25,7 +25,7 @@ function entangle_graph!(::Union{AbstractImplicitNetworkEmulation,AbstractNoNetw
     max_qubit = qureg.numQubitsRepresented
     for e in edge_iter
         src,dst = e.src,e.dst 
-        @assert src ≤ max_qubit || dst ≤ max_qubit ""
+        @assert src ≤ max_qubit || dst ≤ max_qubit "Either vertex $(src) or $(dst) is greater than $(max_qubit), which is the largest index for the quantum state, fix."
         controlledPhaseFlip(qureg,src,dst)
     end
 end

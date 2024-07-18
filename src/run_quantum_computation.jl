@@ -14,7 +14,10 @@
     initialised_server = get_prop(mg,:quantum_state_properties)
     qubits_to_measure = get_qubit_range(initialised_server)
     for q in qubits_to_measure  
-        adjusted_qubit = adjust_vertex(mg,q)
+        adjusted_qubit = adjust_vertex(mg,q) 
+        # Vertex adjusted for network type
+        # explicit network client is qubit 1
+        # so needs to shift back 1 for the graph
         ϕ̃ = get_updated_ϕ!(Client(),mg,adjusted_qubit)
         ϕ = add_noise!(Client(),mg,channel,adjusted_qubit,ϕ̃)
         m̃ = measure_along_ϕ_basis!(Server(),mg,q,ϕ)
@@ -33,6 +36,9 @@ function run_computation!(
     qubits_to_measure = get_qubit_range(initialised_server)
     for q in qubits_to_measure  
         adjusted_qubit = adjust_vertex(mg,q)
+        # Vertex adjusted for network type
+        # explicit network client is qubit 1
+        # so needs to shift back 1 for the graph
         ϕ = get_updated_ϕ!(Client(),mg,adjusted_qubit)
         m̃ = measure_along_ϕ_basis!(Server(),mg,q,ϕ)
         m = update_measurement(Client(),mg,adjusted_qubit,m̃)
@@ -50,6 +56,9 @@ function run_computation!(
     qubits_to_measure = get_qubit_range(initialised_server)
     for q in qubits_to_measure  
         adjusted_qubit = adjust_vertex(mg,q)
+        # Vertex adjusted for network type
+        # explicit network client is qubit 1
+        # so needs to shift back 1 for the graph
         ϕ = get_updated_ϕ!(Client(),mg,adjusted_qubit)
         m̃ = measure_along_ϕ_basis!(Server(),mg,q,ϕ)
         m̂ = update_measurement(Client(),mg,adjusted_qubit,m̃)

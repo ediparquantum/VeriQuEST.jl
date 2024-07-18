@@ -65,6 +65,8 @@ function verify_round(::Client,::TestRound,mg)
             rᵥ = get_prop(mg,v,:one_time_pad_int)
             Dₙ = []
             for n in neighs
+                n_type = get_prop(mg,n,:vertex_type)
+                @assert n_type isa DummyQubit "Neighbour of a trap is not a dummy, check."
                 dₙ = get_prop(mg,n,:init_qubit)
                 push!(Dₙ,dₙ)
             end

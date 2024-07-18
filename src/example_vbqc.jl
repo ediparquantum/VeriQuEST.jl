@@ -46,6 +46,7 @@ include("../src/verification.jl")
 graph = Graph(2)
 add_edge!(graph,1,2)
 
+
 io = InputOutput(Inputs(),Outputs(2))
 qgraph = QuantumGraph(graph,io)
 function forward_flow(vertex)
@@ -57,37 +58,26 @@ function forward_flow(vertex)
 end
 flow = Flow(forward_flow)
 measurement_angles = Angles([π/2,π/2])
+total_rounds = 10
+computation_rounds = 1
+trapification_strategy = TestRoundTrapAndDummycolouring()
 
 
 
 # Initial setups
-ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
-dm = DensityMatrix()
+ct = LeichtleVerification(
+    total_rounds,
+    computation_rounds,
+    trapification_strategy,
+    qgraph,flow,measurement_angles)
+nt_bp = BellPairExplicitNetwork()
+nt_im = ImplicitNetworkEmulation()
+st = DensityMatrix()
 ch = NoisyChannel(NoNoise(NoQubits()))
-cr = ComputationRound()
 
-
-
-# Implicit network
-implicit_network = ImplicitNetworkEmulation()
-outcomes_imp_net = []
-for i in Base.OneTo(10)
-    mg_imp = compute!(ubqc_comp_type,implicit_network,dm,ch,cr)
-    push!(outcomes_imp_net,get_prop(mg_imp,2,:outcome))
+for i in Base.OneTo(100)
+    ver_res1 = run_verification_simulator(ct,nt_bp,st,ch)
+    ver_res2 = run_verification_simulator(ct,nt_im,st,ch)
+    @assert ver_res1.tests isa Ok
+    @assert ver_res2.tests isa Ok
 end
-
-@assert all([i == 0 for i in outcomes_imp_net])
-
-
-
-# Bell pair network
-bell_pair_explicit_network = BellPairExplicitNetwork()
-outcomes_bel_net = []
-for i in Base.OneTo(10)
-    mg_bp = compute!(ubqc_comp_type,bell_pair_explicit_network,dm,ch,cr)
-    push!(outcomes_bel_net,get_prop(mg_bp,2,:outcome))
-end
-
-
-@assert all([i == 0 for i in outcomes_bel_net])
-

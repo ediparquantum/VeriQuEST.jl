@@ -650,8 +650,8 @@
 
     function entangle_tranfer_get_prep_state!(qureg::Qureg,bell_pair::BellPair,::DummyQubit,initialisation::Union{Float64,Int})
         max_damping!(qureg,bell_pair)
-        initialisation == 0 ? nothing : pauliX(qureg,bell_pair)
         controlledNot(qureg,bell_pair)
+        initialisation == 0 ? nothing : pauliX(qureg,bell_pair)
         outcome = measure(qureg,bell_pair)
         get_state_prep_angle(outcome,initialisation)    
     end  

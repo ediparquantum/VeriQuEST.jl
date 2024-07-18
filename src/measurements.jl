@@ -35,9 +35,29 @@ function update_measurement(::Client,::ComputationRound,::AbstractBellPairExplic
     one_time_pad_int = get_prop(mg,q,:one_time_pad_int)
     abs(outcome-one_time_pad_int)	
 end
-# MBQC/Test round
-function update_measurement(::Client,::TestRound,::Union{AbstractImplicitNetworkEmulation,AbstractBellPairExplicitNetwork},mg::MetaGraphs.MetaGraph{Int64, Float64},q::Union{Int,Int32,Int64},outcome::Union{Int,Int32,Int64})
+
+function update_measurement(::Union{TrapQubit,ComputationQubit},mg,q,outcome)
+    #one_time_pad_int = get_prop(mg,q,:one_time_pad_int)
+    #abs(outcome-one_time_pad_int)
     outcome
+end
+
+function update_measurement(::Union{DummyQubit},mg,q,outcome)
+  outcome
+end
+
+
+# Test round
+#function update_measurement(::Client,::TestRound,::Union{AbstractImplicitNetworkEmulation,AbstractBellPairExplicitNetwork},mg::MetaGraphs.MetaGraph{Int64, Float64},q::Union{Int,Int32,Int64},outcome::Union{Int,Int32,Int64})
+    #outcome
+    #one_time_pad_int = get_prop(mg,q,:one_time_pad_int)
+    #abs(outcome-one_time_pad_int)	
+#end
+
+
+function update_measurement(::Client,::TestRound,::Union{AbstractImplicitNetworkEmulation,AbstractBellPairExplicitNetwork},mg::MetaGraphs.MetaGraph{Int64, Float64},q::Union{Int,Int32,Int64},outcome::Union{Int,Int32,Int64})
+    v_type = get_prop(mg,q,:vertex_type)
+    update_measurement(v_type,mg,q,outcome)
 end
 
 
