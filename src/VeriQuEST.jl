@@ -1,19 +1,17 @@
 module VeriQuEST
 
-    using Reexport
- 
-    @reexport using Revise
-    @reexport using LinearAlgebra
-    @reexport using Chain
-    @reexport using Graphs
-    @reexport using MetaGraphs
-    @reexport using Random # Needed for shuffle function
-    @reexport using RandomMatrices
-    @reexport using Combinatorics # For permutations
-    @reexport using QuEST
-    @reexport using Printf
-    @reexport using StatsBase
-    @reexport using CairoMakie
+    using Revise
+    using LinearAlgebra
+    using Chain
+    using Graphs
+    using MetaGraphs
+    using Random # Needed for shuffle function
+    using RandomMatrices
+    using Combinatorics # For permutations
+    using QuEST
+    using Printf
+    using StatsBase
+    using CairoMakie
     
 
 
