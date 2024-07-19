@@ -20,14 +20,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 Documenter = "1"
-<<<<<<< HEAD
-Graphs = "1"
-MetaGraphs = "0.7"
 RandomMatrices = "0.5"
-Revise = "3"
-=======
-RandomMatrices = "0.5"
->>>>>>> main
 StatsBase = "0.34"
 MetaGraphs = "0.7"
 Combinatorics = "1"

@@ -47,9 +47,7 @@ mutable struct LeichtleVerification <: AbstractRepeatedGraphVerification
     end
 end
 
-function get_total_rounds(vbqc::AbstractVerifiedBlindQuantumComputation)
-    vbqc.total_rounds
-end
+
 
 function get_num_computation_rounds(vbqc::AbstractVerifiedBlindQuantumComputation)
     vbqc.computation_rounds

@@ -50,7 +50,7 @@ function compute_backward_flow(graph,forward_flow,vertex)
     previous_vertex[1]
 end
 
-
+function forward_flow() end
 function get_forward_flow(flow::AbstractQuantumFlow)
     flow.forward
 end
@@ -69,7 +69,7 @@ end
 
 
 
-
+#=
 function get_flow(::BackwardFlow,resource::AbstractParameterResources)
     get_computation_type(resource) |> 
     get_flow |>
@@ -82,6 +82,7 @@ function get_flow(::ForwardFlow,resource::AbstractParameterResources)
     get_flow |>
     get_forward_flow
 end
+=#
 
 
 

@@ -127,6 +127,8 @@ props(mg)
 
 
 
+
+
 compute!(mbqc_comp_type,no_network,dm,channel,cr) |> computation_results |> get_outcomes
 compute!(ubqc_comp_type,implicit_network,dm,channel,cr) |> computation_results |> get_outcomes
 

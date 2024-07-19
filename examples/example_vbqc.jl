@@ -81,3 +81,10 @@ for i in Base.OneTo(100)
     @assert ver_res1.tests isa Ok
     @assert ver_res2.tests isa Ok
 end
+
+vr = run_verification_simulator(ct,nt_bp,st,ch)
+get_tests(vr) 
+get_computations(vr)
+get_tests_verbose(vr)
+get_computations_verbose(vr) 
+get_computations_mode(vr) 
