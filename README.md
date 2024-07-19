@@ -34,42 +34,53 @@ using VeriQuEST
 A generic template, currently these variable names are mandatory.
 
 ```julia
-# Choose backend and round counts
-state_type = DensityMatrix() #or StateVector()
-total_rounds::Int = # Number of rounds, 1...N
-computation_rounds::Int = # Number of rounds,1,...,N
 
-# Grover graph
-num_vertices::Int = # Also becomes number of qubits
-graph = Graph(num_vertices)::Graph # Uses Graphs.jl
-# Specify graph using Graphs.jl API
+# Set up input values
+graph = Graph(2)
+add_edge!(graph,1,2)
 
-input = (indices = (),values = ())::NamedTuple # Input classical data
-output = () # Output qubits classical outcomes BQP 
 
-# Julia is indexed 1, hence a vertex with 0 index is a flag for no flow
-function forward_flow(vertex::Int)
+io = InputOutput(Inputs(),Outputs(2))
+qgraph = QuantumGraph(graph,io)
+function forward_flow(vertex)
     v_str = string(vertex)
     forward = Dict(
-        #current =>future,
-        "1" => 0) # indicates vertex 1 does not have a flow, specify all qubits. 
+        "1" =>2,
+        "2"=>0)
     forward[v_str]
 end
+flow = Flow(forward_flow)
+measurement_angles = Angles([π/2,π/2])
+total_rounds = 10
+computation_rounds = 1
+trapification_strategy = TestRoundTrapAndDummycolouring()
 
 
-secret_angles::Vector{Float64} = # Angles secret from Bob
 
+# Initial setups
+ct = LeichtleVerification(
+    total_rounds,
+    computation_rounds,
+    trapification_strategy,
+    qgraph,flow,measurement_angles)
+nt_bp = BellPairExplicitNetwork()
+nt_im = ImplicitNetworkEmulation()
+st = DensityMatrix()
+ch = NoisyChannel(NoNoise(NoQubits()))
 
-# Keep as is
-para::NamedTuple= (
-    graph=graph,
-    forward_flow = forward_flow,
-    input = input,
-    output = output,
-    secret_angles=secret_angles,
-    state_type = state_type,
-    total_rounds = total_rounds,
-    computation_rounds = computation_rounds)
+for i in Base.OneTo(100)
+    ver_res1 = run_verification_simulator(ct,nt_bp,st,ch)
+    ver_res2 = run_verification_simulator(ct,nt_im,st,ch)
+    @assert ver_res1.tests isa Ok
+    @assert ver_res2.tests isa Ok
+end
+
+vr = run_verification_simulator(ct,nt_bp,st,ch)
+get_tests(vr) 
+get_computations(vr)
+get_tests_verbose(vr)
+get_computations_verbose(vr) 
+get_computations_mode(vr) 
 ```
 
 This script can be seen as the mandatory configuration used to run all subsequent computations.
