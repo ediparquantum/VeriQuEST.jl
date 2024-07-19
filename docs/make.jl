@@ -16,11 +16,11 @@ makedocs(;
     ),
     pages=[
         "Introduction to VeriQuEST.jl" => "index.md",
-        "User Guide" => [
-            "Getting Started" => "user/getting_started.md",
-            "Notes on Noise" => "user/quantum_noise.md",
-            "Grover example" => "user/grover_example.md",
-        ],
+        #"User Guide" => [
+        #   "Getting Started" => "user/getting_started.md",
+        #    "Notes on Noise" => "user/quantum_noise.md",
+        #   "Grover example" => "user/grover_example.md",
+        #],
         "References" => 
             ["API" => "references/api.md"]
     ],

@@ -49,10 +49,12 @@ export
     PostAngleUpdate,
     AddBitFlip,
     get_tests,
-    get_computation,
-    get_tests_verbos,
+    get_computations,
+    get_tests_verbose,
     get_computations_verbose,
-    get_computations_mode
+    get_computations_mode,
+    Ok,
+    Abort
     
 
 
