@@ -187,18 +187,26 @@ export
     verify_rounds
     
 
-    include("client_server_structs.jl")
-    include("QuEST_decoherence_functions.jl")
+
+    include("abstract_types.jl")
+    include("structs.jl")
+    include("draw_random_numbers.jl")
+    include("asserts_errors_warnings.jl")
+    include("create_quantum_state_env.jl")
+    include("input_output_mbqc.jl")
+    include("colourings.jl")
+    include("graphs.jl")
+    include("angles.jl")
+    include("flow.jl")
+    include("computation_types.jl")
+    include("trapification_strategies.jl")
+    include("abstract_parameter_resources.jl")
+    include("network_emulation.jl")
+    include("property_graph.jl")
+    include("entangle.jl")
     include("noisy_functions.jl")
-    include("quantum_general_functions.jl")
-    include("client_struct_utility_functions.jl")
-    include("client_random_draw_functions_angle_bits.jl")
-    include("client_meta_graph_resource.jl")
-    include("client_update_angle.jl")
-    include("server_functions.jl")
-    include("server_malicious_behaviour.jl")
-    include("server_noisy.jl")
-    include("verification_functions.jl")
-    include("verification_visualisation.jl")
+    include("measurements.jl")
+    include("run_quantum_computation.jl")
+    include("verification.jl")
 
 end
