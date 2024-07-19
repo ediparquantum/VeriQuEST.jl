@@ -1,7 +1,15 @@
 using VeriQuEST
 using Test
-using StatsBase
+using LinearAlgebra
+using Chain
 using Graphs
+using Revise
+using MetaGraphs
+using Random # Needed for shuffle function
+using RandomMatrices
+using Combinatorics # For permutations
+using Printf
+using StatsBase
 
 
 tolerance=1e-10

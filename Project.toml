@@ -19,16 +19,24 @@ Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-CairoMakie = "0.11"
-Chain = "0.5"
-Combinatorics = "1"
 Documenter = "1"
+<<<<<<< HEAD
 Graphs = "1"
 MetaGraphs = "0.7"
 RandomMatrices = "0.5"
 Revise = "3"
+=======
+RandomMatrices = "0.5"
+>>>>>>> main
 StatsBase = "0.34"
-julia = "1"
+MetaGraphs = "0.7"
+Combinatorics = "1"
+Graphs = "1"
+Chain = "0.6"
+CairoMakie = "0.12"
+Revise = "3"
+QuEST = "1"
+
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

@@ -1,9 +1,9 @@
 module VeriQuEST
 
-    using Revise
     using LinearAlgebra
     using Chain
     using Graphs
+    using Revise
     using MetaGraphs
     using Random # Needed for shuffle function
     using RandomMatrices
