@@ -64,21 +64,21 @@ para= (
 ubqc_outcome = run_ubqc(para)
 vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)</code></pre><h2 id="Noisy-models-in-verification"><a class="docs-heading-anchor" href="#Noisy-models-in-verification">Noisy models in verification</a><a id="Noisy-models-in-verification-1"></a><a class="docs-heading-anchor-permalink" href="#Noisy-models-in-verification" title="Permalink"></a></h2><p>Set a scaling factor to ensure noise is not randomly chosen above threshold.</p><pre><code class="language-julia hljs">p_scale = 0.1</code></pre><h3 id="Damping-noise"><a class="docs-heading-anchor" href="#Damping-noise">Damping noise</a><a id="Damping-noise-1"></a><a class="docs-heading-anchor-permalink" href="#Damping-noise" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Damping
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Damping(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Damping(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)</code></pre><h3 id="Dephasing-noise"><a class="docs-heading-anchor" href="#Dephasing-noise">Dephasing noise</a><a id="Dephasing-noise-1"></a><a class="docs-heading-anchor-permalink" href="#Dephasing-noise" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Dephasing
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Dephasing(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Dephasing(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)</code></pre><h3 id="Depolarising-noise"><a class="docs-heading-anchor" href="#Depolarising-noise">Depolarising noise</a><a id="Depolarising-noise-1"></a><a class="docs-heading-anchor-permalink" href="#Depolarising-noise" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Depolarising
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Depolarising(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Depolarising(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)</code></pre><h3 id="Pauli-noise"><a class="docs-heading-anchor" href="#Pauli-noise">Pauli noise</a><a id="Pauli-noise-1"></a><a class="docs-heading-anchor-permalink" href="#Pauli-noise" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Pauli
 p_xyz(p_scale) = p_scale .* [rand(),rand(),rand()]
 p = [p_xyz(p_scale) for i in vertices(para[:graph])]
-model = Pauli(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Pauli(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)</code></pre><h3 id="Vector-of-noise-models"><a class="docs-heading-anchor" href="#Vector-of-noise-models">Vector of noise models</a><a id="Vector-of-noise-models-1"></a><a class="docs-heading-anchor-permalink" href="#Vector-of-noise-models" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Vector of noise models
 model_vec = [Damping,Dephasing,Depolarising,Pauli]
 p_damp = [p_scale*rand() for i in vertices(para[:graph])]
@@ -87,9 +87,9 @@ p_depo = [p_scale*rand() for i in vertices(para[:graph])]
 p_pauli = [p_xyz(p_scale) for i in vertices(para[:graph])]
 prob_vec = [p_damp,p_deph,p_depo,p_pauli]
 
-models = Vector{NoiseModels}()
+models = Vector{AbstractNoiseModels}()
 for m in eachindex(model_vec)
-    push!(models,model_vec[m](Quest(),SingleQubit(),prob_vec[m]))
+    push!(models,model_vec[m](SingleQubit(),prob_vec[m]))
 end
-server = NoisyServer(models)
-vbqc_outcome = run_verification_simulator(server,Verbose(),para)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../quantum_noise/">« Notes on Noise</a><a class="docs-footer-nextpage" href="../../references/api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Friday 19 July 2024 15:55">Friday 19 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+server = NoisyChannel(models)
+vbqc_outcome = run_verification_simulator(server,Verbose(),para)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../quantum_noise/">« Notes on Noise</a><a class="docs-footer-nextpage" href="../../references/api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Friday 19 July 2024 16:37">Friday 19 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
