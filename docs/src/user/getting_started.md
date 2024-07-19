@@ -97,7 +97,7 @@ From QuEST, there are pre-built decoherence emulators.
 
 Damping, dephasing, depolarising and pauli noise models have been implemented and tested. Note there are also Kraus maps, but testing is in development.
 
-To run a noisy verification, call the same `run_verification_simulaor`, but this time the server is a `NoisyServer` which has a noise model. A noise model is called, which is then passed to the server. The server tells the verification simulator what noise is needed.
+To run a noisy verification, call the same `run_verification_simulaor`, but this time the server is a `NoisyChannel` which has a noise model. A noise model is called, which is then passed to the server. The server tells the verification simulator what noise is needed.
 
 To ensure probabilities are small, a scaling value is applied.
 ```julia
@@ -112,8 +112,8 @@ The following examples show how easy it is to insert a pre-made noise model.
 ```julia
 # Damping
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Damping(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Damping(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```  
 
@@ -122,8 +122,8 @@ vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```julia
 # Dephasing
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Dephasing(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Dephasing(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
@@ -132,8 +132,8 @@ vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```julia
 # Depolarising
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Depolarising(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Depolarising(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
@@ -143,8 +143,8 @@ vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 # Pauli
 p_xyz(p_scale) = p_scale .* [rand(),rand(),rand()]
 p = [p_xyz(p_scale) for i in vertices(para[:graph])]
-model = Pauli(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Pauli(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
@@ -159,11 +159,11 @@ p_depo = [p_scale*rand() for i in vertices(para[:graph])]
 p_pauli = [p_xyz(p_scale) for i in vertices(para[:graph])]
 prob_vec = [p_damp,p_deph,p_depo,p_pauli]
 
-models = Vector{NoiseModels}()
+models = Vector{AbstractNoiseModels}()
 for m in eachindex(model_vec)
-    push!(models,model_vec[m](Quest(),SingleQubit(),prob_vec[m]))
+    push!(models,model_vec[m](SingleQubit(),prob_vec[m]))
 end
-server = NoisyServer(models)
+server = NoisyChannel(models)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
@@ -176,8 +176,8 @@ This snippet is an example of how the user will call a single qubit Kraus model.
 ```julia
 # Krau
 p = # some Kraus operators
-model = Kraus(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Kraus(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 

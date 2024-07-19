@@ -32,8 +32,8 @@ To run a damping noise within the verification framework recall
 ```julia
 # Damping
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Damping(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Damping(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```  
 
@@ -104,8 +104,8 @@ To run a dephasing noise within the verification framework recall
 ```julia
 # Dephasing
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Dephasing(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Dephasing(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
@@ -168,8 +168,8 @@ To run a depolarising noise within the verification framework recall
 ```julia
 # Depolarising
 p = [p_scale*rand() for i in vertices(para[:graph])]
-model = Depolarising(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Depolarising(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 
@@ -242,8 +242,8 @@ To run a Pauli noise within the verification framework recall
 # Pauli
 p_xyz(p_scale) = p_scale .* [rand(),rand(),rand()]
 p = [p_xyz(p_scale) for i in vertices(para[:graph])]
-model = Pauli(Quest(),SingleQubit(),p)
-server = NoisyServer(model)
+model = Pauli(SingleQubit(),p)
+server = NoisyChannel(model)
 vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 ```
 

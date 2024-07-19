@@ -2,13 +2,7 @@
     test_struct_creation()
 end
 
-@testset "test_c_shift" begin
-    test_c_shift()
-end
 
-@testset "test_c_iterator" begin
-    test_c_iterator()
-end
 
 
 

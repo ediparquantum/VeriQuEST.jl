@@ -133,28 +133,28 @@ using .RobustBlindVerification
 
     # Damping
     p = [p_scale*rand() for i in vertices(para[:graph])]
-    model = Damping(Quest(),SingleQubit(),p)
-    server = NoisyServer(model)
+    model = Damping(SingleQubit(),p)
+    server = NoisyChannel(model)
     vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 
 
     # Dephasing
     p = [p_scale*rand() for i in vertices(para[:graph])]
-    model = Dephasing(Quest(),SingleQubit(),p)
-    server = NoisyServer(model)
+    model = Dephasing(SingleQubit(),p)
+    server = NoisyChannel(model)
     vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 
     # Depolarising
     p = [p_scale*rand() for i in vertices(para[:graph])]
-    model = Depolarising(Quest(),SingleQubit(),p)
-    server = NoisyServer(model)
+    model = Depolarising(SingleQubit(),p)
+    server = NoisyChannel(model)
     vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 
     # Pauli
     p_xyz(p_scale) = p_scale .* [rand(),rand(),rand()]
     p = [p_xyz(p_scale) for i in vertices(para[:graph])]
-    model = Pauli(Quest(),SingleQubit(),p)
-    server = NoisyServer(model)
+    model = Pauli(SingleQubit(),p)
+    server = NoisyChannel(model)
     vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 
 
@@ -166,11 +166,11 @@ using .RobustBlindVerification
     p_pauli = [p_xyz(p_scale) for i in vertices(para[:graph])]
     prob_vec = [p_damp,p_deph,p_depo,p_pauli]
 
-    models = Vector{NoiseModels}()
+    models = Vector{AbstractNoiseModels}()
     for m in eachindex(model_vec)
-        push!(models,model_vec[m](Quest(),SingleQubit(),prob_vec[m]))
+        push!(models,model_vec[m](SingleQubit(),prob_vec[m]))
     end
-    server = NoisyServer(models)
+    server = NoisyChannel(models)
     vbqc_outcome = run_verification_simulator(server,Verbose(),para)
 // # end
 
