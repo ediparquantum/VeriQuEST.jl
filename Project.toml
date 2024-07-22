@@ -29,6 +29,7 @@ Chain = "0.6"
 CairoMakie = "0.12"
 Revise = "3"
 QuEST = "1"
+Julia = "1.9"
 
 
 [extras]
