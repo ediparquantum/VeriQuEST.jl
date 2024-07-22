@@ -233,60 +233,32 @@ get_computations_mode(ver_res2)
 
 ## Noiseless and noisy simulations
 
-In the study of quantum verification protocols, it is crucial to be able to simulate both state vector and density matrix simulations. State vector simulations require less computational space, e.g., $n$-qubit system has dimension $2^n$, making it easier to check if the protocols are correct. On the other hand, density matrix simulations requires more computational space, e.g., $n$-qubit system has dimension $2^n\times 2^n$, however, they are excellent for understanding how noise impacts the whole protocol, affecting both its certification and security. Such features help researcher to ensuring their protocols are both correct and secure in the presence of noise. Some examples on the state-vector and density matrix simulations are given below. 
+In the study of quantum verification protocols, it is crucial to be able to simulate both state vector and density matrix simulations. State vector simulations require less computational space, e.g., $n$-qubit system has dimension $2^n$, making it easier to check if the protocols are correct. On the other hand, density matrix simulations requires more computational space, e.g., $n$-qubit system has dimension $2^n\times 2^n$, however, they are excellent for understanding how noise impacts the whole protocol, affecting both its certification and security. Such features help researcher to ensuring their protocols are both correct and secure in the presence of noise. Some examples on the  density matrix simulations are given below. 
 
-### Unknown addition to angle basis
-
-```julia
-    julia> malicious_angles = π/2
-    julia> malicious_vbqc_outcome = run_verification_simulator(
-        MaliciousServer(),Verbose(),para,malicious_angles)
-    (test_verification = Abort(),
-      test_verification_verb = (failed = 26, passed = 24),
-      computation_verification = Abort(),
-      computation_verification_verb = (failed = 25, passed = 25),
-      mode_outcome = Any[1]
-```
 
 ### Explicit noise channels
 
 Here are examples of damping, dephasing and depolarising noise.
+
 ```julia
-    # Prob scaling
-    p_scale = 0.05
+ # Prob scaling
+p_scale = 0.5
+p = [p_scale*rand() for i in vertices(graph)]
 
-    # Damping
-    p = [p_scale*rand() for i in vertices(para[:graph])]
-    model = Damping(Quest(),SingleQubit(),p)
-    server = NoisyServer(model)
-    julia> vbqc_outcome = run_verification_simulator(server,Verbose(),para)
-    (test_verification = Ok(),
-        test_verification_verb = (failed = 1, passed = 49),
-        computation_verification = Ok(),
-        computation_verification_verb = (failed = 0, passed = 50),
-        mode_outcome = Any[0])
+# Damping
+model = Damping(SingleQubit(),p)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
 
-    # Dephasing
-    p = [p_scale*rand() for i in vertices(para[:graph])]
-    model = Dephasing(Quest(),SingleQubit(),p)
-    server = NoisyServer(model)
-    julia> vbqc_outcome = run_verification_simulator(server,Verbose(),para)
-    (test_verification = Ok(),
-      test_verification_verb = (failed = 4, passed = 46),
-      computation_verification = Ok(),
-      computation_verification_verb = (failed = 0, passed = 50),
-      mode_outcome = Any[0])
+# Dephasing
+model = Dephasing(SingleQubit(),p)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
 
-    # Depolarising
-    p = [p_scale*rand() for i in vertices(para[:graph])]
-    model = Depolarising(Quest(),SingleQubit(),p)
-    server = NoisyServer(model)
-    julia> vbqc_outcome = run_verification_simulator(server,Verbose(),para)
-    (test_verification = Ok(),
-      test_verification_verb = (failed = 3, passed = 47),
-      computation_verification = Ok(),
-      computation_verification_verb = (failed = 1, passed = 49),
-      mode_outcome = Any[0])
+# Depolarising
+model = Depolarising(SingleQubit(),p)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
 ```
 
 # Future plans

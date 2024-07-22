@@ -169,12 +169,34 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <ext-link ext-link-type="uri" xlink:href="https://github.com/fieldofnodes/VeriQuEST.jl"><monospace>VeriQuEST</monospace></ext-link>.</p>
   <sec id="software-architecture">
     <title>Software architecture</title>
-    <p>[JON:Explain how the package works, where does it stand**:
-    function call, core link (if there is any), compilation]</p>
+    <p>VeriQuEST.jl is a package written entirely in
+    <monospace>Julia</monospace>, however to emulate the quantum
+    computation, the <monospace>C</monospace> wrapper
+    <monospace>QuEST.jl</monospace> which utilises the library
+    <monospace>QuEST</monospace> is used.
+    <monospace>QuEST.jl</monospace> calls the <monospace>C</monospace>
+    through a precompiled verions (<monospace>v3.7</monospace>) of
+    <monospace>QuEST</monospace>, with a number of features on the
+    <monospace>Julia</monospace> level to prevent run-time crashes.
+    There are some experimental features, but basic usage and
+    specifically calls relevant to <monospace>VeriQuEST.jl</monospace>
+    are sound. The user takes advantage of the
+    <monospace>Julia</monospace> just-in-time compilation and can run
+    scripts or functions per standard <monospace>Julia</monospace>
+    usage. There are many functions not automatically exported to the
+    user but available in the normal way (e.g., calling
+    <monospace>VeriQuEST.&lt;function/struct/type-call&gt;</monospace>).
+    <monospace>QuEST</monospace> can be compiled to run on multi-core,
+    multi-threads, distributed and GPU clusters, however here
+    <monospace>QuEST.jl</monospace> uses pre-compiled binaries suited
+    for multi-threading only.</p>
     <fig>
-      <caption><p>Architecture: here is a sketch. Some diagram would be
-      cool.</p></caption>
-      <graphic mimetype="image" mime-subtype="jpeg" xlink:href="media/architecture.jpg" />
+      <caption><p>Software architecture</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="media/media/verification_software_stack.png" />
+    </fig>
+    <fig>
+      <caption><p>Network architecture</p></caption>
+      <graphic mimetype="image" mime-subtype="png" xlink:href="media/media/network_per_computation_type.png" />
     </fig>
   </sec>
   <sec id="measurement-based-quantum-computation-mbqc">
@@ -261,7 +283,41 @@ a Creative Commons Attribution 4.0 International License (CC BY
       <styled-content id="figU003Agraph"></styled-content></p></caption>
       <graphic mimetype="image" mime-subtype="jpeg" xlink:href="media/graph.jpg" />
     </fig>
-    <p>[JON:CODE: performing an MBQC]</p>
+    <sec id="configuration">
+      <title>Configuration</title>
+      <p>In this example a simple path graph is implemented.</p>
+      <code language="julia">using Pkg
+Pkg.activate(&quot;.&quot;)
+using VeriQuEST
+using Graphs
+# Set up input values
+graph = Graph(2)
+add_edge!(graph,1,2)
+
+
+io = InputOutput(Inputs(),Outputs(2))
+qgraph = QuantumGraph(graph,io)
+function forward_flow(vertex)
+    v_str = string(vertex)
+    forward = Dict(
+        &quot;1&quot; =&gt;2,
+        &quot;2&quot;=&gt;0)
+    forward[v_str]
+end
+flow = Flow(forward_flow)
+measurement_angles = Angles([π/2,π/2])</code>
+      <p>To run the MBQC pattern</p>
+      <code language="julia">mbqc_comp_type = MeasurementBasedQuantumComputation(qgraph,flow,measurement_angles)
+no_network = NoNetworkEmulation()
+dm = DensityMatrix()
+sv = StateVector()
+ch = NoisyChannel(NoNoise(NoQubits()))
+cr = MBQCRound()</code>
+      <p>Run as state vector</p>
+      <code language="julia">mg_dm = compute!(mbqc_comp_type,no_network,dm,ch,cr)</code>
+      <p>and as density matrix</p>
+      <code language="julia">mg_sv = compute!(mbqc_comp_type,no_network,sv,ch,cr)</code>
+    </sec>
   </sec>
   <sec id="blind-quantum-computation-bqc">
     <title>Blind Quantum Computation (BQC)</title>
@@ -349,9 +405,15 @@ a Creative Commons Attribution 4.0 International License (CC BY
         quantum network. Instead, the states prepared on the server side
         already take into account the state transfer. This approach is
         useful for studying the noise effect on the computation. For an
-        example, see the code below. [JON:CODE SNIPPET with implicit
-        client]</p>
+        example, see the code below.</p>
       </list-item>
+    </list>
+    <code language="julia">ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
+dm = DensityMatrix()
+implicit_network = ImplicitNetworkEmulation()
+cr = ComputationRound()
+mg_imp = compute!(ubqc_comp_type,implicit_network,dm,ch,cr)</code>
+    <list list-type="bullet">
       <list-item>
         <p><bold>Explicit network emulation</bold>. In this option, the
         quantum state of the client and the state transfer are
@@ -376,6 +438,8 @@ a Creative Commons Attribution 4.0 International License (CC BY
         code below. [JON:CODE SNIPPET with explicit client]</p>
       </list-item>
     </list>
+    <code language="julia">bell_pair_explicit_network = BellPairExplicitNetwork()
+mg_bp = compute!(ubqc_comp_type,bell_pair_explicit_network,dm,ch,cr)</code>
   </sec>
   <sec id="verification-protocols-dom">
     <title>Verification protocols [DOM]</title>
@@ -394,33 +458,60 @@ a Creative Commons Attribution 4.0 International License (CC BY
         <p>Maybe Fitsimons verification with hidden trap?</p>
       </list-item>
     </list>
-    <p>[JON:Example: Code BQP verification]</p>
-  </sec>
-  <sec id="noiseless-and-noisy-simulations">
-    <title>Noiseless and noisy simulations</title>
-    <p>In the study of quantum verification protocols, it is crucial to
-    be able to simulate both state vector and density matrix
-    simulations. State vector simulations require less computational
-    space, e.g., <inline-formula><alternatives>
-    <tex-math><![CDATA[n]]></tex-math>
-    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-qubit
-    system has dimension <inline-formula><alternatives>
-    <tex-math><![CDATA[2^n]]></tex-math>
-    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msup><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:msup></mml:math></alternatives></inline-formula>,
-    making it easier to check if the protocols are correct. On the other
-    hand, density matrix simulations requires more computational space,
-    e.g., <inline-formula><alternatives>
-    <tex-math><![CDATA[n]]></tex-math>
-    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>n</mml:mi></mml:math></alternatives></inline-formula>-qubit
-    system has dimension <inline-formula><alternatives>
-    <tex-math><![CDATA[2^n\times 2^n]]></tex-math>
-    <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mrow><mml:msup><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:msup><mml:mo>×</mml:mo><mml:msup><mml:mn>2</mml:mn><mml:mi>n</mml:mi></mml:msup></mml:mrow></mml:math></alternatives></inline-formula>,
-    however, they are excellent for understanding how noise impacts the
-    whole protocol, affecting both its certification and security. Such
-    features help researcher to ensuring their protocols are both
-    correct and secure in the presence of noise. Some examples on the
-    state-vector and density matrix simulations are given below.</p>
-    <p>[JON:Example:CODE SNIPPET]</p>
+    <p>To run the verification on a noisless server</p>
+    <code language="julia">flow = Flow(forward_flow)
+measurement_angles = Angles([π/2,π/2])
+total_rounds = 10
+computation_rounds = 1
+trapification_strategy = TestRoundTrapAndDummycolouring()
+ct = LeichtleVerification(
+    total_rounds,
+    computation_rounds,
+    trapification_strategy,
+    qgraph,flow,measurement_angles)
+nt_bp = BellPairExplicitNetwork()
+nt_im = ImplicitNetworkEmulation()
+st = DensityMatrix()
+ch = NoisyChannel(NoNoise(NoQubits()))</code>
+    <p>Run on an implicit network</p>
+    <code language="julia">ver_res1 = run_verification_simulator(ct,nt_bp,st,ch)</code>
+    <p>and an explicit network</p>
+    <code language="julia">ver_res2 = run_verification_simulator(ct,nt_im,st,ch)</code>
+    <p>To get results</p>
+    <code language="julia">get_tests(ver_res2) 
+get_computations(ver_res2)
+get_tests_verbose(ver_res2)
+get_computations_verbose(ver_res2) 
+get_computations_mode(ver_res2) </code>
+    <preformat>
+## Noiseless and noisy simulations
+
+In the study of quantum verification protocols, it is crucial to be able to simulate both state vector and density matrix simulations. State vector simulations require less computational space, e.g., $n$-qubit system has dimension $2^n$, making it easier to check if the protocols are correct. On the other hand, density matrix simulations requires more computational space, e.g., $n$-qubit system has dimension $2^n\times 2^n$, however, they are excellent for understanding how noise impacts the whole protocol, affecting both its certification and security. Such features help researcher to ensuring their protocols are both correct and secure in the presence of noise. Some examples on the  density matrix simulations are given below. 
+
+
+### Explicit noise channels
+
+Here are examples of damping, dephasing and depolarising noise.
+
+```julia
+ # Prob scaling
+p_scale = 0.5
+p = [p_scale*rand() for i in vertices(graph)]
+
+# Damping
+model = Damping(SingleQubit(),p)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
+
+# Dephasing
+model = Dephasing(SingleQubit(),p)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
+
+# Depolarising
+model = Depolarising(SingleQubit(),p)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)</preformat>
   </sec>
 </sec>
 <sec id="future-plans">
