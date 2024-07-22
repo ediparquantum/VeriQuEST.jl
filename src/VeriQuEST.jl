@@ -36,6 +36,7 @@ export
     NoNoise,
     NoQubits,
     SingleQubit,
+    Pauli,
     ParameterResources,
     generate_property_graph!,
     compute!,
