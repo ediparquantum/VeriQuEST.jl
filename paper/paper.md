@@ -78,16 +78,18 @@ Our package `VeriQuEST.jl` is aimed at assisting researchers in exploring and de
 
 ## Software architecture
 
-[JON:Explain how the package works, where does it stand**: function call, core link (if there is any), compilation]
+VeriQuEST.jl is a package written entirely in `Julia`, however to emulate the quantum computation, the `C` wrapper `QuEST.jl` which utilises the library `QuEST` is used. `QuEST.jl` calls the `C` through a precompiled verions (`v3.7`) of `QuEST`, with a number of features on the `Julia` level to prevent run-time crashes. There are some experimental features, but basic usage and specifically calls relevant to `VeriQuEST.jl` are sound. The user takes advantage of the `Julia` just-in-time compilation and can run scripts or functions per standard `Julia` usage. There are many functions not automatically exported to the user but available in the normal way (e.g., calling `VeriQuEST.<function/struct/type-call>`). `QuEST` can be compiled to run on multi-core, multi-threads, distributed and GPU clusters, however here `QuEST.jl` uses pre-compiled binaries suited for multi-threading only.
 
-![Architecture: here is a sketch. Some diagram would be cool.](architecture.jpg){width=50%}
 
+![Software architecture](media/verification_software_stack.png)
+
+![Network architecture](media/network_per_computation_type.png)
 
 ## Measurement-Based Quantum Computation (MBQC)
 
 In the MBQC framework, a quantum algorithm can be represented as a set $\{(G, I, O), \vec{\phi}\}$, where $(G, I, O)$ denotes the quantum resource and $\vec{\phi}$ is a set of measurement angles. The triplet $(G, I, O)$ signifies an _open graph_, i.e., graphs characterised by the presence of _flow_ [@danos2006determinism]. Single-qubit adaptive measurements are performed sequentially on the vertices with measurement operator $\{|+_{\theta_j}\rangle\!\langle +_{\theta_j}|,|-_{\theta_j}\rangle\!\langle -_{\theta_j}|\}$, measured on vertex $j$, where $|\pm_{\theta}\rangle\coloneq (|0\rangle\pm e^{i\theta}|1\rangle)/\sqrt{2}$ and $\theta_j=\phi_j+\delta$ for a correction $\delta$ that is calculated by our tool. For an illustration, see \autoref{fig:graph}.
 
-![The triplet $(G, I, O)$ representing graph state for the quantum resource, where $G=(V,E)$ is the graph, $I$ is a set of input nodes, and $O$ is a set of output nodes. Each node represents qubit with state $(|0\rangle+|1\rangle)/\sqrt 2$ and each edge represent controlled-$Z$ operation operated to the corresponding nodes. Measurements in the $XY$-plane of Bloch sphere are performed from the left to the right. The arrows indicate the _flow_ $f:O^c\rightarrow I^c$ which induces partial ordering of the measurements. Input nodes $I$ may be initialised to an arbitrary quantum state $\rho$ and the output nodes $O$ is the final output that can be classical or quantum -- if left unmeasured. \label{fig:graph}](graph.jpg){ width=50% }
+![The triplet $(G, I, O)$ representing graph state for the quantum resource, where $G=(V,E)$ is the graph, $I$ is a set of input nodes, and $O$ is a set of output nodes. Each node represents qubit with state $(|0\rangle+|1\rangle)/\sqrt 2$ and each edge represent controlled-$Z$ operation operated to the corresponding nodes. Measurements in the $XY$-plane of Bloch sphere are performed from the left to the right. The arrows indicate the _flow_ $f:O^c\rightarrow I^c$ which induces partial ordering of the measurements. Input nodes $I$ may be initialised to an arbitrary quantum state $\rho$ and the output nodes $O$ is the final output that can be classical or quantum -- if left unmeasured. \label{fig:graph}](graph.jpg)
 
 ### Configuration
 
@@ -97,47 +99,46 @@ In this example a simple path graph is implemented.
 using Pkg
 Pkg.activate(".")
 using VeriQuEST
-state_type = DensityMatrix()
-total_rounds,computation_rounds = 100,50
+using Graphs
+# Set up input values
+graph = Graph(2)
+add_edge!(graph,1,2)
 
-# Grover graph
-num_vertices = 3
-graph = Graph(num_vertices)
-add_edge!(graph,1,2) 
-add_edge!(graph,2,3) 
 
-input = (indices = (),values = ())
-output = (3) # integer separeted by comma
-
-# Julia is indexed 1, hence a vertex with 0 index is flag for no flow
+io = InputOutput(Inputs(),Outputs(2))
+qgraph = QuantumGraph(graph,io)
 function forward_flow(vertex)
     v_str = string(vertex)
     forward = Dict(
-        "1" =>2, 
-        "2" =>3,
-        "3" =>0) # 0 means no future vertex
+        "1" =>2,
+        "2"=>0)
     forward[v_str]
 end
-
-secret_angles = [π,0.0,π] # Angles secret from Bob
-
-para= (
-    graph=graph,
-    forward_flow = forward_flow,
-    input = input,
-    output = output,
-    secret_angles=secret_angles,
-    state_type = state_type,
-    total_rounds = total_rounds,
-    computation_rounds = computation_rounds)
+flow = Flow(forward_flow)
+measurement_angles = Angles([π/2,π/2])
 ```
 
 To run the MBQC pattern
 
 ```julia
-julia> run_mbqc(para)
-1-element Vector{Any}:
- 0
+mbqc_comp_type = MeasurementBasedQuantumComputation(qgraph,flow,measurement_angles)
+no_network = NoNetworkEmulation()
+dm = DensityMatrix()
+sv = StateVector()
+ch = NoisyChannel(NoNoise(NoQubits()))
+cr = MBQCRound()
+```
+
+Run as state vector
+
+```julia
+mg_dm = compute!(mbqc_comp_type,no_network,dm,ch,cr)
+```
+
+and as density matrix
+
+```julia
+mg_sv = compute!(mbqc_comp_type,no_network,sv,ch,cr)
 ```
 
 ## Blind Quantum Computation (BQC)
@@ -155,15 +156,21 @@ In BQC, delegating quantum tasks privately highlights the importance of client s
 - **Implicit network emulation**. In this option, we do not explicitly emulate the quantum state of the client or the quantum network. Instead, the states prepared on the server side already take into account the state transfer. This approach is useful for studying the noise effect on the computation. For an example, see the code below.
 
 ```julia
-julia> run_ubqc(para)
-1-element Vector{Any}:
- 0
-julia> run_ubqc(para) == run_mbqc(para) # should be equivalent.
-true
+ubqc_comp_type = BlindQuantumComputation(qgraph,flow,measurement_angles)
+dm = DensityMatrix()
+implicit_network = ImplicitNetworkEmulation()
+cr = ComputationRound()
+mg_imp = compute!(ubqc_comp_type,implicit_network,dm,ch,cr)
 ```
+
 
 - **Explicit network emulation**. In this option, the quantum state of the client and the state transfer are explicitly emulated. The quantum network is simulated using remote entanglement operators, which can also be specified by the end user. This is made possible by operators operating between the client and the server in the joint Hilbert space of the client and the server, denoted as $\mathcal H_c \otimes \mathcal H_s$. This approach is useful for studying the effects of noise on the protocol as well as examining security in greater detail. Additionally, users can access the state of each party: the client's state in $\mathcal H_c$ and the server's state in $\mathcal H_s$, enabled by the partial trace operation. For an example, see the code below.
 [JON:CODE SNIPPET with explicit client]
+
+```julia
+bell_pair_explicit_network = BellPairExplicitNetwork()
+mg_bp = compute!(ubqc_comp_type,bell_pair_explicit_network,dm,ch,cr)
+```
 
 
 
@@ -181,13 +188,47 @@ Our tool provides several verification protocols that are ready for users to use
 
 To run the verification on a noisless server
 
+
 ```julia
-julia> vbqc_outcome = run_verification_simulator(TrustworthyServer(),Verbose(),para)
-(test_verification = Ok(),
-  test_verification_verb = (failed = 0, passed = 50),
-  computation_verification = Ok(),
-  computation_verification_verb = (failed = 0, passed = 50),
-  mode_outcome = Any[0])
+flow = Flow(forward_flow)
+measurement_angles = Angles([π/2,π/2])
+total_rounds = 10
+computation_rounds = 1
+trapification_strategy = TestRoundTrapAndDummycolouring()
+ct = LeichtleVerification(
+    total_rounds,
+    computation_rounds,
+    trapification_strategy,
+    qgraph,flow,measurement_angles)
+nt_bp = BellPairExplicitNetwork()
+nt_im = ImplicitNetworkEmulation()
+st = DensityMatrix()
+ch = NoisyChannel(NoNoise(NoQubits()))
+```
+
+Run on an implicit network
+
+
+```julia
+ver_res1 = run_verification_simulator(ct,nt_bp,st,ch)
+```
+
+and an explicit network
+
+```julia
+ver_res2 = run_verification_simulator(ct,nt_im,st,ch)
+```
+
+To get results 
+
+```julia
+get_tests(ver_res2) 
+get_computations(ver_res2)
+get_tests_verbose(ver_res2)
+get_computations_verbose(ver_res2) 
+get_computations_mode(ver_res2) 
+```
+
 ```
 
 ## Noiseless and noisy simulations
