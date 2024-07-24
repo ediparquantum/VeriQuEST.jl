@@ -132,13 +132,13 @@ cr = MBQCRound()
 Run as state vector
 
 ```julia
-mg_dm = compute!(mbqc_comp_type,no_network,dm,ch,cr)
+mg_dm = compute!(mbqc_comp_type,no_network,sv,ch,cr)
 ```
 
 and as density matrix
 
 ```julia
-mg_sv = compute!(mbqc_comp_type,no_network,sv,ch,cr)
+mg_sv = compute!(mbqc_comp_type,no_network,dm,ch,cr)
 ```
 
 ## Blind Quantum Computation (BQC)
@@ -235,30 +235,84 @@ get_computations_mode(ver_res2)
 
 In the study of quantum verification protocols, it is crucial to be able to simulate both state vector and density matrix simulations. State vector simulations require less computational space, e.g., $n$-qubit system has dimension $2^n$, making it easier to check if the protocols are correct. On the other hand, density matrix simulations requires more computational space, e.g., $n$-qubit system has dimension $2^n\times 2^n$, however, they are excellent for understanding how noise impacts the whole protocol, affecting both its certification and security. Such features help researcher to ensuring their protocols are both correct and secure in the presence of noise. Some examples on the  density matrix simulations are given below. 
 
+### Implicit noise channels
+
+Here are examples of bit flip noise and angles added to measurement basis 
+
+```julia
+# Post Angle Update
+angle = 0.1
+model = PostAngleUpdate(SingleQubit(),angle)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
+vr = run_verification_simulator(ct,nt_bp,st,ch)
+st = StateVector()
+vr = run_verification_simulator(ct,nt_im,st,ch)
+
+
+
+# Add bit flip
+bit_flip_prob = 0.5
+model = AddBitFlip(SingleQubit(),bit_flip_prob)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
+vr = run_verification_simulator(ct,nt_bp,st,ch)
+st = StateVector()
+vr = run_verification_simulator(ct,nt_im,st,ch)
+
+```
 
 ### Explicit noise channels
 
 Here are examples of damping, dephasing and depolarising noise.
 
 ```julia
- # Prob scaling
-p_scale = 0.5
+
+# Prob scaling
+p_scale = 0.1
 p = [p_scale*rand() for i in vertices(graph)]
 
 # Damping
 model = Damping(SingleQubit(),p)
 ch = NoisyChannel(model)
 vr = run_verification_simulator(ct,nt_im,st,ch)
+vr = run_verification_simulator(ct,nt_bp,st,ch)
 
 # Dephasing
 model = Dephasing(SingleQubit(),p)
 ch = NoisyChannel(model)
 vr = run_verification_simulator(ct,nt_im,st,ch)
+vr = run_verification_simulator(ct,nt_bp,st,ch)
 
 # Depolarising
 model = Depolarising(SingleQubit(),p)
 ch = NoisyChannel(model)
 vr = run_verification_simulator(ct,nt_im,st,ch)
+vr = run_verification_simulator(ct,nt_bp,st,ch)
+
+# Pauli 
+p_xyz(p_scale) = p_scale/10 .* [rand(),rand(),rand()]
+p = [p_xyz(p_scale) for i in vertices(graph)]
+model = Pauli(SingleQubit(),p)
+ch = NoisyChannel(model)
+vr = run_verification_simulator(ct,nt_im,st,ch)
+vr = run_verification_simulator(ct,nt_bp,st,ch)
+
+# Vector of noise models
+model_vec = [Damping,Dephasing,Depolarising,Pauli]
+p_damp = [p_scale*rand() for i in vertices(graph)]
+p_deph = [p_scale*rand() for i in vertices(graph)]
+p_depo = [p_scale*rand() for i in vertices(graph)]
+p_pauli = [p_xyz(p_scale) for i in vertices(graph)]
+prob_vec = [p_damp,p_deph,p_depo,p_pauli]
+
+models = Vector{AbstractNoiseModels}()
+for m in eachindex(model_vec)
+    push!(models,model_vec[m](SingleQubit(),prob_vec[m]))
+end
+ch = NoisyChannel(models)
+vr = run_verification_simulator(ct,nt_im,st,ch)
+vr = run_verification_simulator(ct,nt_bp,st,ch)
 ```
 
 # Future plans
