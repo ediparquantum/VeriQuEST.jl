@@ -10,37 +10,11 @@
 #           : Tested on state vector and density matrix
 ##################################################################
 
-
 using Pkg
 Pkg.activate(".")
+include("../src/VeriQuEST.jl")
+using .VeriQuEST
 using Graphs
-using MetaGraphs
-using QuEST
-using Chain
-using Random
-using StatsBase
-
-
-include("../src/abstract_types.jl")
-include("../src/structs.jl")
-include("../src/draw_random_numbers.jl")
-include("../src/asserts_errors_warnings.jl")
-include("../src/create_quantum_state_env.jl")
-include("../src/input_output_mbqc.jl")
-include("../src/colourings.jl")
-include("../src/graphs.jl")
-include("../src/angles.jl")
-include("../src/flow.jl")
-include("../src/computation_types.jl")
-include("../src/trapification_strategies.jl")
-include("../src/abstract_parameter_resources.jl")
-include("../src/network_emulation.jl")
-include("../src/property_graph.jl")
-include("../src/entangle.jl")
-include("../src/noisy_functions.jl")
-include("../src/measurements.jl")
-include("../src/run_quantum_computation.jl")
-include("../src/verification.jl")
 
 
 # Set up input values

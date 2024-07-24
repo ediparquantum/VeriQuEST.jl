@@ -315,7 +315,7 @@ end
 function initialise_add_noise_entangle!(mg::MetaGraphs.MetaGraph{Int64, Float64},channel::NoisyChannel)
     init_quantum_state = initialise_state!(mg)
     update_init_angles!(mg,init_quantum_state) # Update angles from state init
-    add_noise!(channel,init_quantum_state) 
+    add_noise!(channel,init_quantum_state) # Adds noise to underlying qureg 
     entangle_graph!(mg,init_quantum_state)
     set_prop!(mg,:quantum_state_properties,init_quantum_state)
     set_prop!(mg,:noisy_channel,channel)

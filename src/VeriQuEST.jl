@@ -16,6 +16,7 @@ module VeriQuEST
 
 
 export
+    AbstractNoiseModels,
     InputOutput,
     Inputs,
     Outputs,
