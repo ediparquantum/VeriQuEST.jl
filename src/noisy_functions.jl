@@ -67,7 +67,7 @@ function add_depolarising!(::TwoQubits,ρ::Qureg,q,p)
 end 
 
 
-function add_pauli_noise!(::SingleQubit,ρ::Qureg,q,p)
+function add_pauli_noise!(::SingleQubit,ρ::Qureg,q,p::Vector)
     mixPauli(ρ,q,p)
 end
 
@@ -194,7 +194,7 @@ function get_noise_model_params(
     noise_param(qureg,qubit)
 end
 
-
+# For PostAngleUpdate
 function add_noise!(::Client,
     client_meta_graph::MetaGraphs.MetaGraph{Int64, Float64},
     channel::NoisyChannel,
@@ -228,6 +228,7 @@ function add_noise!(::Client,
     noise_function(qubit_type,q,[θ,ϕ̂])
 end
 
+# For AddBitFlip
 function add_noise!(::Client,
     client_meta_graph::MetaGraphs.MetaGraph{Int64, Float64},
     channel::NoisyChannel,
@@ -315,7 +316,8 @@ end
 
 function add_noise!(
     channel::NoisyChannel,
-    qureg::Qureg)
+    qureg::Qureg,
+    qubit_range)
     channel_copy = channel
     models = get_channel(channel_copy)
     models = models isa Vector ? models : [models]
@@ -324,13 +326,13 @@ function add_noise!(
         for m in eachindex(models)
             model = models[m]
             params = get_noise_model_params(model,qureg)
-            qubit_range = Base.OneTo(params.ρ.numQubitsRepresented)
+            #qubit_range = Base.OneTo(params.ρ.numQubitsRepresented)
             if length(model.param) == 1
                 for q in qubit_range
                     params.q = q
                     add_noise!(model,params)
                 end
-            elseif length(model.param) > 1
+            elseif length(model.param) > 1 # Pauli has more than one dim -- fix
                 probs = model.param
                 for q in qubit_range
                     model.param = probs[q]
@@ -348,7 +350,7 @@ function add_noise!(
                 add_noise!(models,params)
             end
         elseif length(models.param) > 1
-            probs = model.param
+            probs = model.param 
             for q in qubit_range
                 models.param = probs[q]
                 params.q = q
@@ -362,6 +364,6 @@ end
 
 function add_noise!(channel::NoisyChannel,is::AbstractInitialisedServer)
     qureg = get_quantum_backend(is)
-
-    add_noise!(channel,qureg)
+    qubit_range = get_qubit_range(is)
+    add_noise!(channel,qureg,qubit_range)
 end

@@ -10,7 +10,7 @@
 
  function run_computation!(
     mg::MetaGraphs.MetaGraph{Int64, Float64},
-    channel::NoisyChannel,::Union{Damping,Dephasing,Depolarising,PostAngleUpdate,Vector{AbstractNoiseModels}})
+    channel::NoisyChannel,::Union{Damping,Dephasing,Depolarising,PostAngleUpdate,Pauli,Vector{AbstractNoiseModels}})
     initialised_server = get_prop(mg,:quantum_state_properties)
     qubits_to_measure = get_qubit_range(initialised_server)
     for q in qubits_to_measure  
