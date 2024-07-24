@@ -129,7 +129,7 @@ end
 function mix_two_density_matrices!(::DensityMatrices,ρ₁::Qureg,ρ₂::Qureg,p)
     p > 1.0 && throw_error(ProbabilityExceedsOneError())
     p < 0.0 && throw_error(ProbabilityLessThanZeroError())
-    ρ₁.numQubitsRepresented == ρ₂.numQubitsRepresented && 
+    ρ₁.numQubitsRepresented != ρ₂.numQubitsRepresented && 
         throw_error(DimensionMismatchDensityMatricesError())
     mixDensityMatrix(ρ₁,p,ρ₂)
 end 
@@ -317,48 +317,36 @@ end
 function add_noise!(
     channel::NoisyChannel,
     qureg::Qureg,
-    qubit_range)
-    channel_copy = channel
+    qubit_range) 
+    channel_copy = deepcopy(channel)
     models = get_channel(channel_copy)
-    models = models isa Vector ? models : [models]
-    models = filter(x->!(x isa PostAngleUpdate || x isa AddBitFlip || x isa NoNoise),models)
-    if models isa Vector 
-        for m in eachindex(models)
-            model = models[m]
-            params = get_noise_model_params(model,qureg)
-            #qubit_range = Base.OneTo(params.ρ.numQubitsRepresented)
-            if length(model.param) == 1
-                for q in qubit_range
-                    params.q = q
-                    add_noise!(model,params)
-                end
-            elseif length(model.param) > 1 # Pauli has more than one dim -- fix
-                probs = model.param
-                for q in qubit_range
-                    model.param = probs[q]
-                    params.q = q
-                    add_noise!(model,params)
-                end
-            end
-        end
-    elseif !(models isa Vector)
-        params = get_noise_model_params(models,qureg)
-        qubit_range = Base.OneTo(params.ρ.numQubitsRepresented)
-        if length(models.param) == 1
-            for q in qubit_range
-                params.q = q
-                add_noise!(models,params)
-            end
-        elseif length(models.param) > 1
-            probs = model.param 
-            for q in qubit_range
-                models.param = probs[q]
-                params.q = q
-                add_noise!(models,params)
-            end
+    models = models isa Vector ? models : [models] # Embed model into vector if not a vector
+
+    if any(map(x->(x isa PostAngleUpdate || x isa AddBitFlip || x isa NoNoise),models)[1])
+        return
+    end
+
+    for m in eachindex(models)
+        model = models[m]
+        params = get_noise_model_params(model,qureg)
         
+        # Only one probability applied to all qubits
+        if length(model.param) == 1 
+            for q in qubit_range
+                params.q = q
+                add_noise!(model,params) # Applies noise to specific qubit
+            end
+        # A specific probability per qubit
+        elseif length(model.param) > 1 
+            probs = model.param
+            for q in eachindex(qubit_range)
+                model.param = probs[q]
+                params.q = qubit_range[q]
+                add_noise!(model,params)
+            end
         end
     end
+        
 end
 
 
