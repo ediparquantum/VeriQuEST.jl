@@ -15,13 +15,14 @@ Pkg.activate(".")
 include("../src/VeriQuEST.jl")
 using .VeriQuEST
 using Graphs
+using MetaGraphs
 
 
 # Set up input values
 graph = Graph(2)
 add_edge!(graph,1,2)
 
-io = InputOutput(Inputs(),Outputs(2))
+io = InputOutput(Inputs((1),(0)),Outputs(2))
 qgraph = QuantumGraph(graph,io)
 function forward_flow(vertex)
     v_str = string(vertex)
@@ -41,7 +42,6 @@ dm = DensityMatrix()
 sv = StateVector()
 ch = NoisyChannel(NoNoise(NoQubits()))
 cr = MBQCRound()
-
 
 
 outcomes_dm = []
