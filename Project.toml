@@ -1,7 +1,7 @@
 name = "VeriQuEST"
 uuid = "3aa2c528-5caf-4a2e-b044-409d1cbc6a28"
 authors = ["Jonathan Miller"]
-version = "1.0.1"
+version = "1.0.0"
 
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
