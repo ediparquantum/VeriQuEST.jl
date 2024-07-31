@@ -16,14 +16,16 @@ Run the following commands along with relevant input to implement the blind veri
 
 ```julia
 using Pkg
-Pkg.add("VeriQuEST")
+Pkg.add(url = "https://github.com/fieldofnodes/VeriQuEST.jl")
 ```
 
 or
 
 ```julia
-] add VeriQuEST
+] add https://github.com/fieldofnodes/VeriQuEST.jl
 ```
+
+
 
 Then, 
 
